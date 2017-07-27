@@ -1,36 +1,42 @@
 import CSSModules from 'react-css-modules'
 import React from 'react'
 
+import * as gitService from './services/git'
 import css from './menu.css'
+import * as userService from './services/user'
 
 @CSSModules(css)
 export default class Menu extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentCommitter: 'Bryce',
-      users: [
-        { name: 'Bryce', selected: true },
-        { name: 'Bressain', selected: false },
-        { name: 'James', selected: false },
-        { name: 'Parker', selected: false },
-        { name: 'Kaiden', selected: true },
-      ]
+      currentCommitter: '',
+      users: []
     }
   }
 
-  handleUserClick = user => () => {
+  componentDidMount() {
     this.setState({
-      users: this.state.users.map(u => u.name !== user.name
-        ? u :
-        { ...u, selected: !user.selected })
+      users: userService.getUsers()
+    })
+  }
+
+  handleUserClick = user => async () => {
+    const updatedUser = { ...user, active: !user.active }
+    userService.updateUser(updatedUser)
+
+    this.setState({
+      users: this.state.users.map(u => u.email === user.email
+        ? updatedUser
+        : u
+      )
     })
   }
 
   renderUser = user => {
     return (
-      <li styleName="user" onClick={this.handleUserClick(user)} key={user.name}>
-        <input type="checkbox" checked={user.selected} readOnly/>
+      <li styleName="user" onClick={this.handleUserClick(user)} key={user.email}>
+        <input type="checkbox" checked={user.active} readOnly/>
         <span styleName="name">{user.name}</span>
       </li>
     )

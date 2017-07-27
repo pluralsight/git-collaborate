@@ -3,13 +3,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 module.exports =  {
-  entry: './src/menu/index.js',
+  entry: ['babel-polyfill', './src/menu/index.js'],
 
   output: {
     filename: 'bundle.js',
     path: path.resolve('./src/build'),
     publicPath: '/'
   },
+
+  target: 'electron-renderer',
 
   module: {
     rules: [
@@ -33,7 +35,7 @@ module.exports =  {
                 }
               }
             }
-          ],
+          ]
         })
       }
     ]

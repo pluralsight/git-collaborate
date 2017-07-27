@@ -1,6 +1,5 @@
-import * as path from 'path'
-
 import menubar from 'menubar'
+import * as path from 'path'
 
 menubar({
   dir: __dirname,

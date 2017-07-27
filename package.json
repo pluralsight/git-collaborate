@@ -5,13 +5,12 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron .",
-    "start:dev": "webpack && npm run start",
-    "start:web": "webpack-dev-server"
+    "start:dev": "webpack && npm run start"
   },
   "license": "ISC",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/pluralsight/git-switch-electron"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pluralsight/git-switch-electron"
   },
   "dependencies": {},
   "devDependencies": {
@@ -35,12 +34,12 @@
     "normalize.css": "5.0.0",
     "postcss-cssnext": "2.9.0",
     "postcss-import": "9.1.0",
-    "postcss-nested": "1.0.0",
     "postcss-loader": "1.2.2",
+    "postcss-nested": "1.0.0",
     "react": "15.4.2",
     "react-css-modules": "4.1.0",
     "react-dom": "15.4.2",
-    "webpack": "2.2.1",
+    "webpack": "3.4.1",
     "webpack-dev-server": "2.3.0"
   }
 }
