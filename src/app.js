@@ -5,7 +5,7 @@ const isDev = process.env.NODE_ENV === 'dev'
 
 function getMenuConfig() {
   if (isDev)
-    return { height: 780, width: 1080 }
+    return { height: 600, width: 800 }
 
   return { height: 400, width: 400 }
 }

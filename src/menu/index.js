@@ -4,6 +4,6 @@ import ReactDOM from 'react-dom'
 import Menu from './menu'
 
 ReactDOM.render(
-  <Menu/>,
+  <Menu />,
   document.getElementById('app-root')
 )
