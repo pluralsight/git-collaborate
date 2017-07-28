@@ -1,0 +1,9 @@
+#!/bin/sh
+
+actual_author=$(git log -1 HEAD --format="%an")
+expected_author=$(git config --get author.name)
+expected_author_email=$(git config --get author.email)
+
+if [ "$actual_author" != "$expected_author" ]; then
+  git commit --amend --no-edit --author="${expected_author} <${expected_author_email}>"
+fi

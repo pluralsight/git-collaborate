@@ -7,6 +7,7 @@ html, body {
 
 .container {
   color: #333333;
+  margin-bottom: 40px;
 }
 
 .header {
@@ -20,10 +21,27 @@ html, body {
   margin-bottom: 35px;
 }
 
+.users-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #24292e;
+  font-size: 22px;
+  margin: 18px 8px 4px 12px;
+}
 .users-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  border-top: 1px solid #ededed;
+}
+
+.buttons > * {
+  margin-left: 8px;
+}
+.button-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .user {
@@ -34,7 +52,6 @@ html, body {
   border-bottom: 1px solid #ededed;
   cursor: pointer;
 }
-
 .user:hover {
   background: #F7F7F7;
 }
@@ -43,12 +60,21 @@ html, body {
  cursor: pointer;
 }
 
-.name {
+.user-info {
+  flex-grow: 1;
   margin-left: 8px;
+}
+.name {
+  color: #444d56;
+  font-weight: 600;
+}
+.role {
+  color: #586069;
+  font-size: 12px;
 }
 
 .footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;

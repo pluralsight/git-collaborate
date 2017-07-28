@@ -10,12 +10,11 @@ export function get() {
 
 export function add({ name, email, rsaKeyPath }) {
   const users = get()
-  users.push({ name, email, rsaKeyPath })
-  persist(users)
+  users.push({ name, email, rsaKeyPath, active: true })
+  return persist(users)
 }
 
 export function update(user) {
-  // TODO: tomorrow, make this work so that users can update their email
   const users = get()
   const foundIndex = users.findIndex(u => u.email === user.email)
   if (foundIndex !== -1) {
@@ -24,13 +23,46 @@ export function update(user) {
     users.push(user)
   }
 
-  persist(users)
+  return persist(users)
+}
+
+export function rotate() {
+  const users = get()
+  const activeUsers = users.filter(u => u.active)
+  if (!activeUsers.length) return users
+
+  const inactiveUsers = users.filter(u => !u.active)
+  const updatedUsers = [
+    ...activeUsers.slice(1),
+    activeUsers[0],
+    ...inactiveUsers
+  ]
+
+  return persist(updatedUsers)
+}
+
+export function toggleActive(email) {
+  const users = get()
+  const user = users.find(u => u.email === email)
+  const activeUsers = users.filter(u => u.active && u.email !== email)
+  const inactiveUsers = users.filter(u => !u.active && u.email !== email)
+
+  user.active = !user.active
+  return persist(activeUsers.concat(user).concat(inactiveUsers))
+}
+
+export function clearActive() {
+  const users = get()
+  const updatedUsers = users.map(u => ({ ...u, active: false }))
+
+  return persist(updatedUsers)
 }
 
 function persist(users) {
   const config = getConfig()
   config.users = users
   setConfig(config)
+  return users
 }
 
 function getConfig() {

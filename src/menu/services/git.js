@@ -1,7 +1,13 @@
 import childProcess from 'child_process'
 
-export async function setUser(name, email) {
-  await execute(`git config set user`)
+export async function setAuthor(name, email) {
+  await execute(`git config --global author.name "${name}"`)
+  await execute(`git config --global author.email "${email}"`)
+}
+
+export async function setCommitters(name, email) {
+  await execute(`git config --global user.name "${name}"`)
+  await execute(`git config --global user.email "${email}"`)
 }
 
 async function execute(command, options) {

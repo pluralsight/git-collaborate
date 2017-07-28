@@ -5,6 +5,7 @@ import { func } from 'react-proptypes'
 
 import css from './index.css'
 import UserForm from '../user-form'
+import Button from '../button'
 
 @CSSModules(css)
 export default class AddButton extends React.Component {
@@ -31,15 +32,19 @@ export default class AddButton extends React.Component {
   }
 
   render() {
+    if (!this.state.showAddForm)
+      return (
+        <div styleName="container">
+          <Button onClick={this.toggleForm}>Add user</Button>
+        </div>
+      )
+
     return (
-      <div styleName="container">
-        <span styleName={this.state.showAddForm ? 'add-button-hidden' : 'add-button'} onClick={this.toggleForm}>Add</span>
-        <UserForm
-          onConfirm={this.handleAddUser}
-          onClose={this.toggleForm}
-          confirmLabel="Add user"
-          isOpen={this.state.showAddForm} />
-      </div>
+      <UserForm
+        onConfirm={this.handleAddUser}
+        onClose={this.toggleForm}
+        confirmLabel="Add user"
+        isOpen={this.state.showAddForm} />
     )
   }
 }

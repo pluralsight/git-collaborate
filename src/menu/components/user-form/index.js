@@ -8,7 +8,8 @@ import css from './index.css'
 const userType = shape({
   name: string.isRequired,
   email: string.isRequired,
-  rsaKeyPath: string.isRequired
+  rsaKeyPath: string.isRequired,
+  active: bool
 })
 
 @CSSModules(css)
@@ -25,7 +26,8 @@ export default class UserForm extends React.Component {
     this.state = {
       name: null,
       email: null,
-      rsaKeyPath: null
+      rsaKeyPath: null,
+      active: false
     }
   }
 
@@ -40,7 +42,8 @@ export default class UserForm extends React.Component {
     this.props.onConfirm({
       name: this.state.name || user.name,
       email: this.state.email || user.email,
-      rsaKeyPath: this.state.rsaKeyPath || user.rsaKeyPath
+      rsaKeyPath: this.state.rsaKeyPath || user.rsaKeyPath,
+      active: this.state.active || user.active
     })
   }
 
