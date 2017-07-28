@@ -4,6 +4,7 @@ import CSSModules from 'react-css-modules'
 import { func } from 'react-proptypes'
 
 import css from './index.css'
+import UserForm from '../user-form'
 
 @CSSModules(css)
 export default class AddButton extends React.Component {
@@ -12,16 +13,11 @@ export default class AddButton extends React.Component {
   }
   constructor(props) {
     super(props)
-    this.state = {
-      showForm: false,
-      name: null,
-      email: null,
-      rsaKeyPath: null
-    }
+    this.state = { showAddForm: false }
   }
 
   toggleForm = () => {
-    this.setState({ showForm: !this.state.showForm })
+    this.setState({ showAddForm: !this.state.showAddForm })
   }
 
   handleFieldChange = e => {
@@ -29,30 +25,20 @@ export default class AddButton extends React.Component {
     this.setState({ [id]: value })
   }
 
-  handleAddUser = () => {
-    const { name, email, rsaKeyPath } = this.state
+  handleAddUser = user => {
     this.toggleForm()
-    this.props.onAddUser({ name, email, rsaKeyPath })
-  }
-
-  renderForm() {
-    return (
-      <div styleName={this.state.showForm ? 'add-form' : 'add-form-hidden'}>
-        <div styleName="add-user">
-          <input id="name" styleName="add-user-field" placeholder="Name" onChange={this.handleFieldChange} />
-          <input id="email" styleName="add-user-field" placeholder="Email" onChange={this.handleFieldChange} />
-          <input id="rsaKeyPath" styleName="add-user-field" placeholder="RSA Key Path" onChange={this.handleFieldChange} />
-        </div>
-        <button styleName="add-user-button" onClick={this.handleAddUser}>Add user</button>
-      </div>
-    )
+    this.props.onAddUser(user)
   }
 
   render() {
     return (
       <div styleName="container">
-        <span styleName={this.state.showForm ? 'add-button-hidden' : 'add-button'} onClick={this.toggleForm}>Add</span>
-        {this.renderForm()}
+        <span styleName={this.state.showAddForm ? 'add-button-hidden' : 'add-button'} onClick={this.toggleForm}>Add</span>
+        <UserForm
+          onConfirm={this.handleAddUser}
+          onClose={this.toggleForm}
+          confirmLabel="Add user"
+          isOpen={this.state.showAddForm} />
       </div>
     )
   }

@@ -15,6 +15,7 @@ export function add({ name, email, rsaKeyPath }) {
 }
 
 export function update(user) {
+  // TODO: tomorrow, make this work so that users can update their email
   const users = get()
   const foundIndex = users.findIndex(u => u.email === user.email)
   if (foundIndex !== -1) {
