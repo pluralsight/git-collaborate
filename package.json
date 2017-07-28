@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron .",
-    "start:dev": "webpack && npm run start"
+    "start:dev": "webpack && NODE_ENV=dev npm run start"
   },
   "license": "ISC",
   "repository": {
