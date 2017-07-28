@@ -26,8 +26,7 @@ export default class UserForm extends React.Component {
     this.state = {
       name: null,
       email: null,
-      rsaKeyPath: null,
-      active: false
+      rsaKeyPath: null
     }
   }
 
@@ -43,7 +42,7 @@ export default class UserForm extends React.Component {
       name: this.state.name || user.name,
       email: this.state.email || user.email,
       rsaKeyPath: this.state.rsaKeyPath || user.rsaKeyPath,
-      active: this.state.active || user.active
+      active: user ? user.active : false
     })
   }
 
