@@ -30,6 +30,7 @@
     "babel-preset-stage-0": "6.22.0",
     "babel-require": "1.0.1",
     "css-loader": "0.26.1",
+    "electron": "1.4.12",
     "eslint": "3.19.0",
     "eslint-config-standard": "7.1.0",
     "eslint-config-standard-jsx": "3.3.0",
@@ -39,7 +40,6 @@
     "eslint-plugin-promise": "3.5.0",
     "eslint-plugin-react": "6.10.3",
     "eslint-plugin-standard": "2.1.1",
-    "electron": "1.4.12",
     "extract-text-webpack-plugin": "v2.0.0-rc.3",
     "html-webpack-plugin": "2.29.0",
     "husky": "0.13.3",
@@ -52,6 +52,7 @@
     "react": "15.4.2",
     "react-css-modules": "4.1.0",
     "react-dom": "15.4.2",
+    "react-proptypes": "1.0.0",
     "webpack": "3.4.1",
     "webpack-dev-server": "2.3.0"
   }

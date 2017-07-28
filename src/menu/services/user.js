@@ -4,12 +4,18 @@ import os from 'os'
 
 const CONFIG_FILE_PATH = path.join(os.homedir(), '.git-switch.json')
 
-export function getUsers() {
+export function get() {
   return getConfig().users || []
 }
 
-export function updateUser(user) {
-  const users = getUsers()
+export function add({ name, email, rsaKeyPath }) {
+  const users = get()
+  users.push({ name, email, rsaKeyPath })
+  persist(users)
+}
+
+export function update(user) {
+  const users = get()
   const foundIndex = users.findIndex(u => u.email === user.email)
   if (foundIndex !== -1) {
     users[foundIndex] = user
@@ -17,24 +23,24 @@ export function updateUser(user) {
     users.push(user)
   }
 
-  setUsers(users)
+  persist(users)
 }
 
-export function setUsers(users) {
+function persist(users) {
   const config = getConfig()
   config.users = users
   setConfig(config)
 }
 
 function getConfig() {
-  if (!configFileExists()) {
+  if (!configFileExists())
     return {}
-  }
+
   return JSON.parse(fs.readFileSync(CONFIG_FILE_PATH))
 }
 
 function setConfig(config) {
-  fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config))
+  fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2))
 }
 
 function configFileExists() {

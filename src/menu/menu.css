@@ -11,7 +11,8 @@ html, body {
 
 .header {
   padding: 12px 8px;
-  background: #f0f0f0;
+  background: #24292E;
+  color: #FFF;
   border-bottom: 1px solid #d5d5d5;
 }
 
@@ -33,12 +34,12 @@ html, body {
   cursor: pointer;
 }
 
-.name {
-  margin-left: 8px;
-}
-
 .user:hover {
   background: #F7F7F7;
+}
+
+.name {
+  margin-left: 8px;
 }
 
 .footer {
