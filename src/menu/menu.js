@@ -1,7 +1,6 @@
 import CSSModules from 'react-css-modules'
 import React from 'react'
 
-import * as gitService from './services/git'
 import css from './menu.css'
 import * as userService from './services/user'
 
@@ -36,7 +35,7 @@ export default class Menu extends React.Component {
   renderUser = user => {
     return (
       <li styleName="user" onClick={this.handleUserClick(user)} key={user.email}>
-        <input type="checkbox" checked={user.active} readOnly/>
+        <input type="checkbox" checked={user.active} readOnly />
         <span styleName="name">{user.name}</span>
       </li>
     )

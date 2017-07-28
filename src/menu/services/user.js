@@ -27,7 +27,7 @@ export function setUsers(users) {
 }
 
 function getConfig() {
-  if(!configFileExists()) {
+  if (!configFileExists()) {
     return {}
   }
   return JSON.parse(fs.readFileSync(CONFIG_FILE_PATH))
