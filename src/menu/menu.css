@@ -11,7 +11,8 @@ html, body {
 
 .header {
   padding: 12px 8px;
-  background: #f0f0f0;
+  background: #24292E;
+  color: #FFF;
   border-bottom: 1px solid #d5d5d5;
 }
 
@@ -28,17 +29,22 @@ html, body {
 .user {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 8px;
   border-bottom: 1px solid #ededed;
   cursor: pointer;
 }
 
-.name {
-  margin-left: 8px;
-}
-
 .user:hover {
   background: #F7F7F7;
+}
+
+.active {
+ cursor: pointer;
+}
+
+.name {
+  margin-left: 8px;
 }
 
 .footer {
