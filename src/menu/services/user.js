@@ -1,16 +1,17 @@
 import fs from 'fs'
-import path from 'path'
 import os from 'os'
+import path from 'path'
 
 const CONFIG_FILE_PATH = path.join(os.homedir(), '.git-switch.json')
 
 export function get() {
-  return getConfig().users || []
+  return getConfig().users
 }
 
 export function add({ name, email, rsaKeyPath }) {
   const users = get()
   users.push({ name, email, rsaKeyPath, active: true })
+
   return persist(users)
 }
 
@@ -29,7 +30,7 @@ export function update(user) {
 export function rotate() {
   const users = get()
   const activeUsers = users.filter(u => u.active)
-  if (!activeUsers.length) return users
+  if (!activeUsers.length || activeUsers.length === 1) return users
 
   const inactiveUsers = users.filter(u => !u.active)
   const updatedUsers = [
@@ -44,11 +45,17 @@ export function rotate() {
 export function toggleActive(email) {
   const users = get()
   const user = users.find(u => u.email === email)
+  if (!user) return users
+
   const activeUsers = users.filter(u => u.active && u.email !== email)
   const inactiveUsers = users.filter(u => !u.active && u.email !== email)
 
   user.active = !user.active
-  return persist(activeUsers.concat(user).concat(inactiveUsers))
+  return persist([
+    ...activeUsers,
+    user,
+    ...inactiveUsers
+  ])
 }
 
 export function clearActive() {
@@ -58,24 +65,30 @@ export function clearActive() {
   return persist(updatedUsers)
 }
 
-function persist(users) {
-  const config = getConfig()
-  config.users = users
-  setConfig(config)
-  return users
+function configFileExists() {
+  return fs.existsSync(CONFIG_FILE_PATH)
+}
+
+function getDefaultConfig() {
+  return {
+    users: []
+  }
 }
 
 function getConfig() {
-  if (!configFileExists())
-    return {}
-
-  return JSON.parse(fs.readFileSync(CONFIG_FILE_PATH))
+  return configFileExists()
+    ? JSON.parse(fs.readFileSync(CONFIG_FILE_PATH))
+    : getDefaultConfig()
 }
 
 function setConfig(config) {
   fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2))
 }
 
-function configFileExists() {
-  return fs.existsSync(CONFIG_FILE_PATH)
+function persist(users) {
+  const config = getConfig()
+  config.users = users
+  setConfig(config)
+
+  return users
 }

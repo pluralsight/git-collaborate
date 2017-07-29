@@ -1,0 +1,5 @@
+--reporter min
+--require babel-register
+--require babel-polyfill
+./test/setup.js
+./src/**/*.spec.js

@@ -4,10 +4,12 @@
   "description": "Cross-platform electron app for managing git users while pair/mob programming",
   "main": "src/index.js",
   "scripts": {
+    "lint": "eslint src/menu",
+    "precommit": "npm run lint && npm run test && webpack",
     "start": "electron .",
     "start:dev": "webpack && NODE_ENV=dev npm run start",
-    "lint": "eslint src/menu",
-    "precommit": "npm run lint && webpack"
+    "test": "mocha",
+    "test:watch": "npm run test -- --watch"
   },
   "license": "ISC",
   "repository": {
@@ -28,7 +30,10 @@
     "babel-preset-es2017": "6.16.0",
     "babel-preset-react": "6.22.0",
     "babel-preset-stage-0": "6.22.0",
+    "babel-register": "6.24.1",
     "babel-require": "1.0.1",
+    "chai": "4.1.0",
+    "chai-as-promised": "7.1.1",
     "css-loader": "0.26.1",
     "electron": "1.4.12",
     "eslint": "3.19.0",
@@ -44,6 +49,7 @@
     "html-webpack-plugin": "2.29.0",
     "husky": "0.13.3",
     "menubar": "5.2.1",
+    "mocha": "3.4.2",
     "normalize.css": "5.0.0",
     "postcss-cssnext": "2.9.0",
     "postcss-import": "9.1.0",
@@ -53,6 +59,8 @@
     "react-css-modules": "4.1.0",
     "react-dom": "15.4.2",
     "react-proptypes": "1.0.0",
+    "sinon": "2.4.1",
+    "sinon-chai": "2.12.0",
     "webpack": "3.4.1",
     "webpack-dev-server": "2.3.0"
   }

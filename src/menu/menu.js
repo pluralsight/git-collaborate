@@ -23,15 +23,10 @@ export default class Menu extends React.Component {
   }
 
   handleGitUserChanges = async () => {
-    const committers = userService.get().filter(u => u.active)
-    if (!committers.length) return
-
-    const author = committers.length === 1
-      ? committers[0]
-      : committers.shift()
+    const { author, committer } = gitService.getAuthorAndCommitter(userService.get())
 
     await gitService.setAuthor(author.name, author.email)
-    await gitService.setCommitters(committers.map(c => c.name).join(' & '), committers.map(c => c.email).join(', '))
+    await gitService.setCommitter(committer.name, committer.email)
   }
   handleRotateUsers = async () => {
     const updatedUsers = userService.rotate()
