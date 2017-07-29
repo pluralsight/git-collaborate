@@ -4,10 +4,11 @@
   "description": "Cross-platform electron app for managing git users while pair/mob programming",
   "main": "src/index.js",
   "scripts": {
-    "lint": "eslint src/menu",
-    "precommit": "npm run lint && npm run test && webpack",
+    "build": "webpack",
+    "lint": "eslint ./src/menu",
+    "precommit": "npm run lint && npm run test && npm run build",
     "start": "electron .",
-    "start:dev": "webpack && NODE_ENV=dev npm run start",
+    "start:dev": "npm run build && NODE_ENV=dev npm run start",
     "test": "mocha",
     "test:watch": "npm run test -- --watch"
   },
