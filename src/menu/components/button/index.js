@@ -1,6 +1,7 @@
 import CSSModules from 'react-css-modules'
 import React from 'react'
-import { func, node } from 'react-proptypes'
+
+import { func, node } from 'prop-types'
 
 import css from './index.css'
 

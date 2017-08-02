@@ -1,7 +1,7 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
 
-import { func } from 'react-proptypes'
+import { func } from 'prop-types'
 
 import css from './index.css'
 import UserForm from '../user-form'

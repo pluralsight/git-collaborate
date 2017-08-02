@@ -1,7 +1,7 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
 
-import { bool, func, shape, string } from 'react-proptypes'
+import { bool, func, shape, string } from 'prop-types'
 
 import css from './index.css'
 
