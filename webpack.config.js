@@ -18,7 +18,7 @@ module.exports = {
       {
         test: /\.js$/,
         use: 'babel-loader',
-        exclude: /^.*node_modules[\/\\](?!@pluralsight).*$/
+        exclude: /^.*node_modules[/\\](?!@pluralsight).*$/
       },
       {
         test: /\.css$/,

@@ -3,7 +3,7 @@ import os from 'os'
 import path from 'path'
 import uuid from 'uuid/v4'
 
-const CONFIG_FILE_PATH = path.join(os.homedir(), '.git-switch.json')
+const CONFIG_FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 
 export function get() {
   return getConfig().users
@@ -78,7 +78,7 @@ export function clearActive() {
 }
 
 function configFileExists() {
-  return fs.existsSync(CONFIG_FILE_PATH)
+  return fs.existsSync(CONFIG_FILE)
 }
 
 function getDefaultConfig() {
@@ -89,12 +89,12 @@ function getDefaultConfig() {
 
 function getConfig() {
   return configFileExists()
-    ? JSON.parse(fs.readFileSync(CONFIG_FILE_PATH))
+    ? JSON.parse(fs.readFileSync(CONFIG_FILE))
     : getDefaultConfig()
 }
 
 function setConfig(config) {
-  fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2))
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2))
 }
 
 function persist(users) {
