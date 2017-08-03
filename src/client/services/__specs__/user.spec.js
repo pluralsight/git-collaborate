@@ -7,7 +7,7 @@ import uuid from 'uuid/v4'
 
 import * as subject from '../user'
 
-const FILE = path.join(os.homedir(), '.git-switch.json')
+const FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 
 describe('services/user', () => {
   let users

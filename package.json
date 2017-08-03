@@ -48,7 +48,7 @@
     "eslint-plugin-standard": "2.1.1",
     "extract-text-webpack-plugin": "v2.0.0-rc.3",
     "html-webpack-plugin": "2.29.0",
-    "husky": "0.13.3",
+    "husky": "0.14.3",
     "menubar": "5.2.1",
     "mocha": "3.4.2",
     "normalize.css": "5.0.0",
