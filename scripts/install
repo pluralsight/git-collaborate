@@ -1,30 +1,35 @@
 #!/usr/bin/env node
 'use strict'
 
-const childProcess = require('child_process')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+
+const exec = require('./util/exec')
 
 const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 const TEMPLATES_PATH = path.join(GIT_SWITCH_PATH, 'git-templates')
 const HOOKS_PATH = path.join(TEMPLATES_PATH, 'hooks')
 const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 
-console.log('Creating git switch files...')
-console.log('~/.git-switch')
-console.log('  - git-templates')
-console.log('    - hooks')
-console.log('      - post-commit.git-switch')
-console.log('    - git-init')
-console.log('  - config.json')
-console.log('')
+console.log(`Creating git switch files...
+~/.git-switch
+  - git-templates
+    - hooks
+      - post-commit.git-switch
+    - git-init
+  - config.json
+`)
 
 if (!fs.existsSync(GIT_SWITCH_PATH)) {
   fs.mkdirSync(GIT_SWITCH_PATH)
 }
 if (!fs.existsSync(TEMPLATES_PATH)) {
   fs.mkdirSync(TEMPLATES_PATH)
+
+  const readGitInit = fs.createReadStream(path.join(__dirname, 'git-init'), 'utf-8')
+  const writeGitInit = fs.createWriteStream(path.join(TEMPLATES_PATH, 'git-init.git-switch'), 'utf-8')
+  readGitInit.pipe(writeGitInit)
 }
 if (!fs.existsSync(HOOKS_PATH)) {
   fs.mkdirSync(HOOKS_PATH)
@@ -39,27 +44,16 @@ if (!fs.existsSync(CONFIG_FILE)) {
 
 console.log('Done\n')
 
-function exec(command, options) {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(command, (err, data) => {
-      if (err && !options.ignoreError) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
-  })
-}
-
-console.log('Setting global config for git switch...')
-console.log('init.templatedir = ', TEMPLATES_PATH)
-console.log('')
+console.log(`Setting global config for git switch...
+init.templatedir = ${TEMPLATES_PATH}
+`)
 
 exec('git config --global init.templatedir', { ignoreError: true })
   .then(val => {
     if (val) {
       console.error('Global init.templatedir already exists...')
       console.log(`This should be '${TEMPLATES_PATH}':`, val)
+      console.log('')
       return
     }
 

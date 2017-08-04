@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+'use strict'
+
+const fs = require('fs')
+const path = require('path')
+
+const exec = require('./util/exec')
+
+const POST_COMMIT_SCRIPT = '/bin/bash "$(dirname $0)"/post-commit.git-switch'
+const EXISTING_POST_COMMIT_SCRIPT = '/bin/bash "$(dirname $0)"/post-commit.existing'
+
+const repoPath = process.argv[2]
+function fail(msg) {
+  console.error(msg)
+  process.exit(1)
+}
+
+if (!repoPath) fail('The path to a git repository must specfied')
+if (!fs.existsSync(path.join(repoPath, '.git'))) fail('The path specified does not contain a ".git" directory')
+
+const repoHooksPath = path.join(repoPath, '.git', 'hooks')
+
+let postCommitText = `#!/bin/bash\n\n`
+let existingHookIncludesGitSwitch = false
+
+const postCommitFile = path.join(repoHooksPath, 'post-commit')
+if (fs.existsSync(postCommitFile)) {
+  console.log('Existing post-commit hook detected...')
+  const existingHook = fs.readFileSync(postCommitFile, 'utf-8')
+
+  existingHookIncludesGitSwitch = existingHook.includes(POST_COMMIT_SCRIPT)
+  if (!existingHookIncludesGitSwitch) {
+    console.log('Moving existing post-commit hook to post-commit.existing...')
+
+    if (fs.existsSync(path.join(repoHooksPath, 'post-commit.existing'))) {
+      console.error('The hook file post-commit.existing already exists... Aborting.\n')
+      process.exit(1)
+    }
+
+    fs.writeFileSync(path.join(repoHooksPath, 'post-commit.existing'), existingHook, 'utf-8')
+    postCommitText = postCommitText + EXISTING_POST_COMMIT_SCRIPT + '\n'
+  }
+}
+
+postCommitText = postCommitText + POST_COMMIT_SCRIPT
+process.chdir(repoPath)
+
+console.log('Adding git-switch post-commit hook...')
+exec('git init').then(() => {
+  console.log(`Writing post-commit hook to use git-switch${!existingHookIncludesGitSwitch ? ' amd existing hook(s)' : ''}...\n`)
+  fs.writeFileSync(postCommitFile, postCommitText, 'utf-8')
+
+  console.log('Done\n')
+}).catch(err => {
+  console.error(err)
+  process.exit(1)
+})
