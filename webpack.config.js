@@ -2,8 +2,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
-module.exports =  {
-  entry: ['babel-polyfill', './src/menu/index.js'],
+module.exports = {
+  entry: ['babel-polyfill', './src/client/index.js'],
 
   output: {
     filename: 'bundle.js',
@@ -43,10 +43,10 @@ module.exports =  {
 
   plugins: [
     new ExtractTextPlugin('styles.css'),
-    new HtmlWebpackPlugin({ template: './src/menu/index.html' })
+    new HtmlWebpackPlugin({ template: './src/client/index.html' })
   ],
 
   devServer: {
-    contentBase: path.join(__dirname, 'menu')
+    contentBase: path.join(__dirname, 'client')
   }
 }

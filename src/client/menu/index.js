@@ -4,9 +4,9 @@ import React from 'react'
 import AddButton from './components/add-button'
 import Button from './components/button'
 import EditButton from './components/edit-button/index'
-import css from './menu.css'
-import * as gitService from './services/git'
-import * as userService from './services/user'
+import css from './index.css'
+import * as gitService from '../services/git'
+import * as userService from '../services/user'
 
 @CSSModules(css)
 export default class Menu extends React.Component {
