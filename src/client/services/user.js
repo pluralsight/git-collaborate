@@ -1,6 +1,7 @@
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import uuid from 'uuid/v4'
 
 const CONFIG_FILE_PATH = path.join(os.homedir(), '.git-switch.json')
 
@@ -10,19 +11,30 @@ export function get() {
 
 export function add({ name, email, rsaKeyPath }) {
   const users = get()
-  users.push({ name, email, rsaKeyPath, active: true })
+  const id = uuid()
+  users.push({ id, name, email, rsaKeyPath, active: true })
 
   return persist(users)
 }
 
 export function update(user) {
   const users = get()
-  const foundIndex = users.findIndex(u => u.email === user.email)
+  const foundIndex = users.findIndex(u => u.id === user.id)
   if (foundIndex !== -1) {
     users[foundIndex] = user
   } else {
     users.push(user)
   }
+
+  return persist(users)
+}
+
+export function remove({ id }) {
+  const users = get()
+  const foundIndex = users.findIndex(u => u.id === id)
+  if (foundIndex === -1) return
+
+  users.splice(foundIndex)
 
   return persist(users)
 }
@@ -42,13 +54,13 @@ export function rotate() {
   return persist(updatedUsers)
 }
 
-export function toggleActive(email) {
+export function toggleActive(userId) {
   const users = get()
-  const user = users.find(u => u.email === email)
+  const user = users.find(u => u.id === userId)
   if (!user) return users
 
-  const activeUsers = users.filter(u => u.active && u.email !== email)
-  const inactiveUsers = users.filter(u => !u.active && u.email !== email)
+  const activeUsers = users.filter(u => u.active && u.id !== userId)
+  const inactiveUsers = users.filter(u => !u.active && u.id !== userId)
 
   user.active = !user.active
   return persist([
