@@ -1,12 +1,15 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
 import uuid from 'uuid/v4'
 
-const CONFIG_FILE = path.join(os.homedir(), '.git-switch', 'config.json')
+import * as config from '../../utils/config'
 
 export function get() {
-  return getConfig().users || []
+  return config.read().users || []
+}
+
+function persist(users) {
+  config.write({ users })
+
+  return users
 }
 
 export function add({ name, email, rsaKeyPath }) {
@@ -75,32 +78,4 @@ export function clearActive() {
   const updatedUsers = users.map(u => ({ ...u, active: false }))
 
   return persist(updatedUsers)
-}
-
-function configFileExists() {
-  return fs.existsSync(CONFIG_FILE)
-}
-
-function getDefaultConfig() {
-  return {
-    users: []
-  }
-}
-
-function getConfig() {
-  return configFileExists()
-    ? JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
-    : getDefaultConfig()
-}
-
-function setConfig(config) {
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8')
-}
-
-function persist(users) {
-  const config = getConfig()
-  config.users = users
-  setConfig(config)
-
-  return users
 }

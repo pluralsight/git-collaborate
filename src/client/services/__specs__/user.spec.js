@@ -1,13 +1,9 @@
 import { expect } from 'chai'
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
 import * as sinon from 'sinon'
 import uuid from 'uuid/v4'
 
+import * as configUtil from '../../../utils/config'
 import * as subject from '../user'
-
-const FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 
 describe('services/user', () => {
   let users
@@ -29,20 +25,25 @@ describe('services/user', () => {
     }]
     config = { users }
 
-    sinon.stub(fs, 'existsSync').callsFake(() => true)
-    sinon.stub(fs, 'readFileSync').callsFake(() => JSON.stringify(config, null, 2))
-    sinon.stub(fs, 'writeFileSync')
+    sinon.stub(configUtil, 'read').callsFake(() => config)
+    sinon.stub(configUtil, 'write')
   })
 
   afterEach(() => {
-    fs.existsSync.restore()
-    fs.readFileSync.restore()
-    fs.writeFileSync.restore()
+    configUtil.read.restore()
+    configUtil.write.restore()
   })
 
   describe('#get', () => {
     it('returns the users in config', () => {
       expect(subject.get()).to.eql(users)
+    })
+
+    describe('when users is null', () => {
+      it('returns empty array', () => {
+        config = {}
+        expect(subject.get()).to.eql([])
+      })
     })
   })
 
@@ -54,13 +55,15 @@ describe('services/user', () => {
         rsaKeyPath: '/a/path/to/nowhere'
       }
 
-      const results = subject.add(userToAdd)
-      const addedUser = results[2]
+      const actual = subject.add(userToAdd)
+
+      const addedUser = actual[2]
+      const expected = { ...config, users: actual }
 
       expect(addedUser.name).to.eql(userToAdd.name)
       expect(addedUser.email).to.eql(userToAdd.email)
       expect(addedUser.id).to.not.be.null
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify({...config, users: results}, null, 2))
+      expect(configUtil.write).to.have.been.calledWith(expected)
     })
   })
 
@@ -71,7 +74,6 @@ describe('services/user', () => {
         name: 'Changed Name'
       }
       const expected = {
-        ...config,
         users: [
           config.users[0],
           userToUpdate
@@ -81,7 +83,7 @@ describe('services/user', () => {
       const actual = subject.update(userToUpdate)
 
       expect(actual).to.eql(expected.users)
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+      expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
     describe('when updated user does not already exist', () => {
@@ -92,7 +94,6 @@ describe('services/user', () => {
           rsaKeyPath: '/a/path/to/nowhere'
         }
         const expected = {
-          ...config,
           users: [
             ...config.users,
             userToUpdate
@@ -102,18 +103,18 @@ describe('services/user', () => {
         const actual = subject.update(userToUpdate)
 
         expect(actual).to.eql(expected.users)
-        expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+        expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })
   })
 
   describe('#remove', () => {
     it('removes the user from the config', () => {
-      const expected = {...config, users: [users[0]]}
+      const expected = { ...config, users: [users[0]] }
       const actual = subject.remove(users[1].id)
 
-      expect(actual.length).to.eql(1)
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+      expect(actual).to.eql([users[0]])
+      expect(configUtil.write).to.have.been.calledWith(expected)
     })
   })
 
@@ -123,7 +124,7 @@ describe('services/user', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(users)
-        expect(fs.writeFileSync).to.not.have.been.called
+        expect(configUtil.write).to.not.have.been.called
       })
     })
 
@@ -138,7 +139,7 @@ describe('services/user', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(users)
-        expect(fs.writeFileSync).to.not.have.been.called
+        expect(configUtil.write).to.not.have.been.called
       })
     })
 
@@ -153,7 +154,6 @@ describe('services/user', () => {
             active: false
           })
         const expected = {
-          ...config,
           users: [
             users[1],
             users[0],
@@ -165,7 +165,7 @@ describe('services/user', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(expected.users)
-        expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+        expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })
 
@@ -185,7 +185,6 @@ describe('services/user', () => {
             active: false
           }])
         const expected = {
-          ...config,
           users: [
             users[1],
             users[2],
@@ -198,7 +197,7 @@ describe('services/user', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(expected.users)
-        expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+        expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })
   })
@@ -221,7 +220,6 @@ describe('services/user', () => {
 
     it('moves the user to the end of active users leaving inactive users last', () => {
       const expected = {
-        ...config,
         users: [
           users[0],
           { ...users[2], active: true },
@@ -232,7 +230,7 @@ describe('services/user', () => {
       const actual = subject.toggleActive(users[2].id)
 
       expect(actual).to.eql(expected.users)
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+      expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
     describe('when user does not exist', () => {
@@ -240,7 +238,7 @@ describe('services/user', () => {
         const actual = subject.toggleActive(uuid())
 
         expect(actual).to.eql(users)
-        expect(fs.writeFileSync).to.not.have.been.called
+        expect(configUtil.write).to.not.have.been.called
       })
     })
   })
@@ -258,7 +256,6 @@ describe('services/user', () => {
         }
       ]
       const expected = {
-        ...config,
         users: users.map(u => ({ ...u, active: false }))
       }
       config = { users }
@@ -266,7 +263,7 @@ describe('services/user', () => {
       const actual = subject.clearActive()
 
       expect(actual).to.eql(expected.users)
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+      expect(configUtil.write).to.have.been.calledWith(expected)
     })
   })
 })

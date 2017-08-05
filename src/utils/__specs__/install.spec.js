@@ -7,26 +7,18 @@ import * as sinon from 'sinon'
 import subject from '../install'
 
 const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
-const HOOKS_PATH = path.join(GIT_SWITCH_PATH, 'hooks')
-const POST_COMMIT_FILE = path.join(HOOKS_PATH, 'post-commit.git-switch')
 const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 
 describe('utils/install', () => {
   let gitSwitchDirExists
-  let hooksDirExists
-  let postCommitFileExists
   let configFileExsists
 
   beforeEach(() => {
     gitSwitchDirExists = true
-    hooksDirExists = true
-    postCommitFileExists = true
     configFileExsists = true
 
     sinon.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
-      .withArgs(HOOKS_PATH).callsFake(() => hooksDirExists)
-      .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
   })
   afterEach(() => {
