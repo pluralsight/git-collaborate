@@ -29,7 +29,7 @@ export function update(user) {
   return persist(users)
 }
 
-export function remove({ id }) {
+export function remove(id) {
   const users = get()
   const foundIndex = users.findIndex(u => u.id === id)
   if (foundIndex === -1) return

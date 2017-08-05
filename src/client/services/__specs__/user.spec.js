@@ -110,7 +110,7 @@ describe('services/user', () => {
   describe('#remove', () => {
     it('removes the user from the config', () => {
       const expected = {...config, users: [users[0]]}
-      const actual = subject.remove(users[1])
+      const actual = subject.remove(users[1].id)
 
       expect(actual.length).to.eql(1)
       expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))

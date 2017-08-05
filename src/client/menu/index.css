@@ -79,6 +79,10 @@ html, body {
   color: #586069;
   font-size: 12px;
 }
+.user-actions-container {
+  display: flex;
+  align-items: center;
+}
 
 .footer {
   position: fixed;
