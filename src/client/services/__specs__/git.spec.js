@@ -1,5 +1,8 @@
 import { expect } from 'chai'
+import fs from 'fs'
+import path from 'path'
 import * as sinon from 'sinon'
+import { Readable, Writable } from 'stream'
 
 import * as execute from '../../../utils/exec'
 import * as subject from '../git'
@@ -99,6 +102,100 @@ describe('services/git', () => {
           committer: { name: '', email: '' }
         }
         expect(subject.getAuthorAndCommitter([users[3]])).to.eql(expected)
+      })
+    })
+  })
+
+  describe('#initRepo', () => {
+    let repoPath
+    let pathExists
+    let repoExists
+    let postCommitExists
+
+    beforeEach(() => {
+      repoPath = '/repo/path'
+      pathExists = true
+      repoExists = true
+      postCommitExists = false
+      sinon.stub(fs, 'existsSync')
+        .withArgs(repoPath).callsFake(() => pathExists)
+        .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
+        .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
+    })
+    afterEach(() => {
+      fs.existsSync.restore()
+    })
+
+    describe('when path is a git repo', () => {
+      const postCommitGitSwitch = '/bin/bash "$(dirname $0)"/post-commit.git-switch'
+      let existingPostCommitScript
+      let readStream
+      let writeStream
+      let postCommitBuffer = []
+
+      beforeEach(() => {
+        existingPostCommitScript = ''
+        readStream = new Readable()
+        writeStream = new Writable({
+          write: (data, enc, cb) => {
+            postCommitBuffer.push(data)
+            cb()
+          }
+        })
+
+        sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitScript)
+        sinon.stub(fs, 'writeFileSync')
+        sinon.stub(fs, 'createReadStream').callsFake(() => readStream)
+        sinon.stub(fs, 'createWriteStream').callsFake(() => writeStream)
+      })
+      afterEach(() => {
+        fs.readFileSync.restore()
+        fs.writeFileSync.restore()
+        fs.createReadStream.restore()
+        fs.createWriteStream.restore()
+      })
+
+      it('copies the post-commit.git-switch file', () => {
+        subject.initRepo(repoPath)
+        readStream.emit('data', '123')
+        expect(fs.createReadStream).to.have.been.calledWith(path.join(process.cwd(), 'scripts', 'post-commit'), 'utf-8')
+        expect(fs.createWriteStream).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch'), 'utf-8')
+        expect(postCommitBuffer.toString('utf-8')).to.eql('123')
+      })
+
+      it('writes post-commit file to call post-commit.git-switch', () => {
+        const expected = `#!/bin/bash\n\n${postCommitGitSwitch}`
+        subject.initRepo(repoPath)
+        expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, 'utf-8')
+      })
+
+      describe('when post-commit already exists', () => {
+        beforeEach(() => {
+          postCommitExists = true
+        })
+
+        it('merges git-swtich call into post-commit', () => {
+          existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
+          const expected = `#!/bin/bash\n\n${postCommitGitSwitch}\n\necho "Committed"`
+
+          subject.initRepo(repoPath)
+
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected)
+        })
+      })
+    })
+
+    describe('when path does not exist', () => {
+      it('throws an error', () => {
+        pathExists = false
+        expect(() => subject.initRepo(repoPath)).to.throw
+      })
+    })
+
+    describe('when path is not a git repo', () => {
+      it('throws an error', () => {
+        repoExists = false
+        expect(() => subject.initRepo(repoPath)).to.throw
       })
     })
   })

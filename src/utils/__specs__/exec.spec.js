@@ -27,7 +27,7 @@ describe('utils/exec', () => {
   describe('when exec returns an error', async () => {
     it('rejects with an error', async () => {
       sinon.stub(proc, 'exec').callsFake((_cmd, _opts, callback) => callback(new Error('badness')))
-      expect(subject('ls')).to.eventually.be.rejectedWith(Error)
+      return expect(subject('ls')).to.eventually.be.rejectedWith(Error)
     })
   })
 })
