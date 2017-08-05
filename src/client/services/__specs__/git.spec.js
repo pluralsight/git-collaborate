@@ -1,23 +1,23 @@
 import { expect } from 'chai'
-import childProcess from 'child_process'
 import * as sinon from 'sinon'
 
+import * as execute from '../../../utils/exec'
 import * as subject from '../git'
 
 describe('services/git', () => {
   beforeEach(() => {
-    sinon.stub(childProcess, 'exec').callsFake((_cmd, _opts, callback) => callback())
+    sinon.stub(execute, 'default')
   })
   afterEach(() => {
-    childProcess.exec.restore()
+    execute.default.restore()
   })
 
   describe('#setAuthor', () => {
     it('executes a git command to set author name and email', async () => {
       await subject.setAuthor('author-name', 'author-email')
 
-      expect(childProcess.exec).to.have.been.calledWith('git config --global author.name "author-name"')
-      expect(childProcess.exec).to.have.been.calledWith('git config --global author.email "author-email"')
+      expect(execute.default).to.have.been.calledWith('git config --global author.name "author-name"')
+      expect(execute.default).to.have.been.calledWith('git config --global author.email "author-email"')
     })
   })
 
@@ -25,8 +25,8 @@ describe('services/git', () => {
     it('executes a git command to set committer name and email', async () => {
       await subject.setCommitter('committer-1 & committer-2', 'committer-1, committer-2')
 
-      expect(childProcess.exec).to.have.been.calledWith('git config --global user.name "committer-1 & committer-2"')
-      expect(childProcess.exec).to.have.been.calledWith('git config --global user.email "committer-1, committer-2"')
+      expect(execute.default).to.have.been.calledWith('git config --global user.name "committer-1 & committer-2"')
+      expect(execute.default).to.have.been.calledWith('git config --global user.email "committer-1, committer-2"')
     })
   })
 

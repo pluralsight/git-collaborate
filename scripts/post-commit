@@ -6,5 +6,5 @@ expected_author_email=$(git config --get author.email)
 
 if [ "$actual_author" != "$expected_author" ]; then
   echo -e "git-switch > Amending commit with author\n"
-  git commit --amend --no-verify --no-edit --author="${expected_author} <${expected_author_email}>"
+  git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
 fi
