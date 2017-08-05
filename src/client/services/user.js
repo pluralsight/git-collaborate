@@ -6,7 +6,7 @@ import uuid from 'uuid/v4'
 const CONFIG_FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 
 export function get() {
-  return getConfig().users
+  return getConfig().users || []
 }
 
 export function add({ name, email, rsaKeyPath }) {
@@ -89,12 +89,12 @@ function getDefaultConfig() {
 
 function getConfig() {
   return configFileExists()
-    ? JSON.parse(fs.readFileSync(CONFIG_FILE))
+    ? JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
     : getDefaultConfig()
 }
 
 function setConfig(config) {
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2))
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8')
 }
 
 function persist(users) {

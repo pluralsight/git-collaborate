@@ -1,4 +1,4 @@
-import childProcess from 'child_process'
+import execute from '../../utils/exec'
 
 export async function setAuthor(name, email) {
   await execute(`git config --global author.name "${name}"`)
@@ -36,16 +36,4 @@ function getDefaultAuthorAndCommitter() {
     author: { name: '', email: '' },
     committer: { name: '', email: '' }
   }
-}
-
-async function execute(command, options) {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(command, options, (err) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve()
-      }
-    })
-  })
 }

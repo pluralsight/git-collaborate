@@ -1,6 +1,9 @@
 import menubar from 'menubar'
 import * as path from 'path'
 
+import install from './utils/install'
+
+install()
 const isDev = process.env.NODE_ENV === 'dev'
 
 function getMenuConfig() {
