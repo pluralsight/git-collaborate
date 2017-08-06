@@ -16,8 +16,6 @@ export default class RemoveButton extends React.Component {
   handleOnRemove = () => this.props.onRemove(this.props.userToRemove)
 
   render() {
-    return (
-      <div styleName="container"><BinIcon onClick={this.handleOnRemove} /></div>
-    )
+    return <div styleName="container"><BinIcon onClick={this.handleOnRemove} /></div>
   }
 }

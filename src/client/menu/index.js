@@ -1,14 +1,15 @@
-import CSSModules from 'react-css-modules'
 import React from 'react'
+import CSSModules from 'react-css-modules'
 
 import AddButton from './components/add-button'
 import Button from './components/button'
-import EditButton from './components/edit-button'
 import DeleteButton from './components/delete-button'
-import { ClearIcon, GitIcon, RotateIcon } from './icons'
-import css from './index.css'
+import EditButton from './components/edit-button'
 import * as gitService from '../services/git'
+import { ClearIcon, GitIcon, MoreIcon, RotateIcon } from './icons'
 import * as userService from '../services/user'
+
+import css from './index.css'
 
 @CSSModules(css)
 export default class Menu extends React.Component {
@@ -17,11 +18,22 @@ export default class Menu extends React.Component {
     this.state = {
       currentCommitter: '',
       users: [],
-      showAddForm: false
+      showAddForm: false,
+      showUserActions: {}
     }
   }
+
+  setShowUserActions(users) {
+    const showUserActions = {}
+    users.forEach(u => { showUserActions[u.id] = false })
+    this.setState({ showUserActions })
+  }
+
   componentDidMount() {
-    this.setState({ users: userService.get() })
+    const users = userService.get()
+    this.setState({ users })
+
+    this.setShowUserActions(users)
   }
 
   handleGitUserChanges = async () => {
@@ -47,6 +59,7 @@ export default class Menu extends React.Component {
   }
   handleEditUser = async user => {
     const users = userService.update(user)
+    this.toggleUserActions(user.id)()
     this.setState({ users })
     await this.handleGitUserChanges()
   }
@@ -61,10 +74,42 @@ export default class Menu extends React.Component {
     await this.handleGitUserChanges()
   }
 
+  toggleUserActions = (userId) => () => {
+    const showUserActions = {
+      ...this.state.showUserActions,
+      [userId]: !this.state.showUserActions[userId]
+    }
+    this.setState({ showUserActions })
+  }
+
+  renderUserActions = user => {
+    const showUserActions = this.state.showUserActions[user.id]
+    return showUserActions
+    ? (
+      <div>
+        <div styleName="user-actions-container">
+          <EditButton
+            onEditUser={this.handleEditUser}
+            onClose={this.toggleUserActions(user.id)}
+            user={user} />
+          <div styleName="back-button-container">
+            <Button onClick={this.toggleUserActions(user.id)}>Back</Button>
+          </div>
+          <DeleteButton onRemove={this.handleRemoveUser} userToRemove={user.id} />
+        </div>
+      </div>
+      ) : (
+        <div>
+          <MoreIcon onClick={this.toggleUserActions(user.id)} />
+        </div>
+      )
+  }
+
   renderUser = (user, index) => {
     const role = user.active
       ? index === 0 ? 'Author' : 'Committer'
       : ''
+
     return (
       <li styleName="user" key={user.id}>
         <div>
@@ -74,10 +119,7 @@ export default class Menu extends React.Component {
           <div styleName="name">{user.name}</div>
           {role && <div styleName="role">{role}</div>}
         </div>
-        <div styleName="user-actions-container">
-          <EditButton onEditUser={this.handleEditUser} user={user} />
-          <DeleteButton onRemove={this.handleRemoveUser} userToRemove={user.id} />
-        </div>
+        {this.renderUserActions(user)}
       </li>
     )
   }
