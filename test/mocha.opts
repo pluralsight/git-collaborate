@@ -1,4 +1,4 @@
---reporter min
+--reporter list
 --require babel-register
 --require babel-polyfill
 ./test/setup.js

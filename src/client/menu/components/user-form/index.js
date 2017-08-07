@@ -39,6 +39,7 @@ export default class UserForm extends React.Component {
     const { user } = this.props
 
     this.props.onConfirm({
+      id: user && user.id,
       name: this.state.name || user.name,
       email: this.state.email || user.email,
       rsaKeyPath: this.state.rsaKeyPath || user.rsaKeyPath,

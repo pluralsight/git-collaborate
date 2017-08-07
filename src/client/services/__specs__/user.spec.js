@@ -3,6 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import * as sinon from 'sinon'
+import uuid from 'uuid/v4'
 
 import * as subject from '../user'
 
@@ -14,11 +15,13 @@ describe('services/user', () => {
 
   beforeEach(() => {
     users = [{
+      id: uuid(),
       name: 'First User',
       email: 'first@email.com',
       rsaKeyPath: '/not/a/real/path',
       active: false
     }, {
+      id: uuid(),
       name: 'Second User',
       email: 'second@email.com',
       rsaKeyPath: '/not/a/real/path',
@@ -28,10 +31,13 @@ describe('services/user', () => {
 
     sinon.stub(fs, 'existsSync').callsFake(() => true)
     sinon.stub(fs, 'readFileSync').callsFake(() => JSON.stringify(config, null, 2))
+    sinon.stub(fs, 'writeFileSync')
   })
+
   afterEach(() => {
     fs.existsSync.restore()
     fs.readFileSync.restore()
+    fs.writeFileSync.restore()
   })
 
   describe('#get', () => {
@@ -41,40 +47,24 @@ describe('services/user', () => {
   })
 
   describe('#add', () => {
-    afterEach(() => {
-      fs.writeFileSync.restore()
-    })
-
     it('adds user to config', () => {
       const userToAdd = {
         name: 'New User',
         email: 'new@email.com',
         rsaKeyPath: '/a/path/to/nowhere'
       }
-      const expected = {
-        ...config,
-        users: [
-          ...config.users,
-          { ...userToAdd, active: true }
-        ]
-      }
-      sinon.stub(fs, 'writeFileSync')
 
-      const actual = subject.add(userToAdd)
+      const results = subject.add(userToAdd)
+      const addedUser = results[2]
 
-      expect(actual).to.eql(expected.users)
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+      expect(addedUser.name).to.eql(userToAdd.name)
+      expect(addedUser.email).to.eql(userToAdd.email)
+      expect(addedUser.id).to.not.be.null
+      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify({...config, users: results}, null, 2))
     })
   })
 
   describe('#update', () => {
-    beforeEach(() => {
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
-    })
-
     it('updates the user in config', () => {
       const userToUpdate = {
         ...users[1],
@@ -117,14 +107,17 @@ describe('services/user', () => {
     })
   })
 
-  describe('#rotate', () => {
-    beforeEach(() => {
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
-    })
+  describe('#remove', () => {
+    it('removes the user from the config', () => {
+      const expected = {...config, users: [users[0]]}
+      const actual = subject.remove(users[1].id)
 
+      expect(actual.length).to.eql(1)
+      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
+    })
+  })
+
+  describe('#rotate', () => {
     describe('when no users are active', () => {
       it('returns current users', () => {
         const actual = subject.rotate()
@@ -216,6 +209,7 @@ describe('services/user', () => {
         { ...users[0], active: true },
         users[1],
         {
+          id: uuid(),
           name: 'Third User',
           email: 'third@email.com',
           rsaKeyPath: '/foo/bar',
@@ -223,11 +217,6 @@ describe('services/user', () => {
         }
       ]
       config = { users }
-
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
     })
 
     it('moves the user to the end of active users leaving inactive users last', () => {
@@ -240,7 +229,7 @@ describe('services/user', () => {
         ]
       }
 
-      const actual = subject.toggleActive('third@email.com')
+      const actual = subject.toggleActive(users[2].id)
 
       expect(actual).to.eql(expected.users)
       expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2))
@@ -248,7 +237,7 @@ describe('services/user', () => {
 
     describe('when user does not exist', () => {
       it('returns current users', () => {
-        const actual = subject.toggleActive('herp@derp.com')
+        const actual = subject.toggleActive(uuid())
 
         expect(actual).to.eql(users)
         expect(fs.writeFileSync).to.not.have.been.called
@@ -257,13 +246,6 @@ describe('services/user', () => {
   })
 
   describe('#clearActive', () => {
-    beforeEach(() => {
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
-    })
-
     it('unsets the active flag on all users', () => {
       users = [
         { ...users[0], active: true },

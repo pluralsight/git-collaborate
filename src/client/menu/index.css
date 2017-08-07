@@ -80,6 +80,14 @@ html, body {
   font-size: 12px;
 }
 
+.user-actions-container {
+  display: flex;
+  align-items: center;
+}
+.back-button-container {
+  margin-left: 8px;
+}
+
 .footer {
   position: fixed;
   bottom: 0;
