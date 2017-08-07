@@ -3,9 +3,10 @@ import CSSModules from 'react-css-modules'
 
 import { bool, func, shape, string } from 'prop-types'
 
-import css from './index.css'
+import Button from '../../../components/button'
 import UserForm from '../user-form'
-import Button from '../button/index'
+
+import css from './index.css'
 
 const userType = shape({
   id: string.isRequired,
