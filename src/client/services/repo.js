@@ -1,6 +1,7 @@
 import orderBy from 'lodash.orderby'
 
 import * as config from '../../utils/config'
+import { initRepo, removeRepo } from './git'
 
 export function get() {
   return config.read().repos || []
@@ -18,21 +19,23 @@ function persist(repos) {
   return repos
 }
 
-export function add(repoPath) {
+export function add(path) {
+  initRepo(path)
   const repos = get()
-  const name = getNameFromPath(repoPath)
+  const name = getNameFromPath(path)
 
   return persist([
     ...repos,
-    { name, path: repoPath }
+    { name, path, isValid: true }
   ])
 }
 
-export function remove(repoPath) {
+export function remove(path) {
   const repos = get()
-  const foundIndex = repos.findIndex(r => r.path === repoPath)
+  const foundIndex = repos.findIndex(r => r.path === path)
   if (foundIndex === -1) return repos
 
+  if (repos[foundIndex].isValid) removeRepo(path)
   repos.splice(foundIndex, 1)
 
   return persist(repos)

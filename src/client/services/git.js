@@ -3,6 +3,7 @@ import path from 'path'
 
 import execute from '../../utils/exec'
 
+const POST_COMMIT_GIT_SWITCH = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
 const defaultAuthorAndCommitter = {
   author: { name: '', email: '' },
   committer: { name: '', email: '' }
@@ -49,23 +50,21 @@ function copyGitSwitchPostCommit(gitHooksPath) {
   readPostCommit.pipe(writePostCommit)
 }
 
-function mergePostCommitScripts(postCommitFile, postCommitGitSwitch) {
+function mergePostCommitScripts(postCommitFile) {
   let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
-  if (!postCommitScript.includes(postCommitGitSwitch)) {
+  if (!postCommitScript.includes(POST_COMMIT_GIT_SWITCH)) {
     const temp = postCommitScript.substring(postCommitScript.indexOf('\n'))
-    postCommitScript = postCommitGitSwitch.concat(temp)
+    postCommitScript = POST_COMMIT_GIT_SWITCH.concat(temp)
   }
 
   return postCommitScript
 }
 
 function writePostCommit(gitHooksPath) {
-  const postCommitGitSwitch = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
-
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   const postCommitScript = fs.existsSync(postCommitFile)
-    ? mergePostCommitScripts(postCommitFile, postCommitGitSwitch)
-    : postCommitGitSwitch
+    ? mergePostCommitScripts(postCommitFile)
+    : POST_COMMIT_GIT_SWITCH
 
   fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
 }
@@ -79,4 +78,30 @@ export function initRepo(repoPath) {
   const gitHooksPath = path.join(repoPath, '.git', 'hooks')
   copyGitSwitchPostCommit(gitHooksPath)
   writePostCommit(gitHooksPath)
+}
+
+function removeGitSwitchPostCommitScript(gitHooksPath) {
+  const postCommitGitSwitchFile = path.join(gitHooksPath, 'post-commit.git-switch')
+  if (fs.existsSync(postCommitGitSwitchFile)) {
+    fs.unlinkSync(postCommitGitSwitchFile)
+  }
+}
+
+function removePostCommitScript(gitHooksPath) {
+  const postCommitFile = path.join(gitHooksPath, 'post-commit')
+  if (fs.existsSync(postCommitFile)) {
+    let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
+    if (postCommitScript === POST_COMMIT_GIT_SWITCH) {
+      fs.unlinkSync(postCommitFile)
+    } else {
+      postCommitScript = postCommitScript.replace(POST_COMMIT_GIT_SWITCH, '#!/bin/bash')
+      fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
+    }
+  }
+}
+
+export function removeRepo(repoPath) {
+  const gitHooksPath = path.join(repoPath, '.git', 'hooks')
+  removeGitSwitchPostCommitScript(gitHooksPath)
+  removePostCommitScript(gitHooksPath)
 }

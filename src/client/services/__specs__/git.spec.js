@@ -199,4 +199,50 @@ describe('services/git', () => {
       })
     })
   })
+
+  describe('#removeRepo', () => {
+    const postCommitGitSwitch = '\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
+    let postCommitScript
+    let repoPath
+    let postCommitExists
+    let postCommitGitSwitchExists
+
+    beforeEach(() => {
+      repoPath = '/repo/path'
+      postCommitExists = true
+      postCommitGitSwitchExists = true
+      postCommitScript = `#!/bin/bash${postCommitGitSwitch}\n\necho "Committed"`
+      sinon.stub(fs, 'existsSync')
+        .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
+        .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')).callsFake(() => postCommitGitSwitchExists)
+      sinon.stub(fs, 'unlinkSync')
+      sinon.stub(fs, 'readFileSync').callsFake(() => postCommitScript)
+      sinon.stub(fs, 'writeFileSync')
+    })
+    afterEach(() => {
+      fs.existsSync.restore()
+      fs.unlinkSync.restore()
+      fs.readFileSync.restore()
+      fs.writeFileSync.restore()
+    })
+
+    it('deletes the post-commit.git-switch file', () => {
+      subject.removeRepo(repoPath)
+      expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch'))
+    })
+
+    it('removes the git switch call in post-commit', () => {
+      const expected = postCommitScript.replace(postCommitGitSwitch, '')
+      subject.removeRepo(repoPath)
+      expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, 'utf-8')
+    })
+
+    describe('when no other post-commit hooks exist', () => {
+      it('deletes the post-commit hook', () => {
+        postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
+        subject.removeRepo(repoPath)
+        expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'))
+      })
+    })
+  })
 })
