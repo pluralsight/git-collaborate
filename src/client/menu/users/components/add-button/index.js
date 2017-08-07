@@ -3,9 +3,10 @@ import CSSModules from 'react-css-modules'
 
 import { func } from 'prop-types'
 
-import css from './index.css'
+import Button from '../../../components/button'
 import UserForm from '../user-form'
-import Button from '../button'
+
+import css from './index.css'
 
 @CSSModules(css)
 export default class AddButton extends React.Component {

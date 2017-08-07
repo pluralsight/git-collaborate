@@ -29,19 +29,19 @@
   font-weight: 400;
 }
 
-.form-button {
-  height: 24px;
-  width: 88px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid rgba(27, 31, 35, 0.2);
-  border-radius: 3px;
-}
-
 .button-section {
   display: flex;
   justify-content: space-between;
+}
+.form-button {
+  background-color: #eff3f6;
+  background-image: linear-gradient(-180deg, #f0f3f6 0%, #e6ebf1 90%);
+  border: 1px solid rgba(27,31,35,0.35);
+  border-radius: 3px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }
 .confirm-button {
   composes: form-button;
@@ -51,7 +51,6 @@
   border: 1px solid rgba(27,31,35,0.2);
   border-radius: 3px;
 }
-
 .close-button {
   composes: form-button;
   background-color: #EFF3F6;
