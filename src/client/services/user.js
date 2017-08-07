@@ -37,7 +37,7 @@ export function remove(id) {
   const foundIndex = users.findIndex(u => u.id === id)
   if (foundIndex === -1) return
 
-  users.splice(foundIndex)
+  users.splice(foundIndex, 1)
 
   return persist(users)
 }
@@ -57,13 +57,13 @@ export function rotate() {
   return persist(updatedUsers)
 }
 
-export function toggleActive(userId) {
+export function toggleActive(id) {
   const users = get()
-  const user = users.find(u => u.id === userId)
+  const user = users.find(u => u.id === id)
   if (!user) return users
 
-  const activeUsers = users.filter(u => u.active && u.id !== userId)
-  const inactiveUsers = users.filter(u => !u.active && u.id !== userId)
+  const activeUsers = users.filter(u => u.active && u.id !== id)
+  const inactiveUsers = users.filter(u => !u.active && u.id !== id)
 
   user.active = !user.active
   return persist([

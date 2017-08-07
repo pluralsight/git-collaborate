@@ -110,11 +110,12 @@ describe('services/user', () => {
 
   describe('#remove', () => {
     it('removes the user from the config', () => {
-      const expected = { ...config, users: [users[0]] }
-      const actual = subject.remove(users[1].id)
+      const newConfig = { ...config, users: [users[1]] }
+      const expected = [users[1]]
+      const actual = subject.remove(users[0].id)
 
-      expect(actual).to.eql([users[0]])
-      expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(actual).to.eql(expected)
+      expect(configUtil.write).to.have.been.calledWith(newConfig)
     })
   })
 
