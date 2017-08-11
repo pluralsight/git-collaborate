@@ -73,11 +73,11 @@ export default class Menu extends React.Component {
     this.setState({ users })
     await this.handleGitUserChanges()
   }
-  handleAddRepo = async path => {
+  handleAddRepo = path => {
     const repos = repoService.add(path)
     this.setState({ repos })
   }
-  handleRemoveRepo = async path => {
+  handleRemoveRepo = path => {
     const repos = repoService.remove(path)
     this.setState({ repos })
   }
