@@ -10,7 +10,7 @@ function getMenuConfig() {
   if (isDev)
     return { height: 600, width: 800 }
 
-  return { height: 400, width: 400 }
+  return { height: 600, width: 400 }
 }
 
 const mb = menubar({

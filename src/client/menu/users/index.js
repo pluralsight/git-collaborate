@@ -37,23 +37,23 @@ export default class Users extends React.Component {
     this.setShowUserActions(this.props.users)
   }
 
-  handleRotateUsers = async () => {
+  handleRotateUsers = () => {
     this.props.onUsersRotated()
   }
-  handleToggleActiveUser = user => async () => {
+  handleToggleActiveUser = user => () => {
     this.props.onUserActiveToggled(user.id)
   }
-  handleAddUser = async newUser => {
+  handleAddUser = newUser => {
     this.props.onUserAdded(newUser)
   }
-  handleUpdateUser = async user => {
+  handleUpdateUser = user => {
     this.toggleUserActions(user.id)
     this.props.onUserUpdated(user)
   }
-  handleRemoveUser = async userId => {
+  handleRemoveUser = userId => {
     this.props.onUserRemoved(userId)
   }
-  handleClearActiveUsers = async () => {
+  handleClearActiveUsers = () => {
     this.props.onActiveUsersCleared()
   }
 
