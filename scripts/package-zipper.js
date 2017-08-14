@@ -5,7 +5,7 @@ const path = require('path')
 const OS_PACKAGE_BUILDS = {
   'macos': 'git-switch-darwin-x64',
   'linux': 'git-switch-linux-x64',
-  'win32': 'git-switch-win32-x64'
+  'windows': 'git-switch-win32-x64'
 }
 
 const getOutputDir = (os) => path.join(__dirname, '../lib/', `git-switch-${os}.zip`)
@@ -45,7 +45,7 @@ function zipPackage(os) {
 function execute() {
   zipPackage('macos')
   zipPackage('linux')
-  zipPackage('win32')
+  zipPackage('windows')
 }
 
 console.log('Starting zip of all OS distributable packages...')
