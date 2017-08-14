@@ -3,9 +3,9 @@ src/node_modules
 npm-debug.log
 
 src/build
-/lib/git-switch-darwin-x64
-/lib/git-switch-linux-x64
-/lib/git-switch-win32-x64
+/releases/git-switch-darwin-x64
+/releases/git-switch-linux-x64
+/releases/git-switch-win32-x64
 
 .DS_Store
 .idea

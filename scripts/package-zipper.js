@@ -8,8 +8,8 @@ const OS_PACKAGE_BUILDS = {
   'windows': 'git-switch-win32-x64'
 }
 
-const getOutputDir = (os) => path.join(__dirname, '../lib/', `git-switch-${os}.zip`)
-const getSourceDir = (os) => path.join(__dirname, '../lib', OS_PACKAGE_BUILDS[os])
+const getOutputDir = os => path.join(__dirname, '../releases/', `git-switch-${os}.zip`)
+const getSourceDir = os => path.join(__dirname, '../releases', OS_PACKAGE_BUILDS[os])
 
 function removePackageSource(os) {
   const sourcePath = getSourceDir(os)
@@ -28,7 +28,7 @@ function zipPackage(os) {
     throw new Error('npm run build:packages must be run before zipping!')
 
   const output = fs.createWriteStream(outputDir)
-  const zip = archiver('zip')
+  const zip = archiver('zip', { zlib: { level: 9 } })
 
   output.on('close', () => {
     console.log(`${os} package:`, zip.pointer() + ' total bytes')
