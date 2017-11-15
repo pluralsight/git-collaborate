@@ -1,7 +1,7 @@
-import menubar from 'menubar'
-import * as path from 'path'
+const menubar = require('menubar')
+const path = require('path')
 
-import install from './utils/install'
+const install = require('./utils/install')
 
 install()
 const isDev = process.env.NODE_ENV === 'dev'
@@ -13,14 +13,13 @@ function getMenuConfig() {
   return { height: 600, width: 400 }
 }
 
-const mb = menubar({
+const menuBarOpts = {
   dir: __dirname,
   index: 'file://' + path.join(__dirname, 'build', 'index.html'),
-  preloadWindow: true,
-  ...getMenuConfig()
-})
+  preloadWindow: true
+}
+const mb = menubar(Object.assign({}, menuBarOpts, getMenuConfig()))
 
 mb.on('after-create-window', () => {
-  if (isDev)
-    mb.window.openDevTools()
+  if (isDev) mb.window.openDevTools()
 })
