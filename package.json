@@ -5,12 +5,19 @@
   "main": "src/index.js",
   "scripts": {
     "build": "webpack",
+    "electron:install": "cd ./src && npm install",
     "lint": "eslint ./src/menu",
+    "package:all": "npm run package:macos && npm run package:linux && npm run package:win32",
+    "package:linux": "electron-packager ./src git-switch --platform=linux --arch=x64 --out=./releases --overwrite --prune=true",
+    "package:macos": "electron-packager ./src git-switch --platform=darwin --arch=x64 --out=./releases --overwrite --prune=true",
+    "package:win32": "electron-packager ./src git-switch --platform=win32 --out=./releases --overwrite --prune=true",
     "precommit": "npm run lint && npm run test && npm run build",
+    "create:release": "npm run electron:install && npm run package:all && npm run zip:packages",
     "start": "electron .",
     "start:dev": "npm run build && NODE_ENV=dev npm run start",
     "test": "mocha",
-    "test:watch": "npm run test -- --watch"
+    "test:watch": "npm run test -- --watch",
+    "zip:packages": "node ./scripts/package-zipper"
   },
   "license": "ISC",
   "repository": {
@@ -19,6 +26,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "archiver": "2.0.0",
     "babel-cli": "6.18.0",
     "babel-core": "6.20.0",
     "babel-eslint": "7.2.1",
@@ -37,6 +45,7 @@
     "chai-as-promised": "7.1.1",
     "css-loader": "0.26.1",
     "electron": "1.4.12",
+    "electron-packager": "8.7.2",
     "eslint": "3.19.0",
     "eslint-config-standard": "7.1.0",
     "eslint-config-standard-jsx": "3.3.0",
@@ -47,6 +56,7 @@
     "eslint-plugin-react": "6.10.3",
     "eslint-plugin-standard": "2.1.1",
     "extract-text-webpack-plugin": "v2.0.0-rc.3",
+    "fs-extra": "4.0.1",
     "html-webpack-plugin": "2.29.0",
     "husky": "0.14.3",
     "lodash.orderby": "4.6.0",

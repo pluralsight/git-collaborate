@@ -1,6 +1,10 @@
 node_modules
+src/node_modules
 npm-debug.log
 
 src/build
+releases
+
 .DS_Store
 .idea
+.vscode
