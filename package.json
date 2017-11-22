@@ -14,7 +14,7 @@
     "precommit": "npm run lint && npm run test && npm run build",
     "create:release": "npm run electron:install && npm run build && npm run package:all && npm run zip:packages",
     "start": "electron .",
-    "start:dev": "npm run build && NODE_ENV=dev npm run start",
+    "start:dev": "NODE_ENV=dev webpack --watch",
     "test": "mocha",
     "test:watch": "npm run test -- --watch",
     "zip:packages": "node ./scripts/package-zipper"
@@ -45,6 +45,8 @@
     "chai-as-promised": "7.1.1",
     "css-loader": "0.26.1",
     "electron": "1.4.12",
+    "electron-connect": "0.6.2",
+    "electron-connect-webpack-plugin": "0.1.1",
     "electron-packager": "8.7.2",
     "eslint": "3.19.0",
     "eslint-config-standard": "7.1.0",
