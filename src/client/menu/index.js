@@ -1,15 +1,20 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
+import { remote } from 'electron'
 
 import Button from './components/button'
 import * as gitService from '../services/git'
-import { GitIcon } from './icons'
+import { GitIcon, MenuIcon } from './icons'
 import Repositories from './repositories'
 import * as repoService from '../services/repo'
 import * as userService from '../services/user'
 import Users from './users'
 
 import css from './index.css'
+
+const moreMenu = remote.Menu.buildFromTemplate([
+  { label: 'Quit Git Switch Electron', click: () => remote.app.quit() }
+])
 
 @CSSModules(css)
 export default class Menu extends React.Component {
@@ -81,6 +86,9 @@ export default class Menu extends React.Component {
     const repos = repoService.remove(path)
     this.setState({ repos })
   }
+  handleMenuButtonClick = () => {
+    moreMenu.popup()
+  }
 
   toggleRepositories = () => {
     this.setState({ showRepositories: !this.state.showRepositories })
@@ -107,7 +115,12 @@ export default class Menu extends React.Component {
   render() {
     return (
       <div styleName="container">
-        <div styleName="header"><GitIcon /><span styleName="header-title">switch</span></div>
+        <div styleName="header">
+          <GitIcon /><span styleName="header-title">switch</span>
+          <div styleName="menu-button-container">
+            <button styleName="menu-button" onClick={this.handleMenuButtonClick}><MenuIcon /></button>
+          </div>
+        </div>
         {this.renderContent()}
         <div styleName="footer">
           <Button onClick={this.toggleRepositories}>{this.state.showRepositories ? 'Users' : 'Repos'}</Button>
