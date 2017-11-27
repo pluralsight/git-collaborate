@@ -1,5 +1,6 @@
 export BinIcon from './bin.svg'
 export ClearIcon from './clear.svg'
 export GitIcon from './git.svg'
+export MenuIcon from './menu.svg'
 export MoreIcon from './more.svg'
 export RotateIcon from './rotate.svg'
