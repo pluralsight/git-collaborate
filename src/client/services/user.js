@@ -54,6 +54,7 @@ export function rotate() {
     ...inactiveUsers
   ]
 
+  console.log(`rotating to ${updatedUsers.filter(u => u.active).map(u => u.name).join(', ')}`)
   return persist(updatedUsers)
 }
 
