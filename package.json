@@ -11,13 +11,13 @@
     "package:linux": "electron-packager ./src git-switch --platform=linux --arch=x64 --out=./releases --overwrite --prune=true",
     "package:macos": "electron-packager ./src git-switch --platform=darwin --arch=x64 --out=./releases --overwrite --prune=true",
     "package:win32": "electron-packager ./src git-switch --platform=win32 --out=./releases --overwrite --prune=true",
+    "packages:zip": "node ./scripts/package-zipper",
     "precommit": "npm run lint && npm run test && npm run build",
-    "create:release": "npm run electron:install && npm run build && npm run package:all && npm run zip:packages",
+    "release:create": "npm run electron:install && npm run build && npm run package:all && npm run zip:packages",
     "start": "electron .",
     "start:dev": "NODE_ENV=dev webpack --watch",
     "test": "mocha",
-    "test:watch": "npm run test -- --watch",
-    "zip:packages": "node ./scripts/package-zipper"
+    "test:watch": "npm run test -- --watch"
   },
   "license": "ISC",
   "repository": {
