@@ -127,7 +127,6 @@ describe('services/git', () => {
     })
 
     describe('when path is a git repo', () => {
-      const postCommitGitSwitch = '/bin/bash "$(dirname $0)"/post-commit.git-switch'
       let existingPostCommitScript
       let readStream
       let writeStream
@@ -158,15 +157,14 @@ describe('services/git', () => {
       it('copies the post-commit.git-switch file', () => {
         subject.initRepo(repoPath)
         readStream.emit('data', '123')
-        expect(fs.createReadStream).to.have.been.calledWith(path.join(process.cwd(), 'scripts', 'post-commit'), 'utf-8')
+        expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
         expect(fs.createWriteStream).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch'), 'utf-8')
         expect(postCommitBuffer.toString('utf-8')).to.eql('123')
       })
 
       it('writes post-commit file to call post-commit.git-switch', () => {
-        const expected = `#!/bin/bash\n\n${postCommitGitSwitch}`
         subject.initRepo(repoPath)
-        expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
       })
 
       describe('when post-commit already exists', () => {
@@ -176,7 +174,7 @@ describe('services/git', () => {
 
         it('merges git-swtich call into post-commit', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
-          const expected = `#!/bin/bash\n\n${postCommitGitSwitch}\n\necho "Committed"`
+          const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
           subject.initRepo(repoPath)
 

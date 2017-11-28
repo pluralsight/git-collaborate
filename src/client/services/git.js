@@ -1,9 +1,12 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 
 import execute from '../../utils/exec'
 
-const POST_COMMIT_GIT_SWITCH = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
+export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
+export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
+
 const defaultAuthorAndCommitter = {
   author: { name: '', email: '' },
   committer: { name: '', email: '' }
@@ -41,7 +44,7 @@ export function getAuthorAndCommitter(users) {
 }
 
 function copyGitSwitchPostCommit(gitHooksPath) {
-  const source = path.join(process.cwd(), 'scripts', 'post-commit')
+  const source = path.join(GIT_SWITCH_PATH, 'post-commit')
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
 
   const readPostCommit = fs.createReadStream(source, 'utf-8')
@@ -52,9 +55,9 @@ function copyGitSwitchPostCommit(gitHooksPath) {
 
 function mergePostCommitScripts(postCommitFile) {
   let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
-  if (!postCommitScript.includes(POST_COMMIT_GIT_SWITCH)) {
+  if (!postCommitScript.includes(POST_COMMIT_BASE)) {
     const temp = postCommitScript.substring(postCommitScript.indexOf('\n'))
-    postCommitScript = POST_COMMIT_GIT_SWITCH.concat(temp)
+    postCommitScript = POST_COMMIT_BASE.concat(temp)
   }
 
   return postCommitScript
@@ -64,7 +67,7 @@ function writePostCommit(gitHooksPath) {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   const postCommitScript = fs.existsSync(postCommitFile)
     ? mergePostCommitScripts(postCommitFile)
-    : POST_COMMIT_GIT_SWITCH
+    : POST_COMMIT_BASE
 
   fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
 }
@@ -91,10 +94,10 @@ function removePostCommitScript(gitHooksPath) {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   if (fs.existsSync(postCommitFile)) {
     let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
-    if (postCommitScript === POST_COMMIT_GIT_SWITCH) {
+    if (postCommitScript === POST_COMMIT_BASE) {
       fs.unlinkSync(postCommitFile)
     } else {
-      postCommitScript = postCommitScript.replace(POST_COMMIT_GIT_SWITCH, '#!/bin/bash')
+      postCommitScript = postCommitScript.replace(POST_COMMIT_BASE, '#!/bin/bash')
       fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
     }
   }

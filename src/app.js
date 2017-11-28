@@ -1,7 +1,7 @@
-const menubar = require('menubar')
-const path = require('path')
+import menubar from 'menubar'
+import path from 'path'
 
-const install = require('./utils/install')
+import install from './utils/install'
 
 install()
 const isDev = process.env.NODE_ENV === 'dev'

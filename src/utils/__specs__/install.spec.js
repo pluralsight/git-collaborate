@@ -1,25 +1,23 @@
 import { expect } from 'chai'
 import fs from 'fs'
-import os from 'os'
-import path from 'path'
 import * as sinon from 'sinon'
 
-import subject from '../install'
-
-const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
-const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
+import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH } from '../install'
 
 describe('utils/install', () => {
   let gitSwitchDirExists
   let configFileExsists
+  let postCommitFileExists
 
   beforeEach(() => {
     gitSwitchDirExists = true
     configFileExsists = true
+    postCommitFileExists = true
 
     sinon.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
+      .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
   })
   afterEach(() => {
     fs.existsSync.restore()
@@ -51,7 +49,22 @@ describe('utils/install', () => {
 
       subject()
 
-      expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }))
+      expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
+    })
+  })
+
+  describe('when post-commit file does not esxist', () => {
+    afterEach(() => {
+      fs.writeFileSync.restore()
+    })
+
+    it('creates .git-switch/post-commit', () => {
+      postCommitFileExists = false
+      sinon.stub(fs, 'writeFileSync')
+
+      subject()
+
+      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH, 'utf-8')
     })
   })
 })
