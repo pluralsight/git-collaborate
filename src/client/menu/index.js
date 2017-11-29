@@ -99,11 +99,13 @@ export default class Menu extends React.Component {
 
     return showRepositories
       ? (
-        <Repositories repos={this.state.repos}
+        <Repositories
+          repos={this.state.repos}
           onRepoAdded={this.handleAddRepo}
           onRepoRemoved={this.handleRemoveRepo} />
       ) : (
-        <Users users={this.state.users}
+        <Users
+          users={this.state.users}
           onActiveUsersCleared={this.handleClearActiveUsers}
           onUserActiveToggled={this.handleToggleActiveUser}
           onUserAdded={this.handleAddUser}
