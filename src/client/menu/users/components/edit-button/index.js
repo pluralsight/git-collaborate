@@ -12,7 +12,7 @@ const userType = shape({
   id: string.isRequired,
   name: string.isRequired,
   email: string.isRequired,
-  rsaKeyPath: string.isRequired
+  rsaKeyPath: string
 })
 
 @CSSModules(css)
