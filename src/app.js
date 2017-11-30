@@ -33,7 +33,7 @@ mb.on('ready', () => {
   if (state.rotateOnOpen) {
     rotateUsers()
     state.rotateOnOpen = false
-  } else {
+  } else if (!isDev) {
     notificationService.showCurrentCommiters()
   }
 })
