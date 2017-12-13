@@ -1,52 +1,50 @@
 const archiver = require('archiver')
 const fs = require('fs-extra')
-const path = require('path')
+const os = require('os')
 
-const OS_PACKAGE_BUILDS = {
-  'macos': 'git-switch-darwin-x64',
-  'linux': 'git-switch-linux-x64',
-  'windows': 'git-switch-win32-x64'
-}
+const { getPackageSrcDir, getPackageZipDir, removePackageSrc } = require('./utils/package')
 
-const getOutputDir = os => path.join(__dirname, '../releases/', `git-switch-${os}.zip`)
-const getSourceDir = os => path.join(__dirname, '../releases', OS_PACKAGE_BUILDS[os])
+function zipPackage(operatingSystem) {
+  const zippedDir = getPackageZipDir(operatingSystem)
+  const sourceDir = getPackageSrcDir(operatingSystem)
 
-function removePackageSource(os) {
-  const sourcePath = getSourceDir(os)
-  if (!fs.existsSync(sourcePath))
-    throw new Error(`Attempted to remove src code directory for ${os} before src code was zipped.`)
-  console.log(`Removing unzipped build:`, sourcePath)
-  fs.removeSync(sourcePath)
-  console.log(`Finished zipping git-switch-${os}.zip`)
-}
+  const srcCodeExists = fs.existsSync(sourceDir)
+  const nonMacMessage = os.type() !== 'Darwin'
 
-function zipPackage(os) {
-  const outputDir = getOutputDir(os)
-  const sourceDir = getSourceDir(os)
-
-  if (!fs.existsSync(sourceDir))
+  if (!srcCodeExists)
     throw new Error('npm run build:packages must be run before zipping!')
 
-  const output = fs.createWriteStream(outputDir)
+  if (nonMacMessage) {
+    removePackageSrc('macos')
+    const nonMacLog = 'Warning: The macos package may only be signed from a mac.'.concat(
+      '\nThe existing macos release will now be removed and will not be zipped.')
+    console.log(nonMacLog)
+
+    return
+  }
+
+  const zippedPackage = fs.createWriteStream(zippedDir)
   const zip = archiver('zip', { zlib: { level: 9 } })
 
-  output.on('close', () => {
-    console.log(`${os} package:`, zip.pointer() + ' total bytes')
-    console.log(`Compression has finalized for git-switch-${os}.zip and the output file descriptor has closed.`)
-    removePackageSource(os)
+  zippedPackage.on('close', () => {
+    console.log(`${operatingSystem} package:`, zip.pointer() + ' total bytes')
+    console.log(`Compression has completed for git-switch-${operatingSystem}.zip and the output file descriptor has closed.`)
+    console.log(`Removing unzipped build:`, sourceDir)
+    removePackageSrc(operatingSystem)
+    console.log(`Finished zipping git-switch-${operatingSystem}.zip`)
   })
 
   zip.on('error', (err) => { throw err })
-  zip.pipe(output)
+  zip.pipe(zippedPackage)
   zip.directory(sourceDir, false)
   zip.finalize()
 }
 
 function execute() {
+  console.log('Starting zip of all OS packages...')
   zipPackage('macos')
   zipPackage('linux')
   zipPackage('windows')
 }
 
-console.log('Starting zip of all OS distributable packages...')
 execute()

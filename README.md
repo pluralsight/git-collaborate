@@ -28,27 +28,37 @@ npm run release:create
 
 A `/releases` directory will be created containing the zipped deployables for Linux, MacOS, and Windows.
 
-### Publishing a Release
-
-There are two options for publishing a release
-
-#### Manual Publish:
-    * Once a new release has been generated locally, you can drag the zipped `./releases` packages onto the [Create Release Page](https://github.com/pluralsight/git-switch-electron/releases/new) in github.
-#### Publish via CLI
-* You can publish releases programatically by installing [hub](https://github.com/github/hub) _(github's cross platform cli tool)_
-* Run `npm run release:publish 0.0.1 (insert semver release version)` which will trigger the `hub release` command.
-
-### Creating Windows release from MacOS & Linux
-Building an Electron app for the Windows target platform requires editing the `Electron.exe`.
-Currently, `electron-packager` uses `node-rcedit` to accomplish this.
-A Windows executable is bundled into the `node-rcedit` package and needs to be run in order for this functionality to work, so on non-Windows hosts [Wine 1.6](https://www.winehq.org/) or later needs to be installed.
-
-On MacOS, we recommend you install `wine` via [homebrew](https://brew.sh/):
+### **Mac Users**
+* Only mac users may publish a release of the MacOS package.
+* The MacOS package must be signed with the appropriate `Pluralsight Developer Certificate` stored on the user's MacOS keychain.
+* To obtain said certificate please speak with one of the package maintainers.
+* Building an Electron app for the Windows target platform requires [Wine 1.6](https://www.winehq.org/) or later to be installed.
+* We recommend you install `wine` via [homebrew](https://brew.sh/):
 ```
 brew cask install xquartz
 brew install wine
 ```
 
-Directions for installing `wine` on Linux can be found [here](hhttps://www.winehq.org/download)
+### **Linux Users**
+* Your release will _**not**_ include a zipped package for macOS.
+* The MacOS package must be signed with the appropriate `Pluralsight Developer Certificate` stored on the users MacOS keychain.
+* Building an Electron app for the Windows target platform requires [Wine 1.6](https://www.winehq.org/) or later to be installed.
+* Directions for installing `wine` on Linux can be found [here](hhttps://www.winehq.org/download)
 
-_No additional steps are required for packaging the Windows deployable on a Windows host machine._
+### **Windows Users**
+* Your release will _**not**_ include a zipped package for MacOS.
+* The MacOS package must be signed with the appropriate `Pluralsight Developer Certificate` stored on the users MacOS keychain.
+
+### Publishing a Release
+
+There are two options for publishing a release:
+
+#### Manual Publish:
+Once a new release has been generated locally, you can drag the zipped `./releases` packages onto the [Create Release Page](https://github.com/pluralsight/git-switch-electron/releases/new) in github.
+
+#### Publish via CLI
+You can publish releases programatically by installing [hub](https://github.com/github/hub) _(github's cross platform cli tool)_ by running:
+```
+npm run release:publish 0.0.1 (insert semver release version)
+```
+This will trigger the `hub release` command.
