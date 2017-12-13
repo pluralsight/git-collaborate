@@ -9,7 +9,7 @@
     "lint": "eslint ./src/menu",
     "package:all": "npm run package:macos && npm run package:linux && npm run package:win32",
     "package:linux": "electron-packager ./src git-switch --platform=linux --arch=x64 --out=./releases --overwrite --prune=true",
-    "package:macos": "electron-packager ./src git-switch --platform=darwin --arch=x64 --out=./releases --overwrite --prune=true",
+    "package:macos": "electron-packager ./src git-switch --platform=darwin --arch=x64 --out=./releases --overwrite --prune=true --protocol=git-switch --protocol-name=git-switch-electron",
     "package:win32": "electron-packager ./src git-switch --platform=win32 --out=./releases --overwrite --prune=true",
     "packages:zip": "node ./scripts/package-zipper",
     "precommit": "npm run lint && npm run test && npm run build",
@@ -25,7 +25,6 @@
     "type": "git",
     "url": "https://github.com/pluralsight/git-switch-electron"
   },
-  "dependencies": {},
   "devDependencies": {
     "archiver": "2.0.0",
     "babel-cli": "6.18.0",
@@ -45,7 +44,7 @@
     "chai": "4.1.0",
     "chai-as-promised": "7.1.1",
     "css-loader": "0.26.1",
-    "electron": "1.4.12",
+    "electron": "1.7.9",
     "electron-connect": "0.6.2",
     "electron-connect-webpack-plugin": "0.1.1",
     "electron-packager": "8.7.2",

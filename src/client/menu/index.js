@@ -1,6 +1,6 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
-import { remote } from 'electron'
+import { remote, ipcRenderer } from 'electron'
 
 import Button from './components/button'
 import * as gitService from '../services/git'
@@ -40,8 +40,18 @@ export default class Menu extends React.Component {
     this.setState({ users, repos })
 
     this.setShowUserActions(users)
+
+    ipcRenderer.on('users-updated', this.handleUsersUpdated)
   }
 
+  componentWillUnmount() {
+    ipcRenderer.removeListener('users-updated', this.handleUsersUpdated)
+  }
+
+  handleUsersUpdated = (event, users) => {
+    this.setState({ users: users })
+    this.handleGitUserChanges()
+  }
   handleGitUserChanges = async () => {
     const { author, committer } = gitService.getAuthorAndCommitter(userService.get())
 
