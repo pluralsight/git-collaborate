@@ -8,6 +8,7 @@
   align-items: center;
   color: #24292e;
   font-size: 22px;
+  font-weight: bold;
   margin: 18px 8px 4px 12px;
 }
 .users-list {
@@ -41,6 +42,15 @@
  cursor: pointer;
 }
 
+.avatar {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  margin-left: 8px;
+  border-radius: 15px;
+  background-size: cover;
+}
+
 .user-info {
   flex-grow: 1;
   margin-left: 8px;
@@ -54,10 +64,27 @@
   font-size: 12px;
 }
 
+.user-menu-button {
+  padding: 2px;
+  margin-right: 5px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
 .user-actions-container {
   display: flex;
   align-items: center;
 }
 .back-button-container {
   margin-left: 8px;
+}
+
+.empty-message {
+  padding: 30px;
+  text-align: center;
+  color: #b3b3b3;
+  font-size: 18px;
+}
+.empty-message-sub {
+  font-size: 12px;
 }

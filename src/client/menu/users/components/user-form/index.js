@@ -1,8 +1,8 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
-
 import { bool, func, shape, string } from 'prop-types'
 
+import Button from '../../../components/button'
 import css from './index.css'
 
 const userType = shape({
@@ -21,37 +21,30 @@ export default class UserForm extends React.Component {
     confirmLabel: string.isRequired,
     isOpen: bool.isRequired
   }
-  constructor(props) {
-    super(props)
-    this.state = {
-      name: null,
-      email: null,
-      rsaKeyPath: null
+
+  componentDidUpdate(lastProps) {
+    if(this.props.user && lastProps.user !== this.props.user && !this.props.user.name) {
+      this.nameInput.focus()
     }
+  }
+
+  setNameInput = el => this.nameInput = el
+  isValid = () => {
+    const { user } = this.props
+    return user && user.name && user.email
   }
 
   handleFieldChange = e => {
     const { id, value } = e.target
-    this.setState({ [id]: value })
-  }
-
-  onSubmit = () => {
-    const { user } = this.props
-
-    this.props.onConfirm({
-      id: user && user.id,
-      name: this.state.name || user.name,
-      email: this.state.email || user.email,
-      rsaKeyPath: this.state.rsaKeyPath || user.rsaKeyPath,
-      active: user ? user.active : false
+    this.props.onChange({
+      ...this.props.user,
+      [id]: value
     })
   }
 
   render() {
-    const { confirmLabel, onClose, isOpen, user } = this.props
-    const defaultName = user ? user.name : ''
-    const defaultEmail = user ? user.email : ''
-    const defaultRsaKeypath = user ? user.rsaKeyPath : ''
+    const { confirmLabel, onClose, onConfirm, isOpen } = this.props
+    const user = this.props.user || { name: '', email: '', rsaKeyPath: '', active: false }
 
     return (
       <div styleName={isOpen ? 'form' : 'form-hidden'}>
@@ -59,25 +52,20 @@ export default class UserForm extends React.Component {
           <input
             id="name"
             styleName="field"
-            defaultValue={defaultName}
+            value={user.name}
             placeholder="Name"
-            onChange={this.handleFieldChange} />
+            onChange={this.handleFieldChange}
+            ref={this.setNameInput}/>
           <input
             id="email"
             styleName="field"
-            defaultValue={defaultEmail}
+            value={user.email}
             placeholder="Email"
-            onChange={this.handleFieldChange} />
-          <input
-            id="rsaKeyPath"
-            styleName="field"
-            defaultValue={defaultRsaKeypath}
-            placeholder="RSA Key Path"
             onChange={this.handleFieldChange} />
         </div>
         <div styleName="button-section">
-          <button styleName="confirm-button" onClick={this.onSubmit}>{confirmLabel}</button>
-          <button styleName="close-button" onClick={onClose}>Close</button>
+          <Button type={Button.types.confirm} onClick={onConfirm} disabled={!this.isValid()}>{confirmLabel}</Button>
+          <Button onClick={onClose}>Close</Button>
         </div>
       </div>
     )

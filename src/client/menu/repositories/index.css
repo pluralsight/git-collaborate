@@ -3,6 +3,8 @@
   margin: 0;
   padding: 0;
   border-top: 1px solid #ededed;
+  max-height: 400px;
+  overflow: auto;
 }
 .repo {
   display: flex;
@@ -22,4 +24,20 @@
 .repo-path {
   color: #586069;
   font-size: 12px;
+}
+
+.empty-message {
+  padding: 30px;
+  text-align: center;
+  color: #b3b3b3;
+  font-size: 18px;
+}
+.empty-message-sub {
+  font-size: 12px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
 }

@@ -13,6 +13,8 @@ html, body {
 
 .header {
   display: flex;
+  position: relative;
+  z-index: 100;
   align-items: center;
   padding: 12px 8px;
   background: #24292E;
@@ -41,6 +43,8 @@ html, body {
 
 .footer {
   position: fixed;
+  display: flex;
+  justify-content: space-between;
   bottom: 0;
   left: 0;
   right: 0;
@@ -48,4 +52,28 @@ html, body {
   padding: 8px;
   background: #f0f0f0;
   border-top: 1px solid #d5d5d5;
+}
+
+.overlay-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 5000px;
+  left: 0;
+  transition: background 0.3s, bottom 0s 0.3s;
+}
+.overlay-background-active {
+  composes: overlay-background;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  transition: background 0.3s;
+}
+.overlay-container {
+  position: absolute;
+  top: 65px;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0px 4px 20px rgba(0,0,0,0.5);
+  transition: top 0.3s;
 }
