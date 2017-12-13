@@ -9,12 +9,9 @@ import Repositories from './repositories'
 import * as repoService from '../services/repo'
 import * as userService from '../services/user'
 import Users from './users'
+import UserForm from './users/components/user-form'
 
 import css from './index.css'
-
-const moreMenu = remote.Menu.buildFromTemplate([
-  { label: 'Quit Git Switch Electron', click: () => remote.app.quit() }
-])
 
 @CSSModules(css)
 export default class Menu extends React.Component {
@@ -37,7 +34,11 @@ export default class Menu extends React.Component {
   componentDidMount() {
     const users = userService.get()
     const repos = repoService.get()
-    this.setState({ users, repos })
+    this.setState({
+      users,
+      repos,
+      showRepositories: !repos.length
+    })
 
     this.setShowUserActions(users)
 
@@ -73,14 +74,37 @@ export default class Menu extends React.Component {
     this.setState({ users })
     await this.handleGitUserChanges()
   }
-  handleAddUser = async newUser => {
-    const users = userService.add(newUser)
-    this.setState({ users })
+  handleAddUser = () => {
+    this.setState({
+      userEdits: { name: '', email: '', rsaKeyPath: '', active: true }
+    })
+  }
+  handleSubmitAddUser = async () => {
+    const users = userService.add(this.state.userEdits)
+    this.setState({
+      users,
+      userEdits: null
+    })
     await this.handleGitUserChanges()
   }
-  handleEditUser = async user => {
-    const users = userService.update(user)
-    this.setState({ users })
+  handleUserFormSubmit = () => {
+    this.state.userEdits.id ? this.handleSubmitEditUser() : this.handleSubmitAddUser()
+  }
+  handleEditUser = user => {
+    this.setState({ userEdits: { ...user } })
+  }
+  handleUserEditsChange = user => {
+    this.setState({ userEdits: user })
+  }
+  handleCancelEditUser = () => {
+    this.setState({ userEdits: null })
+  }
+  handleSubmitEditUser = async () => {
+    const users = userService.update(this.state.userEdits)
+    this.setState({
+      users,
+      userEdits: null
+    })
     await this.handleGitUserChanges()
   }
   handleRemoveUser = async userId => {
@@ -97,7 +121,11 @@ export default class Menu extends React.Component {
     this.setState({ repos })
   }
   handleMenuButtonClick = () => {
-    moreMenu.popup()
+    remote.Menu.buildFromTemplate([
+      { label: 'Edit repositories', click: () => this.toggleRepositories() },
+      { type: 'separator' },
+      { label: 'Quit', click: () => remote.app.quit() }
+    ]).popup()
   }
 
   toggleRepositories = () => {
@@ -105,15 +133,11 @@ export default class Menu extends React.Component {
   }
 
   renderContent = () => {
-    const showRepositories = this.state.showRepositories
-
-    return showRepositories
-      ? (
-        <Repositories repos={this.state.repos}
-          onRepoAdded={this.handleAddRepo}
-          onRepoRemoved={this.handleRemoveRepo} />
-      ) : (
-        <Users users={this.state.users}
+    return (
+        <Users
+          users={this.state.users}
+          onEditUser={this.handleEditUser}
+          onAddUser={this.handleAddUser}
           onActiveUsersCleared={this.handleClearActiveUsers}
           onUserActiveToggled={this.handleToggleActiveUser}
           onUserAdded={this.handleAddUser}
@@ -123,6 +147,9 @@ export default class Menu extends React.Component {
       )
   }
   render() {
+    const { userEdits, showRepositories } = this.state
+    const overlayActive = userEdits || showRepositories
+
     return (
       <div styleName="container">
         <div styleName="header">
@@ -133,7 +160,23 @@ export default class Menu extends React.Component {
         </div>
         {this.renderContent()}
         <div styleName="footer">
-          <Button onClick={this.toggleRepositories}>{this.state.showRepositories ? 'Users' : 'Repos'}</Button>
+          <Button onClick={this.handleAddUser}>Add user</Button>
+        </div>
+        <div styleName={overlayActive ? 'overlay-background-active' : 'overlay-background'} />
+        <div styleName="overlay-container" style={{ top: userEdits ? 65: -150 }}>
+          <UserForm
+            user={userEdits}
+            onChange={this.handleUserEditsChange}
+            onConfirm={this.handleUserFormSubmit}
+            onClose={this.handleCancelEditUser}
+            confirmLabel={userEdits && userEdits.id ? 'Update user' : 'Add user'}
+            isOpen={true} />
+        </div>
+        <div styleName="overlay-container" style={{ top: showRepositories ? 65: -60 * this.state.repos.length - 100 }}>
+          <Repositories repos={this.state.repos}
+            onRepoAdded={this.handleAddRepo}
+            onDone={this.toggleRepositories}
+            onRepoRemoved={this.handleRemoveRepo} />
         </div>
       </div>
     )

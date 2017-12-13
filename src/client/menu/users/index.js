@@ -1,15 +1,14 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
+import md5 from 'md5'
 
 import { array, func } from 'prop-types'
 
-import AddButton from './components/add-button'
 import Button from '../components/button'
-import DeleteButton from '../components/delete-button'
-import EditButton from './components/edit-button'
 import { ClearIcon, MoreIcon, RotateIcon } from '../icons'
 
 import css from './index.css'
+import { remote } from 'electron'
 
 @CSSModules(css)
 export default class Users extends React.Component {
@@ -18,30 +17,18 @@ export default class Users extends React.Component {
     onUserActiveToggled: func.isRequired,
     onUserAdded: func.isRequired,
     onUserRemoved: func.isRequired,
-    onUserUpdated: func.isRequired,
     onUsersRotated: func.isRequired,
+    onAddUser: func.isRequired,
+    onEditUser: func.isRequired,
     users: array.isRequired
-  }
-  constructor(props) {
-    super(props)
-    this.state = { showUserActions: {} }
-  }
-
-  setShowUserActions(users) {
-    const showUserActions = {}
-    users.forEach(u => { showUserActions[u.id] = false })
-    this.setState({ showUserActions })
-  }
-
-  componentDidMount() {
-    this.setShowUserActions(this.props.users)
   }
 
   handleRotateUsers = () => {
     this.props.onUsersRotated()
   }
-  handleToggleActiveUser = user => () => {
-    this.props.onUserActiveToggled(user.id)
+  handleToggleActiveUser = user => evt => {
+    if(!evt.target.closest('button'))
+      this.props.onUserActiveToggled(user.id)
   }
   handleAddUser = newUser => {
     this.props.onUserAdded(newUser)
@@ -56,80 +43,91 @@ export default class Users extends React.Component {
   handleClearActiveUsers = () => {
     this.props.onActiveUsersCleared()
   }
-
-  toggleUserActions = userId => () => {
-    const showUserActions = {
-      ...this.state.showUserActions,
-      [userId]: !this.state.showUserActions[userId]
-    }
-    this.setState({ showUserActions })
-  }
-
-  renderUserActions = user => {
-    const showUserActions = this.state.showUserActions[user.id]
-    return showUserActions
-      ? (
-        <div>
-          <div styleName="user-actions-container">
-            <EditButton
-              onEditUser={this.handleUpdateUser}
-              onClose={this.toggleUserActions(user.id)}
-              user={user} />
-            <div styleName="back-button-container">
-              <Button onClick={this.toggleUserActions(user.id)}>Back</Button>
-            </div>
-            <DeleteButton onRemove={this.handleRemoveUser} idToRemove={user.id} />
-          </div>
-        </div>
-      ) : (
-        <div>
-          <MoreIcon onClick={this.toggleUserActions(user.id)} />
-        </div>
-      )
+  handleShowUserActionsMenu = user => () => {
+    remote.Menu.buildFromTemplate([
+      { label: 'Edit', click: () => this.props.onEditUser(user) },
+      { label: 'Delete', click: () => this.handleRemoveUser(user.id) }
+    ]).popup()
   }
 
   renderUser = (user, index) => {
+    const photoUrl = `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mm&s=28`
     const role = user.active
       ? index === 0 ? 'Author' : 'Committer'
       : ''
 
     return (
-      <li styleName="user" key={user.id}>
-        <div>
-          <input type="checkbox" styleName="active" checked={user.active} onChange={this.handleToggleActiveUser(user)} />
-        </div>
+      <li styleName="user" key={user.id} onClick={this.handleToggleActiveUser(user)}>
+        <div styleName="avatar" style={{ backgroundImage: `url("${photoUrl}")` }} />
         <div styleName="user-info">
           <div styleName="name">{user.name}</div>
           {role && <div styleName="role">{role}</div>}
         </div>
-        {this.renderUserActions(user)}
+        <button onClick={this.handleShowUserActionsMenu(user)} styleName="user-menu-button">
+          <MoreIcon />
+        </button>
       </li>
     )
   }
 
-  render() {
+  renderEmptyMessage = () => {
+    if (this.props.users.length) return
+
+    return (
+      <div styleName="empty-message">
+        No users yet
+      </div>
+    )
+  }
+  renderActiveUsers = () => {
     const activeUsers = this.props.users.filter(u => u.active)
-    const inactiveUsers = this.props.users.filter(u => !u.active)
+    if(!activeUsers.length) return
 
     return (
       <div>
-        <div styleName="container">
-          <div styleName="users-list-header">
-            <span>Active</span>
-            <div styleName="buttons">
-              <Button onClick={this.handleRotateUsers}><RotateIcon /></Button>
-              <Button onClick={this.handleClearActiveUsers}><ClearIcon /></Button>
-            </div>
+        <div styleName="users-list-header">
+          <span>Active</span>
+          <div styleName="buttons">
+            <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}><RotateIcon /></Button>
+            <Button onClick={this.handleClearActiveUsers}><ClearIcon /></Button>
           </div>
-          <ul styleName="users-list">
-            {activeUsers.map(this.renderUser)}
-          </ul>
-          <div styleName="users-list-header">Inactive</div>
-          <ul styleName="users-list">
-            {inactiveUsers.map(this.renderUser)}
-          </ul>
         </div>
-        <AddButton onAddUser={this.handleAddUser} />
+        <ul styleName="users-list">
+          {activeUsers.map(this.renderUser)}
+        </ul>
+      </div>
+    )
+  }
+  renderInactiveUsers = () => {
+    const inactiveUsers = this.props.users.filter(u => !u.active)
+    if(!inactiveUsers.length) return
+
+    return (
+      <div>
+        <div styleName="users-list-header">Inactive</div>
+        <ul styleName="users-list">
+          {inactiveUsers.map(this.renderUser)}
+        </ul>
+      </div>
+    )
+  }
+  renderUserLists = () => {
+    if (this.props.users.length) {
+      return (
+        <div>
+          {this.renderActiveUsers()}
+          {this.renderInactiveUsers()}
+        </div>
+      )
+    }
+  }
+  render() {
+    return (
+      <div>
+        <div styleName="container">
+          {this.renderEmptyMessage()}
+          {this.renderUserLists()}
+        </div>
       </div>
     )
   }
