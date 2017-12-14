@@ -91,12 +91,9 @@ export default class Menu extends React.Component {
     this.state.userEdits.id ? this.handleSubmitEditUser() : this.handleSubmitAddUser()
   }
   handleEditUser = user => {
-    this.setState({ userEdits: { ...user } })
-  }
-  handleUserEditsChange = user => {
     this.setState({ userEdits: user })
   }
-  handleCancelEditUser = () => {
+  handleCancelUserForm = () => {
     this.setState({ userEdits: null })
   }
   handleSubmitEditUser = async () => {
@@ -134,17 +131,17 @@ export default class Menu extends React.Component {
 
   renderContent = () => {
     return (
-        <Users
-          users={this.state.users}
-          onEditUser={this.handleEditUser}
-          onAddUser={this.handleAddUser}
-          onActiveUsersCleared={this.handleClearActiveUsers}
-          onUserActiveToggled={this.handleToggleActiveUser}
-          onUserAdded={this.handleAddUser}
-          onUserRemoved={this.handleRemoveUser}
-          onUserUpdated={this.handleEditUser}
-          onUsersRotated={this.handleRotateUsers} />
-      )
+      <Users
+        users={this.state.users}
+        onEditUser={this.handleEditUser}
+        onAddUser={this.handleAddUser}
+        onActiveUsersCleared={this.handleClearActiveUsers}
+        onUserActiveToggled={this.handleToggleActiveUser}
+        onUserAdded={this.handleAddUser}
+        onUserRemoved={this.handleRemoveUser}
+        onUserUpdated={this.handleEditUser}
+        onUsersRotated={this.handleRotateUsers} />
+    )
   }
   render() {
     const { userEdits, showRepositories } = this.state
@@ -163,16 +160,15 @@ export default class Menu extends React.Component {
           <Button onClick={this.handleAddUser}>Add user</Button>
         </div>
         <div styleName={overlayActive ? 'overlay-background-active' : 'overlay-background'} />
-        <div styleName="overlay-container" style={{ top: userEdits ? 65: -150 }}>
+        <div styleName="overlay-container" style={{ top: userEdits ? 65 : -150 }}>
           <UserForm
             user={userEdits}
-            onChange={this.handleUserEditsChange}
+            onChange={this.handleEditUser}
             onConfirm={this.handleUserFormSubmit}
-            onClose={this.handleCancelEditUser}
-            confirmLabel={userEdits && userEdits.id ? 'Update user' : 'Add user'}
-            isOpen={true} />
+            onClose={this.handleCancelUserForm}
+            confirmLabel={userEdits && userEdits.id ? 'Update user' : 'Add user'} />
         </div>
-        <div styleName="overlay-container" style={{ top: showRepositories ? 65: -60 * this.state.repos.length - 100 }}>
+        <div styleName="overlay-container" style={{ top: showRepositories ? 65 : -60 * this.state.repos.length - 100 }}>
           <Repositories repos={this.state.repos}
             onRepoAdded={this.handleAddRepo}
             onDone={this.toggleRepositories}
