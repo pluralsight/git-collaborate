@@ -1,9 +1,6 @@
 .form {
   padding: 12px;
 }
-.form-hidden {
-  display: none;
-}
 
 .field-container {
   display: flex;

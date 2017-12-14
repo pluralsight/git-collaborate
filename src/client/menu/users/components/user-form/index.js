@@ -18,8 +18,7 @@ export default class UserForm extends React.Component {
     user: userType,
     onConfirm: func.isRequired,
     onClose: func.isRequired,
-    confirmLabel: string.isRequired,
-    isOpen: bool.isRequired
+    confirmLabel: string.isRequired
   }
 
   componentDidUpdate(lastProps) {
@@ -43,11 +42,11 @@ export default class UserForm extends React.Component {
   }
 
   render() {
-    const { confirmLabel, onClose, onConfirm, isOpen } = this.props
+    const { confirmLabel, onClose, onConfirm } = this.props
     const user = this.props.user || { name: '', email: '', rsaKeyPath: '', active: false }
 
     return (
-      <div styleName={isOpen ? 'form' : 'form-hidden'}>
+      <div styleName="form">
         <div styleName="field-container">
           <input
             id="name"
@@ -55,7 +54,7 @@ export default class UserForm extends React.Component {
             value={user.name}
             placeholder="Name"
             onChange={this.handleFieldChange}
-            ref={this.setNameInput}/>
+            ref={this.setNameInput} />
           <input
             id="email"
             styleName="field"
