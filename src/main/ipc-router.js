@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 
-import CHANNELS from '../common/ipcChannels'
+import CHANNELS from '../common/ipc-channels'
 import * as userService from '../common/services/user'
 import * as repoService from '../common/services/repo'
 
@@ -13,13 +13,13 @@ export default class IpcRouter {
   }
 
   registerAllListeners() {
-    for(const [event, handler] of Object.entries(this.listeners)) {
+    for (const [event, handler] of Object.entries(this.listeners)) {
       this.on(event, handler)
     }
   }
 
   on(event, handler) {
-    if(!event) throw new Error('Invalid IPC event.')
+    if (!event) throw new Error('Invalid IPC event.')
 
     ipcMain.on(event, handler)
   }

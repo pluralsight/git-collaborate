@@ -12,6 +12,7 @@
     "package:macos": "electron-packager ./src git-switch --platform=darwin --arch=x64 --out=./releases --overwrite --prune=true --protocol=git-switch --protocol-name=git-switch-electron",
     "package:win32": "electron-packager ./src git-switch --platform=win32 --out=./releases --overwrite --prune=true",
     "packages:zip": "node ./scripts/package-zipper",
+    "postinstall": "cd ./src && npm install",
     "precommit": "npm run lint && npm run test && npm run build",
     "release:create": "npm run electron:install && npm run build && npm run package:all && npm run packages:zip",
     "release:publish": "node ./scripts/release-publisher",

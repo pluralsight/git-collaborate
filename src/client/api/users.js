@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
-import CHANNELS from '../../common/ipcChannels'
 
+import CHANNELS from '../../common/ipc-channels'
 
 export function getAllUsers() {
   return ipcRenderer.sendSync(CHANNELS.GET_ALL_USERS)

@@ -1,12 +1,12 @@
 import menubar from 'menubar'
 import path from 'path'
 
-import CHANNELS from '../common/ipcChannels'
+import CHANNELS from '../common/ipc-channels'
 import * as notificationService from '../common/services/notification'
 import * as userService from '../common/services/user'
 import { getCommiterLabel } from '../common/utils/string'
-import install from'../common/utils/install'
-import IpcRouter from './ipcRouter'
+import install from '../common/utils/install'
+import IpcRouter from './ipc-router'
 
 const isDev = process.env.NODE_ENV === 'dev'
 const state = { rotateOnOpen: false }
