@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 
-import * as configUtil from '../../../utils/config'
+import * as configUtil from '../../utils/config'
 import * as gitService from '../git'
 import * as subject from '../repo'
 
@@ -59,10 +59,30 @@ describe('services/repo', () => {
       expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
+    describe('when a repo with the path already exists', () => {
+      it('does nothing', () => {
+        const newRepo = '/repo/one'
+        sinon.stub(gitService, 'initRepo')
+
+        const updated = subject.add(newRepo)
+
+        expect(gitService.initRepo).to.not.have.been.called
+        expect(configUtil.write).to.not.have.been.called
+        expect(updated).to.eql(repos)
+      })
+    })
+
     describe('when git service fails to init repo hooks', () => {
-      it('throws error', () => {
+      it('adds the repo with isValid set to false', () => {
         sinon.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
-        expect(() => subject.add('anything')).to.throw(Error)
+        const expected = [
+          { name: 'bar-2', path: '/foo/bar-2', isValid: false },
+          ...repos
+        ]
+
+        const updated = subject.add('/foo/bar-2')
+
+        expect(updated).to.eql(expected)
       })
     })
   })
@@ -117,7 +137,7 @@ describe('services/repo', () => {
     describe('when git service fails to remove repo hooks', () => {
       it('throws error', () => {
         removeRepoStub = () => { throw new Error('pure evil') }
-        expect(() => subject.add('something')).to.throw(Error)
+        expect(() => subject.removeRepo('something')).to.throw(Error)
       })
     })
   })

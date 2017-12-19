@@ -2,8 +2,9 @@ import { expect } from 'chai'
 import * as sinon from 'sinon'
 import uuid from 'uuid/v4'
 
-import * as configUtil from '../../../utils/config'
+import * as configUtil from '../../utils/config'
 import * as subject from '../user'
+import * as gitService from '../git'
 
 describe('services/user', () => {
   let users
@@ -27,11 +28,13 @@ describe('services/user', () => {
 
     sinon.stub(configUtil, 'read').callsFake(() => config)
     sinon.stub(configUtil, 'write')
+    sinon.stub(gitService, 'updateAuthorAndCommitter')
   })
 
   afterEach(() => {
     configUtil.read.restore()
     configUtil.write.restore()
+    gitService.updateAuthorAndCommitter.restore()
   })
 
   describe('#get', () => {
@@ -64,6 +67,7 @@ describe('services/user', () => {
       expect(addedUser.email).to.eql(userToAdd.email)
       expect(addedUser.id).to.not.be.null
       expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(actual)
     })
   })
 
@@ -84,6 +88,7 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(actual)
     })
 
     describe('when updated user does not already exist', () => {
@@ -116,6 +121,7 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected)
       expect(configUtil.write).to.have.been.calledWith(newConfig)
+      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(actual)
     })
   })
 
@@ -126,6 +132,7 @@ describe('services/user', () => {
 
         expect(actual).to.eql(users)
         expect(configUtil.write).to.not.have.been.called
+        expect(gitService.updateAuthorAndCommitter).to.not.have.been.called
       })
     })
 
@@ -141,6 +148,7 @@ describe('services/user', () => {
 
         expect(actual).to.eql(users)
         expect(configUtil.write).to.not.have.been.called
+        expect(gitService.updateAuthorAndCommitter).to.not.have.been.called
       })
     })
 
@@ -167,6 +175,7 @@ describe('services/user', () => {
 
         expect(actual).to.eql(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
+        expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(expected.users)
       })
     })
 
@@ -199,6 +208,7 @@ describe('services/user', () => {
 
         expect(actual).to.eql(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
+        expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(expected.users)
       })
     })
   })
@@ -232,6 +242,7 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(expected.users)
     })
 
     describe('when user does not exist', () => {
@@ -265,6 +276,7 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(expected.users)
     })
   })
 })

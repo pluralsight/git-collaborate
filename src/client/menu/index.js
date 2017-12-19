@@ -24,25 +24,13 @@ export default class Menu extends React.Component {
     this.state = {
       users: [],
       repos: [],
-      showUserActions: {},
       showRepositories: false
     }
   }
 
-  setShowUserActions(users) {
-    const showUserActions = {}
-    users.forEach(u => { showUserActions[u.id] = false })
-    this.setState({ showUserActions })
-  }
-
   async componentDidMount() {
-    // const users = userService.get()
-    // const repos = repoService.get()
-
     const users = usersApi.getAllUsers()
     const repos = reposApi.getAllRepos()
-    console.log('got all users', users)
-    console.log('repos', repos)
 
     this.setState({
       users,
@@ -50,48 +38,30 @@ export default class Menu extends React.Component {
       showRepositories: !repos.length
     })
 
-    // this.setShowUserActions(users)
-
     usersApi.onUsersUpdated(this.handleUsersUpdated)
-    // ipcRenderer.on('users-updated', this.handleUsersUpdated)
   }
 
   componentWillUnmount() {
     usersApi.removeUsersUpdatedListener(this.handleUsersUpdated)
-    // ipcRenderer.removeListener('users-updated', this.handleUsersUpdated)
   }
 
   handleUsersUpdated = (event, users) => {
-    console.log('uses updated', users)
     this.setState({ users })
-    // this.handleGitUserChanges()
-  }
-  handleGitUserChanges = async () => {
-    // const { author, committer } = gitService.getAuthorAndCommitter(userService.get())
-    //
-    // await gitService.setAuthor(author.name, author.email)
-    // await gitService.setCommitter(committer.name, committer.email)
   }
   handleRotateUsers = async () => {
-    // const updatedUsers = userService.rotate()
     this.setState({
       users: usersApi.rotateActiveUsers()
     })
-    // await this.handleGitUserChanges()
   }
   handleClearActiveUsers = async () => {
-    // const users = userService.clearActive()
     this.setState({
       users: usersApi.clearActiveUsers()
     })
-    // await this.handleGitUserChanges()
   }
   handleToggleActiveUser = async userId => {
-    // const users = userService.toggleActive(userId)
     this.setState({
       users: usersApi.toggleUserActive(userId)
     })
-    // await this.handleGitUserChanges()
   }
   handleAddUser = () => {
     this.setState({
@@ -103,13 +73,6 @@ export default class Menu extends React.Component {
       userEdits: null,
       users: usersApi.addUser(this.state.userEdits)
     })
-
-    // const users = userService.add(this.state.userEdits)
-    // this.setState({
-    //   users,
-    //   userEdits: null
-    // })
-    // await this.handleGitUserChanges()
   }
   handleUserFormSubmit = () => {
     this.state.userEdits.id ? this.handleSubmitEditUser() : this.handleSubmitAddUser()
@@ -121,29 +84,28 @@ export default class Menu extends React.Component {
     this.setState({ userEdits: null })
   }
   handleSubmitEditUser = async () => {
-
-    // const users = userService.update(this.state.userEdits)
     this.setState({
       userEdits: null,
       users: usersApi.updateUser(this.state.userEdits)
     })
-    // await this.handleGitUserChanges()
   }
   handleRemoveUser = async userId => {
-    usersApi.removeUser(userId)
-    // const users = userService.remove(userId)
-    // this.setState({ users })
-    // await this.handleGitUserChanges()
+    console.log('removing', userId)
+    this.setState({
+      users: usersApi.removeUser(userId)
+    })
   }
   handleAddRepo = path => {
     reposApi.addRepo(path)
-    // const repos = repoService.add(path)
-    // this.setState({ repos })
+    this.setState({
+      repos: reposApi.addRepo(path)
+    })
   }
   handleRemoveRepo = path => {
-    reposApi.removeRepo(path)
-    // const repos = repoService.remove(path)
-    // this.setState({ repos })
+    const updated = reposApi.removeRepo(path)
+    this.setState({
+      repos: updated
+    })
   }
   handleMenuButtonClick = () => {
     remote.Menu.buildFromTemplate([

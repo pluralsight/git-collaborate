@@ -1,14 +1,14 @@
 import { ipcRenderer } from 'electron'
-import ipcChannels from '../../common/ipcChannels'
+import CHANNELS from '../../common/ipcChannels'
 
 export function getAllRepos() {
-  return ipcRenderer.sendSync(ipcChannels.GET_ALL_REPOS)
+  return ipcRenderer.sendSync(CHANNELS.GET_ALL_REPOS)
 }
 
 export function addRepo(path) {
-  ipcRenderer.send(ipcChannels.ADD_REPO, path)
+  return ipcRenderer.sendSync(CHANNELS.ADD_REPO, path)
 }
 
 export function removeRepo(path) {
-  ipcRenderer.send(ipcChannels.REMOVE_REPO, path)
+  return ipcRenderer.sendSync(CHANNELS.REMOVE_REPO, path)
 }

@@ -4,7 +4,7 @@ import path from 'path'
 import * as sinon from 'sinon'
 import { Readable, Writable } from 'stream'
 
-import * as execute from '../../../utils/exec'
+import * as execute from '../../utils/exec'
 import * as subject from '../git'
 
 describe('services/git', () => {
@@ -33,10 +33,13 @@ describe('services/git', () => {
     })
   })
 
-  describe('#getAuthorAndCommitter', () => {
+  describe('#updateAuthorAndCommitter', () => {
     let users
 
     beforeEach(() => {
+      sinon.stub(subject, 'setAuthor')
+      sinon.stub(subject, 'setCommitter')
+
       users = [{
         name: 'First User',
         email: 'first@email.com',
@@ -60,14 +63,19 @@ describe('services/git', () => {
       }]
     })
 
+    afterEach(() => {
+      subject.setAuthor.restore()
+      subject.setCommitter.restore()
+    })
+
     describe('when this is one active user', () => {
       it('uses one user as author and committer', () => {
         const user = users[0]
 
-        const actual = subject.getAuthorAndCommitter([user])
+        subject.updateAuthorAndCommitter([user])
 
-        expect(actual.author).to.eql({ name: user.name, email: user.email })
-        expect(actual.committer).to.eql({ name: user.name, email: user.email })
+        expect(subject.setAuthor).to.have.been.calledWith(user.name, user.email)
+        expect(subject.setCommitter).to.have.been.calledWith(user.name, user.email)
       })
     })
 
@@ -75,10 +83,10 @@ describe('services/git', () => {
       it('uses the first as author and second as committer', () => {
         users = [users[0], users[1], users[3]]
 
-        const actual = subject.getAuthorAndCommitter(users)
+        subject.updateAuthorAndCommitter(users)
 
-        expect(actual.author).to.eql({ name: users[0].name, email: users[0].email })
-        expect(actual.committer).to.eql({ name: users[1].name, email: users[1].email })
+        expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
+        expect(subject.setCommitter).to.have.been.calledWith(users[1].name, users[1].email)
       })
     })
 
@@ -88,10 +96,10 @@ describe('services/git', () => {
         const committerName = activeUsers.map(u => u.name).join(' & ')
         const committerEmail = activeUsers.map(u => u.email).join(', ')
 
-        const actual = subject.getAuthorAndCommitter(users)
+        subject.updateAuthorAndCommitter(users)
 
-        expect(actual.author).to.eql({ name: users[0].name, email: users[0].email })
-        expect(actual.committer).to.eql({ name: committerName, email: committerEmail })
+        expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
+        expect(subject.setCommitter).to.have.been.calledWith(committerName, committerEmail)
       })
     })
 
@@ -101,7 +109,7 @@ describe('services/git', () => {
           author: { name: '', email: '' },
           committer: { name: '', email: '' }
         }
-        expect(subject.getAuthorAndCommitter([users[3]])).to.eql(expected)
+        expect(subject.updateAuthorAndCommitter([users[3]])).to.eql(expected)
       })
     })
   })

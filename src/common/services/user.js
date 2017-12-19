@@ -1,6 +1,7 @@
 import uuid from 'uuid/v4'
 
 import * as config from '../utils/config'
+import * as gitService from './git'
 
 export function get() {
   return config.read().users || []
@@ -17,7 +18,10 @@ export function add({ name, email, rsaKeyPath }) {
   const id = uuid()
   users.push({ id, name, email, rsaKeyPath, active: true })
 
-  return persist(users)
+  const updated = persist(users)
+  gitService.updateAuthorAndCommitter(users)
+
+  return updated
 }
 
 export function update(user) {
@@ -29,7 +33,9 @@ export function update(user) {
     users.push(user)
   }
 
-  return persist(users)
+  const updated = persist(users)
+  gitService.updateAuthorAndCommitter(users)
+  return updated
 }
 
 export function remove(id) {
@@ -39,7 +45,9 @@ export function remove(id) {
 
   users.splice(foundIndex, 1)
 
-  return persist(users)
+  const updated = persist(users)
+  gitService.updateAuthorAndCommitter(users)
+  return updated
 }
 
 export function rotate() {
@@ -54,7 +62,9 @@ export function rotate() {
     ...inactiveUsers
   ]
 
-  return persist(updatedUsers)
+  const updated = persist(updatedUsers)
+  gitService.updateAuthorAndCommitter(updatedUsers)
+  return updated
 }
 
 export function toggleActive(id) {
@@ -66,16 +76,21 @@ export function toggleActive(id) {
   const inactiveUsers = users.filter(u => !u.active && u.id !== id)
 
   user.active = !user.active
-  return persist([
+  const updatedUsers = [
     ...activeUsers,
     user,
     ...inactiveUsers
-  ])
+  ]
+  const persisted = persist(updatedUsers)
+  gitService.updateAuthorAndCommitter(updatedUsers)
+  return persisted
 }
 
 export function clearActive() {
   const users = get()
   const updatedUsers = users.map(u => ({ ...u, active: false }))
 
-  return persist(updatedUsers)
+  const persisted = persist(updatedUsers)
+  gitService.updateAuthorAndCommitter(updatedUsers)
+  return persisted
 }

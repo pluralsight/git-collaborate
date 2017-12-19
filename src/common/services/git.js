@@ -22,7 +22,7 @@ export async function setCommitter(name, email) {
   await execute(`git config --global user.email "${email}"`)
 }
 
-export function getAuthorAndCommitter(users) {
+export function updateAuthorAndCommitter(users) {
   const activeUsers = users.filter(u => u.active)
   if (!activeUsers.length)
     return defaultAuthorAndCommitter
@@ -31,16 +31,13 @@ export function getAuthorAndCommitter(users) {
     ? activeUsers[0]
     : activeUsers.shift()
 
-  return {
-    author: {
-      name: author.name,
-      email: author.email
-    },
-    committer: {
-      name: activeUsers.map(u => u.name).join(' & '),
-      email: activeUsers.map(u => u.email).join(', ')
-    }
+  const committer = {
+    name: activeUsers.map(u => u.name).join(' & '),
+    email: activeUsers.map(u => u.email).join(', ')
   }
+
+  this.setAuthor(author.name, author.email)
+  this.setCommitter(committer.name, committer.email)
 }
 
 function copyGitSwitchPostCommit(gitHooksPath) {

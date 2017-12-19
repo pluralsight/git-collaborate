@@ -32,8 +32,11 @@ export default class IpcRouter {
   handleToggleUserActive = (evt, userId) => evt.returnValue = userService.toggleActive(userId)
   handleAddUser = (evt, user) => evt.returnValue = userService.add(user)
   handleUpdateUser = (evt, user) => evt.returnValue = userService.update(user)
+  handleRemoveUser = (evt, userId) => evt.returnValue = userService.remove(userId)
 
   handleGetAllRepos = evt => evt.returnValue = repoService.get()
+  handleAddRepo = (evt, path) => evt.returnValue = repoService.add(path)
+  handleRemoveRepo = (evt, path) => evt.returnValue = repoService.remove(path)
 
   listeners = {
     [CHANNELS.QUIT_APPLICATION]: this.handleQuitApplication,
@@ -44,7 +47,10 @@ export default class IpcRouter {
     [CHANNELS.TOGGLE_USER_ACTIVE]: this.handleToggleUserActive,
     [CHANNELS.ADD_USER]: this.handleAddUser,
     [CHANNELS.UPDATE_USER]: this.handleUpdateUser,
+    [CHANNELS.REMOVE_USER]: this.handleRemoveUser,
 
-    [CHANNELS.GET_ALL_REPOS]: this.handleGetAllRepos
+    [CHANNELS.GET_ALL_REPOS]: this.handleGetAllRepos,
+    [CHANNELS.ADD_REPO]: this.handleAddRepo,
+    [CHANNELS.REMOVE_REPO]: this.handleRemoveRepo
   }
 }
