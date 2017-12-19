@@ -54,9 +54,11 @@ export default class Repositories extends React.Component {
     }
   }
   renderRepo = repo => (
-    <li styleName="repo" key={repo.path}>
+    <li styleName={repo.isValid ? 'repo' : 'repo-invalid'} key={repo.path}>
       <div styleName="repo-info">
-        <div styleName="repo-name">{repo.name}</div>
+        <div styleName="repo-name">
+          {repo.name}{repo.isValid ? null : <span styleName="invalid-message">(not a git repo)</span>}
+        </div>
         <div styleName="repo-path">{repo.path}</div>
       </div>
       <DeleteButton onClick={this.handleRemoveRepo(repo)} />
