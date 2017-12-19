@@ -1,6 +1,7 @@
 import menubar from 'menubar'
 import path from 'path'
 
+import CHANNELS from '../common/ipcChannels'
 import * as notificationService from '../common/services/notification'
 import * as userService from '../common/services/user'
 import { getCommiterLabel } from '../common/utils/string'
@@ -58,10 +59,11 @@ function handleOpenUrl(event, url) {
 }
 
 function rotateUsers() {
-  const activeUserCount = userService.rotate().filter(u => u.active).length
+  const updatedUsers = userService.rotate()
+  const activeUserCount = updatedUsers.filter(u => u.active).length
   if (activeUserCount > 1) {
     const label = getCommiterLabel(activeUserCount, true)
     notificationService.showCurrentCommiters({title: `${label} rotated to:`})
-    mb.window.webContents.send('users-updated', userService.get())
+    mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
   }
 }
