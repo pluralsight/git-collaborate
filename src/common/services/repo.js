@@ -20,13 +20,22 @@ function persist(repos) {
 }
 
 export function add(path) {
-  initRepo(path)
-  const repos = get()
+  const repos = this.get()
   const name = getNameFromPath(path)
+
+  if(repos.some(r => r.path === path))
+    return repos
+
+  let isValid = true
+  try {
+    initRepo(path)
+  } catch (err) {
+    isValid = false
+  }
 
   return persist([
     ...repos,
-    { name, path, isValid: true }
+    { name, path, isValid }
   ])
 }
 
