@@ -35,7 +35,7 @@ export default class Menu extends React.Component {
     this.setState({
       users,
       repos,
-      showRepositories: !repos.length
+      showRepositories: !repos.length || this.state.showRepositories
     })
 
     usersApi.onUsersUpdated(this.handleUsersUpdated)
@@ -102,9 +102,8 @@ export default class Menu extends React.Component {
     })
   }
   handleRemoveRepo = path => {
-    const updated = reposApi.removeRepo(path)
     this.setState({
-      repos: updated
+      repos: reposApi.removeRepo(path)
     })
   }
   handleMenuButtonClick = () => {
