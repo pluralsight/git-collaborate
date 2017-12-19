@@ -5,7 +5,6 @@
   "main": "src/index.js",
   "scripts": {
     "build": "webpack",
-    "electron:install": "cd ./src && npm install",
     "lint": "eslint ./src/menu",
     "package:all": "npm run package:macos && npm run package:linux && npm run package:win32",
     "package:linux": "electron-packager ./src git-switch --platform=linux --arch=x64 --out=./releases --overwrite --prune=true",
@@ -14,7 +13,7 @@
     "packages:zip": "node ./scripts/package-zipper",
     "postinstall": "cd ./src && npm install",
     "precommit": "npm run lint && npm run test && npm run build",
-    "release:create": "npm run electron:install && npm run build && npm run package:all && npm run packages:zip",
+    "release:create": "npm run build && npm run package:all && npm run packages:zip",
     "release:publish": "node ./scripts/release-publisher",
     "start": "electron .",
     "start:mac": "npm run build && npm run package:macos && open releases/git-switch-darwin-x64/git-switch.app",

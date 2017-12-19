@@ -1,4 +1,4 @@
-import orderBy from 'lodash/orderby'
+import orderBy from 'lodash/orderBy'
 
 import * as config from '../utils/config'
 import { initRepo, removeRepo } from './git'
