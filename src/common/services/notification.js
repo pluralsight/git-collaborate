@@ -1,5 +1,5 @@
 import { Notification } from 'electron'
-import { formatActiveUserFirstNames, getCommiterLabel } from '../../utils/string'
+import { formatActiveUserFirstNames, getCommiterLabel } from '../utils/string'
 import * as userService from './user'
 
 function showNotification(config) {

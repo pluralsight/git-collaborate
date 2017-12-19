@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4'
 
-import * as config from '../../utils/config'
+import * as config from '../utils/config'
 
 export function get() {
   return config.read().users || []

@@ -1,0 +1,50 @@
+import { ipcMain } from 'electron'
+
+import CHANNELS from '../common/ipcChannels'
+import * as userService from '../common/services/user'
+import * as repoService from '../common/services/repo'
+
+export default class IpcRouter {
+  app = null
+
+  constructor(app) {
+    this.app = app
+    this.registerAllListeners()
+  }
+
+  registerAllListeners() {
+    for(const [event, handler] of Object.entries(this.listeners)) {
+      this.on(event, handler)
+    }
+  }
+
+  on(event, handler) {
+    if(!event) throw new Error('Invalid IPC event.')
+
+    ipcMain.on(event, handler)
+  }
+
+  handleQuitApplication = () => this.app.quit()
+
+  handleGetUsers = evt => evt.returnValue = userService.get()
+  handleRotateActiveUsers = evt => evt.returnValue = userService.rotate()
+  handleClearActiveUsers = evt => evt.returnValue = userService.clearActive()
+  handleToggleUserActive = (evt, userId) => evt.returnValue = userService.toggleActive(userId)
+  handleAddUser = (evt, user) => evt.returnValue = userService.add(user)
+  handleUpdateUser = (evt, user) => evt.returnValue = userService.update(user)
+
+  handleGetAllRepos = evt => evt.returnValue = repoService.get()
+
+  listeners = {
+    [CHANNELS.QUIT_APPLICATION]: this.handleQuitApplication,
+
+    [CHANNELS.GET_ALL_USERS]: this.handleGetUsers,
+    [CHANNELS.ROTATE_ACTIVE_USERS]: this.handleRotateActiveUsers,
+    [CHANNELS.CLEAR_ACTIVE_USERS]: this.handleClearActiveUsers,
+    [CHANNELS.TOGGLE_USER_ACTIVE]: this.handleToggleUserActive,
+    [CHANNELS.ADD_USER]: this.handleAddUser,
+    [CHANNELS.UPDATE_USER]: this.handleUpdateUser,
+
+    [CHANNELS.GET_ALL_REPOS]: this.handleGetAllRepos
+  }
+}

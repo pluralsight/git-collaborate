@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import execute from '../../utils/exec'
+import execute from '../utils/exec'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
