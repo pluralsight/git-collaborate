@@ -26,6 +26,7 @@
     "babel-register": "6.24.1",
     "babel-require": "1.0.1",
     "electron": "1.7.9",
+    "lodash": "4.6.0",
     "md5": "2.2.1",
     "menubar": "5.2.1",
     "uuid": "3.1.0"
