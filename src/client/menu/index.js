@@ -4,13 +4,9 @@ import { remote, ipcRenderer } from 'electron'
 
 import * as appApi from '../api/app'
 import Button from './components/button'
-// import * as gitService from '../services/git'
-import ipcChannels from '../../common/ipcChannels'
 import { GitIcon, MenuIcon } from './icons'
 import * as reposApi from '../api/repositories'
 import Repositories from './repositories'
-// import * as repoService from '../services/repo'
-// import * as userService from '../services/user'
 import Users from './users'
 import * as usersApi from '../api/users'
 import UserForm from './users/components/user-form'
@@ -29,6 +25,8 @@ export default class Menu extends React.Component {
   }
 
   async componentDidMount() {
+    usersApi.onUsersUpdated(this.handleUsersUpdated)
+
     const users = usersApi.getAllUsers()
     const repos = reposApi.getAllRepos()
 
@@ -37,8 +35,6 @@ export default class Menu extends React.Component {
       repos,
       showRepositories: !repos.length || this.state.showRepositories
     })
-
-    usersApi.onUsersUpdated(this.handleUsersUpdated)
   }
 
   componentWillUnmount() {
@@ -90,7 +86,6 @@ export default class Menu extends React.Component {
     })
   }
   handleRemoveUser = async userId => {
-    console.log('removing', userId)
     this.setState({
       users: usersApi.removeUser(userId)
     })
