@@ -2,8 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import * as repoService from '../client/services/repo'
-import * as gitService from '../client/services/git'
+import * as repoService from '../services/repo'
+import * as gitService from '../services/git'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')

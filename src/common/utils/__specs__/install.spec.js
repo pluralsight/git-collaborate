@@ -2,8 +2,8 @@ import { expect } from 'chai'
 import fs from 'fs'
 import * as sinon from 'sinon'
 
-import * as gitService from '../../client/services/git'
-import * as repoService from '../../client/services/repo'
+import * as gitService from '../../services/git'
+import * as repoService from '../../services/repo'
 
 import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH } from '../install'
 

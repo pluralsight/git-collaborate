@@ -61,6 +61,6 @@ module.exports = {
   ].concat(isDev ? devOnlyPlugins : []),
 
   devServer: {
-    contentBase: path.join(__dirname, 'client')
+    contentBase: path.join(__dirname, 'build')
   }
 }

@@ -1,6 +1,6 @@
 import orderBy from 'lodash/orderby'
 
-import * as config from '../../utils/config'
+import * as config from '../utils/config'
 import { initRepo, removeRepo } from './git'
 
 export function get() {
