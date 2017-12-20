@@ -43,7 +43,7 @@ brew install wine
 * Your release will _**not**_ include a zipped package for macOS.
 * The MacOS package must be signed with the appropriate `Pluralsight Developer Certificate` stored on the users MacOS keychain.
 * Building an Electron app for the Windows target platform requires [Wine 1.6](https://www.winehq.org/) or later to be installed.
-* Directions for installing `wine` on Linux can be found [here](hhttps://www.winehq.org/download)
+* Directions for installing `wine` on Linux can be found [here](https://www.winehq.org/download)
 
 ### **Windows Users**
 * Your release will _**not**_ include a zipped package for MacOS.
