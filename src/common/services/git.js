@@ -48,6 +48,7 @@ function copyGitSwitchPostCommit(gitHooksPath) {
   const writePostCommit = fs.createWriteStream(destination, 'utf-8')
 
   readPostCommit.pipe(writePostCommit)
+  execute(`chmod +x ${destination}`)
 }
 
 function mergePostCommitScripts(postCommitFile) {
@@ -67,6 +68,7 @@ function writePostCommit(gitHooksPath) {
     : POST_COMMIT_BASE
 
   fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
+  execute(`chmod +x ${postCommitFile}`)
 }
 
 export function initRepo(repoPath) {
