@@ -86,7 +86,7 @@ describe('utils/install', () => {
       postCommitFileContents = 'outdated-content-here'
 
       sinon.stub(gitService, 'initRepo')
-      sinon.stub(repoService, 'get').returns([ { path: 'repo/one' }, { path: 'repo/two' } ])
+      sinon.stub(repoService, 'get').returns([{ path: 'repo/one' }, { path: 'repo/two' }])
     })
     afterEach(() => {
       gitService.initRepo.restore()
