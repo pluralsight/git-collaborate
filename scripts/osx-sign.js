@@ -38,14 +38,8 @@ function signOsxPackage() {
 }
 
 function nonMacWarning() {
-  const warningMessage =
-    'Warning: Unable to sign the current macos release.'.concat(
-      '\nThe macos package may only be signed from a macOS.'
-    ).concat(
-      '\nThe existing macos release will now be removed and will not be included when running: npm run release:publish'
-    )
-
-  console.warn(warningMessage)
+  console.warn('Warning: The macos package may only be signed from a mac.')
+  console.log('Any existing macos release will now be removed and not signed.')
   removePackageSrc('macos')
 }
 
