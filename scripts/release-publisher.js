@@ -6,9 +6,10 @@ const RELEASE_DIR = './releases'
 
 function executeCmd(command, errMessage) {
   try {
-    execSync(command, { timeout: 10000 })
+    execSync(command)
   } catch (err) {
     console.log(errMessage)
+    console.log('Error:', err)
     process.exit(1)
   }
 }
