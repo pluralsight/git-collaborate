@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron'
 
-import CHANNELS from '../common/ipc-channels'
-import * as userService from '../common/services/user'
-import * as repoService from '../common/services/repo'
+import CHANNELS from './common/ipc-channels'
+import * as userService from './common/services/user'
+import * as repoService from './common/services/repo'
 
 export default class IpcRouter {
   app = null

@@ -2,7 +2,7 @@ node_modules
 npm-debug.log
 
 src/build
-releases
+out
 
 .DS_Store
 .idea
