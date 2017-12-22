@@ -33,7 +33,7 @@ export default class Repositories extends React.Component {
   handleNewRepoSelected = paths => {
     this.setState({ isSelectingRepos: false })
     const newRepos = paths.filter(p => !this.props.repos.some(r => r.path === p))
-    for(const path of newRepos) {
+    for (const path of newRepos) {
       this.props.onRepoAdded(path)
     }
   }
@@ -42,7 +42,7 @@ export default class Repositories extends React.Component {
   }
 
   renderEmptyMessage = () => {
-    if(!this.props.repos.length) {
+    if (!this.props.repos.length) {
       return (
         <div styleName="empty-message">
           No repositories yet
