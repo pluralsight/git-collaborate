@@ -13,13 +13,12 @@ import { remote } from 'electron'
 @CSSModules(css)
 export default class Users extends React.Component {
   static propTypes = {
-    onActiveUsersCleared: func.isRequired,
-    onUserActiveToggled: func.isRequired,
-    onUserAdded: func.isRequired,
-    onUserRemoved: func.isRequired,
-    onUsersRotated: func.isRequired,
     onAddUser: func.isRequired,
     onEditUser: func.isRequired,
+    onActiveUsersCleared: func.isRequired,
+    onUserActiveToggled: func.isRequired,
+    onUserRemoved: func.isRequired,
+    onUsersRotated: func.isRequired,
     users: array.isRequired
   }
 
@@ -27,15 +26,14 @@ export default class Users extends React.Component {
     this.props.onUsersRotated()
   }
   handleToggleActiveUser = user => evt => {
-    if(!evt.target.closest('button'))
+    if (!evt.target.closest('button'))
       this.props.onUserActiveToggled(user.id)
   }
   handleAddUser = newUser => {
-    this.props.onUserAdded(newUser)
+    this.props.onAddUser(newUser)
   }
   handleUpdateUser = user => {
     this.toggleUserActions(user.id)
-    this.props.onUserUpdated(user)
   }
   handleRemoveUser = userId => {
     this.props.onUserRemoved(userId)
@@ -81,7 +79,7 @@ export default class Users extends React.Component {
   }
   renderActiveUsers = () => {
     const activeUsers = this.props.users.filter(u => u.active)
-    if(!activeUsers.length) return
+    if (!activeUsers.length) return
 
     return (
       <div>
@@ -100,7 +98,7 @@ export default class Users extends React.Component {
   }
   renderInactiveUsers = () => {
     const inactiveUsers = this.props.users.filter(u => !u.active)
-    if(!inactiveUsers.length) return
+    if (!inactiveUsers.length) return
 
     return (
       <div>

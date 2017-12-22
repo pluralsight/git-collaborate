@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "build": "webpack",
-    "lint": "eslint ./src/menu",
+    "lint": "npm run lint:main && npm run lint:renderer",
+    "lint:main": "eslint ./src/common",
+    "lint:renderer": "eslint ./src/client",
     "osx:sign": "node ./scripts/osx-sign",
     "package:all": "npm run package:macos && npm run package:linux && npm run package:win32",
     "package:linux": "electron-forge package --platform=linux --arch=x64",

@@ -1,6 +1,6 @@
 import React from 'react'
 import CssModules from 'react-css-modules'
-import { func, string } from 'prop-types'
+import { func } from 'prop-types'
 
 import { BinIcon } from '../../icons'
 
@@ -17,4 +17,3 @@ DeleteButton.propTypes = {
 }
 
 export default CssModules(DeleteButton, css)
-

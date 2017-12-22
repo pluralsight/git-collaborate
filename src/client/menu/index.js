@@ -1,6 +1,6 @@
 import React from 'react'
 import CSSModules from 'react-css-modules'
-import { remote, ipcRenderer } from 'electron'
+import { remote } from 'electron'
 
 import * as appApi from '../api/app'
 import Button from './components/button'
@@ -121,7 +121,6 @@ export default class Menu extends React.Component {
         onAddUser={this.handleAddUser}
         onActiveUsersCleared={this.handleClearActiveUsers}
         onUserActiveToggled={this.handleToggleActiveUser}
-        onUserAdded={this.handleAddUser}
         onUserRemoved={this.handleRemoveUser}
         onUserUpdated={this.handleEditUser}
         onUsersRotated={this.handleRotateUsers} />

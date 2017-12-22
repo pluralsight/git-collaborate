@@ -17,17 +17,21 @@ export default class UserForm extends React.Component {
   static propTypes = {
     user: userType,
     onConfirm: func.isRequired,
+    onChange: func.isRequired,
     onClose: func.isRequired,
     confirmLabel: string.isRequired
   }
 
   componentDidUpdate(lastProps) {
-    if(this.props.user && lastProps.user !== this.props.user && !this.props.user.name) {
+    if (this.props.user && lastProps.user !== this.props.user && !this.props.user.name) {
       this.nameInput.focus()
     }
   }
 
-  setNameInput = el => this.nameInput = el
+  setNameInput = el => {
+    this.nameInput = el
+  }
+
   isValid = () => {
     const { user } = this.props
     return user && user.name && user.email
