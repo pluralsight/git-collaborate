@@ -2,7 +2,7 @@ const execSync = require('child_process').execSync
 
 const RELEASE_URL = 'https://github.com/pluralsight/git-switch-electron/releases'
 const HUB_DOCS_URL = 'https://github.com/github/hub'
-const RELEASE_DIR = './releases'
+const RELEASE_DIR = './out'
 
 function executeCmd(command, errMessage) {
   try {

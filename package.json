@@ -16,7 +16,7 @@
     "release:create": "npm run build && npm run package:all && npm run osx:sign && npm run packages:zip",
     "release:publish": "node ./scripts/release-publisher",
     "start": "electron-forge start",
-    "start:mac": "npm run build && npm run package:macos && open releases/git-switch-darwin-x64/git-switch.app",
+    "start:macos": "npm run build && npm run package:macos && open out/git-switch-darwin-x64/git-switch.app",
     "start:dev": "NODE_ENV=dev webpack --watch",
     "test": "mocha",
     "test:watch": "npm run test -- --watch"
@@ -115,12 +115,8 @@
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
       "github_repository": {
-        "owner": "",
-        "name": ""
-      },
-      "windowsStoreConfig": {
-        "packageName": "",
-        "name": "gitswitchelectron"
+        "owner": "pluralsight",
+        "name": "git-switch-electron"
       }
     }
   }
