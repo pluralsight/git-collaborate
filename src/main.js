@@ -1,11 +1,11 @@
 import menubar from 'menubar'
 import path from 'path'
 
-import CHANNELS from '../common/ipc-channels'
-import * as notificationService from '../common/services/notification'
-import * as userService from '../common/services/user'
-import { getCommiterLabel } from '../common/utils/string'
-import install from '../common/utils/install'
+import CHANNELS from './common/ipc-channels'
+import * as notificationService from './common/services/notification'
+import * as userService from './common/services/user'
+import { getCommiterLabel } from './common/utils/string'
+import install from './common/utils/install'
 import IpcRouter from './ipc-router'
 
 const isDev = process.env.NODE_ENV === 'dev'
@@ -15,7 +15,7 @@ install()
 
 const mb = menubar({
   dir: __dirname,
-  index: 'file://' + path.join(__dirname, '..', 'build', 'index.html'),
+  index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
   preloadWindow: true,
   alwaysOnTop: isDev,
   width: isDev ? 800 : 400,
@@ -63,7 +63,7 @@ function rotateUsers() {
   const activeUserCount = updatedUsers.filter(u => u.active).length
   if (activeUserCount > 1) {
     const label = getCommiterLabel(activeUserCount, true)
-    notificationService.showCurrentCommiters({title: `${label} rotated to:`})
+    notificationService.showCurrentCommiters({ title: `${label} rotated to:` })
     mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
   }
 }

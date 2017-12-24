@@ -26,7 +26,7 @@ The following command utilizes `electron-packager` to build the application for 
 npm run release:create
 ```
 
-A `/releases` directory will be created containing the zipped deployables for Linux, MacOS, and Windows.
+An `/out` directory will be created containing the zipped deployables for Linux, MacOS, and Windows.
 
 ### **Mac Users**
 * Only mac users may publish a release of the MacOS package.
@@ -54,7 +54,7 @@ brew install wine
 There are two options for publishing a release:
 
 #### Manual Publish:
-Once a new release has been generated locally, you can drag the zipped `./releases` packages onto the [Create Release Page](https://github.com/pluralsight/git-switch-electron/releases/new) in github.
+Once a new release has been generated locally, you can drag the zipped `./out` packages onto the [Create Release Page](https://github.com/pluralsight/git-switch-electron/releases/new) in github.
 
 #### Publish via CLI
 You can publish releases programatically by installing [hub](https://github.com/github/hub) _(github's cross platform cli tool)_ by running:
