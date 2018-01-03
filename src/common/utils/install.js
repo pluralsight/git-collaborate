@@ -13,11 +13,15 @@ export const POST_COMMIT_GIT_SWITCH = `#!/bin/sh
 actual_author=$(git log -1 HEAD --format="%an")
 expected_author=$(git config --get author.name)
 expected_author_email=$(git config --get author.email)
+committers=$(git config --get user.name)
 
 if [ "$actual_author" != "$expected_author" ]; then
-  echo -e "git-switch > Amending commit with author\\n"
+  echo "git-switch > Author: $expected_author"
+  echo "git-switch > Committer(s): $committers"
+  echo ""
+
   git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
-  open -g "git-switch://rotate" >&/dev/null 2>&1 &
+  open -g "git-switch://rotate" >& /dev/null 2>&1 &
 fi
 `
 
