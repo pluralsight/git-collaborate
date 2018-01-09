@@ -11,8 +11,6 @@ import IpcRouter from './ipc-router'
 const isDev = process.env.NODE_ENV === 'dev'
 const state = { rotateOnOpen: false }
 
-install()
-
 const mb = menubar({
   dir: __dirname,
   index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
@@ -22,14 +20,21 @@ const mb = menubar({
   height: 600
 })
 
+const appExecutablePath = mb.app.getPath('exe')
+install(appExecutablePath)
+
+const isSecondInstance = mb.app.makeSingleInstance(processAppArgs)
+if (isSecondInstance) {
+  mb.app.exit()
+} else {
+  processAppArgs(process.argv)
+}
+
 mb.on('ready', handleAppReady)
 mb.on('after-create-window', handleAfterCreateWindow)
-mb.app.on('open-url', handleOpenUrl)
 
 function handleAppReady() {
   if (isDev) mb.showWindow()
-
-  state.isReady = true
 
   new IpcRouter(mb.app)
 
@@ -45,11 +50,11 @@ function handleAfterCreateWindow() {
   if (isDev) mb.window.openDevTools()
 }
 
-function handleOpenUrl(event, url) {
-  event.preventDefault()
-  const urlPath = url.slice(13).split('/')
+function processAppArgs(args) {
+  if (args.length < 2) return
 
-  if (urlPath[0] === 'rotate') {
+  const command = args[1]
+  if (command === 'rotate') {
     if (mb.app.isReady()) {
       rotateUsers()
     } else {

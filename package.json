@@ -111,7 +111,11 @@
         "prune": true,
         "overwrite": true,
         "protocol": "git-switch",
-        "protocolName": "git-switch-electron"
+        "protocolName": "git-switch-electron",
+        "ignore": [
+          "\\.idea"
+        ],
+        "quiet": true
       },
       "electronWinstallerConfig": {
         "name": "git_switch_electron"

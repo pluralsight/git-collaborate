@@ -5,27 +5,45 @@ import * as sinon from 'sinon'
 import * as gitService from '../../services/git'
 import * as repoService from '../../services/repo'
 
-import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH } from '../install'
+import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
 
 describe('utils/install', () => {
   let gitSwitchDirExists
   let configFileExsists
   let postCommitFileExists
+  let appExecutablePath
   let postCommitFileContents
+  let existingPostCommitFileContents
 
   beforeEach(() => {
     gitSwitchDirExists = true
     configFileExsists = true
     postCommitFileExists = true
-    postCommitFileContents = POST_COMMIT_GIT_SWITCH
+    appExecutablePath = '~'
+    postCommitFileContents = `#!/bin/sh
+
+actual_author=$(git log -1 HEAD --format="%an")
+expected_author=$(git config --get author.name)
+expected_author_email=$(git config --get author.email)
+committers=$(git config --get user.name)
+
+if [ "$actual_author" != "$expected_author" ]; then
+  echo "git-switch > Author: $expected_author"
+  echo "git-switch > Committer(s): $committers"
+  echo ""
+
+  git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
+  ${appExecutablePath} rotate >& /dev/null 2>&1 &
+fi
+`
+    existingPostCommitFileContents = postCommitFileContents
 
     sinon.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
 
-    sinon.stub(fs, 'readFileSync')
-      .withArgs(POST_COMMIT_FILE, 'utf-8').callsFake(() => postCommitFileContents)
+    sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitFileContents)
   })
   afterEach(() => {
     fs.existsSync.restore()
@@ -41,7 +59,7 @@ describe('utils/install', () => {
       gitSwitchDirExists = false
       sinon.stub(fs, 'mkdirSync')
 
-      subject()
+      subject(appExecutablePath)
 
       expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH)
     })
@@ -56,7 +74,7 @@ describe('utils/install', () => {
       configFileExsists = false
       sinon.stub(fs, 'writeFileSync')
 
-      subject()
+      subject(appExecutablePath)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
     })
@@ -75,15 +93,15 @@ describe('utils/install', () => {
       postCommitFileExists = false
       sinon.stub(fs, 'writeFileSync')
 
-      subject()
+      subject(appExecutablePath)
 
-      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH, 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
   })
 
   describe('when post-commit file is outdated', () => {
     beforeEach(() => {
-      postCommitFileContents = 'outdated-content-here'
+      existingPostCommitFileContents = 'outdated-content-here'
 
       sinon.stub(gitService, 'initRepo')
       sinon.stub(repoService, 'get').returns([{ path: 'repo/one' }, { path: 'repo/two' }])
@@ -97,15 +115,15 @@ describe('utils/install', () => {
     it('updates .git-switch/post-commit', () => {
       sinon.stub(fs, 'writeFileSync')
 
-      subject()
+      subject(appExecutablePath)
 
-      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, POST_COMMIT_GIT_SWITCH, 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
 
     it('re-initializes all the repos', () => {
       sinon.stub(fs, 'writeFileSync')
 
-      subject()
+      subject(appExecutablePath)
 
       expect(gitService.initRepo).to.have.been.calledWith('repo/one')
       expect(gitService.initRepo).to.have.been.calledWith('repo/two')
