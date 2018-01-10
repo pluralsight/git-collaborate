@@ -112,6 +112,7 @@
         "overwrite": true,
         "protocol": "git-switch",
         "protocolName": "git-switch-electron",
+        "icon": "./src/assets/icons/icon",
         "ignore": [
           "\\.idea"
         ],
