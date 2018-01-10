@@ -20,17 +20,18 @@ function installConfigFile() {
 
   if (!fs.existsSync(CONFIG_FILE)) {
     console.log('Installing config file...')
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({users: [], repos: []}), 'utf-8')
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
   }
 }
 
 function installPostCommitHook(appExecutablePath) {
+  appExecutablePath = appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')
   const postCommitScript = `#!/bin/sh
 
 actual_author=$(git log -1 HEAD --format="%an")
-expected_author=$(git config --get author.name)
-expected_author_email=$(git config --get author.email)
-committers=$(git config --get user.name)
+expected_author=$(git config --global author.name)
+expected_author_email=$(git config --global author.email)
+committers=$(git config --global user.name)
 
 if [ "$actual_author" != "$expected_author" ]; then
   echo "git-switch > Author: $expected_author"
@@ -38,9 +39,10 @@ if [ "$actual_author" != "$expected_author" ]; then
   echo ""
 
   git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
-  ${appExecutablePath} rotate >& /dev/null 2>&1 &
+  ${appExecutablePath} rotate
 fi
 `
+
   const alreadyInstalled = fs.existsSync(POST_COMMIT_FILE) &&
     fs.readFileSync(POST_COMMIT_FILE, 'utf-8') === postCommitScript
 

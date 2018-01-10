@@ -69,10 +69,10 @@ describe('services/git', () => {
     })
 
     describe('when this is one active user', () => {
-      it('uses one user as author and committer', () => {
+      it('uses one user as author and committer', async () => {
         const user = users[0]
 
-        subject.updateAuthorAndCommitter([user])
+        await subject.updateAuthorAndCommitter([user])
 
         expect(subject.setAuthor).to.have.been.calledWith(user.name, user.email)
         expect(subject.setCommitter).to.have.been.calledWith(user.name, user.email)
@@ -80,10 +80,10 @@ describe('services/git', () => {
     })
 
     describe('when there are two active users', () => {
-      it('uses the first as author and second as committer', () => {
+      it('uses the first as author and second as committer', async () => {
         users = [users[0], users[1], users[3]]
 
-        subject.updateAuthorAndCommitter(users)
+        await subject.updateAuthorAndCommitter(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
         expect(subject.setCommitter).to.have.been.calledWith(users[1].name, users[1].email)
@@ -91,12 +91,12 @@ describe('services/git', () => {
     })
 
     describe('when there are three or more active users', () => {
-      it('uses the first as author and all others as committer', () => {
+      it('uses the first as author and all others as committer', async () => {
         const activeUsers = users.filter(u => u.active).slice(1)
         const committerName = activeUsers.map(u => u.name).join(' & ')
         const committerEmail = activeUsers.map(u => u.email).join(', ')
 
-        subject.updateAuthorAndCommitter(users)
+        await subject.updateAuthorAndCommitter(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
         expect(subject.setCommitter).to.have.been.calledWith(committerName, committerEmail)
@@ -104,12 +104,15 @@ describe('services/git', () => {
     })
 
     describe('when no users are active', () => {
-      it('returns empty', () => {
+      it('returns empty', async () => {
         const expected = {
           author: { name: '', email: '' },
           committer: { name: '', email: '' }
         }
-        expect(subject.updateAuthorAndCommitter([users[3]])).to.eql(expected)
+
+        const actual = await subject.updateAuthorAndCommitter([users[3]])
+
+        expect(actual).to.eql(expected)
       })
     })
   })

@@ -19,13 +19,13 @@ describe('utils/install', () => {
     gitSwitchDirExists = true
     configFileExsists = true
     postCommitFileExists = true
-    appExecutablePath = '~'
+    appExecutablePath = 'C:\\foo\\bar'
     postCommitFileContents = `#!/bin/sh
 
 actual_author=$(git log -1 HEAD --format="%an")
-expected_author=$(git config --get author.name)
-expected_author_email=$(git config --get author.email)
-committers=$(git config --get user.name)
+expected_author=$(git config --global author.name)
+expected_author_email=$(git config --global author.email)
+committers=$(git config --global user.name)
 
 if [ "$actual_author" != "$expected_author" ]; then
   echo "git-switch > Author: $expected_author"
@@ -33,7 +33,7 @@ if [ "$actual_author" != "$expected_author" ]; then
   echo ""
 
   git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
-  ${appExecutablePath} rotate >& /dev/null 2>&1 &
+  C:\\\\foo\\\\bar rotate
 fi
 `
     existingPostCommitFileContents = postCommitFileContents
