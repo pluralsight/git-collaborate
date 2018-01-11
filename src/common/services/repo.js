@@ -20,11 +20,12 @@ function persist(repos) {
 }
 
 export function add(path) {
-  const repos = get()
+  let repos = get()
   const name = getNameFromPath(path)
 
-  if (repos.some(r => r.path === path))
-    return repos
+  const existingRepo = repos.find(r => r.path === path)
+  if (existingRepo)
+    repos = repos.filter(r => r !== existingRepo)
 
   let isValid = true
   try {

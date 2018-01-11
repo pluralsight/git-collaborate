@@ -3,8 +3,8 @@ import * as sinon from 'sinon'
 import uuid from 'uuid/v4'
 
 import * as configUtil from '../../utils/config'
-import * as subject from '../user'
 import * as gitService from '../git'
+import * as subject from '../user'
 
 describe('services/user', () => {
   let users

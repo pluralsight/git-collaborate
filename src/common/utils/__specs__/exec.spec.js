@@ -1,5 +1,5 @@
-import proc from 'child_process'
 import { expect } from 'chai'
+import proc from 'child_process'
 import * as sinon from 'sinon'
 
 import subject from '../exec'

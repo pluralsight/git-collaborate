@@ -45,30 +45,33 @@ describe('services/repo', () => {
 
     it('adds repo to config sorted by name', () => {
       const newRepo = '/foo/bar'
-      const expected = {
-        repos: [
-          { name: 'bar', path: newRepo, isValid: true },
-          ...repos
-        ]
-      }
+      const expected = [
+        { name: 'bar', path: newRepo, isValid: true },
+        ...repos
+      ]
       sinon.stub(gitService, 'initRepo')
 
-      subject.add(newRepo)
+      const actual = subject.add(newRepo)
 
       expect(gitService.initRepo).to.have.been.calledWith(newRepo)
-      expect(configUtil.write).to.have.been.calledWith(expected)
+      expect(configUtil.write).to.have.been.calledWith({ repos: expected })
+      expect(actual).to.eql(expected)
     })
 
     describe('when a repo with the path already exists', () => {
-      it('does nothing', () => {
-        const newRepo = '/repo/one'
+      it('re-initializes the repo', () => {
+        const existingRepo = '/repo/one'
         sinon.stub(gitService, 'initRepo')
+        const expected = [
+          { name: 'one', path: existingRepo, isValid: true },
+          repos[1]
+        ]
 
-        const updated = subject.add(newRepo)
+        const actual = subject.add(existingRepo)
 
-        expect(gitService.initRepo).to.not.have.been.called
-        expect(configUtil.write).to.not.have.been.called
-        expect(updated).to.eql(repos)
+        expect(gitService.initRepo).to.have.been.calledWith(existingRepo)
+        expect(configUtil.write).to.have.been.calledWith({ repos: expected })
+        expect(actual).to.eql(expected)
       })
     })
 
@@ -80,9 +83,9 @@ describe('services/repo', () => {
           ...repos
         ]
 
-        const updated = subject.add('/foo/bar-2')
+        const actual = subject.add('/foo/bar-2')
 
-        expect(updated).to.eql(expected)
+        expect(actual).to.eql(expected)
       })
     })
   })

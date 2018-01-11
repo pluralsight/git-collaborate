@@ -2,7 +2,6 @@ import { expect } from 'chai'
 import fs from 'fs'
 import * as sinon from 'sinon'
 
-import * as gitService from '../../services/git'
 import * as repoService from '../../services/repo'
 
 import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
@@ -103,11 +102,11 @@ fi
     beforeEach(() => {
       existingPostCommitFileContents = 'outdated-content-here'
 
-      sinon.stub(gitService, 'initRepo')
+      sinon.stub(repoService, 'add')
       sinon.stub(repoService, 'get').returns([{ path: 'repo/one' }, { path: 'repo/two' }])
     })
     afterEach(() => {
-      gitService.initRepo.restore()
+      repoService.add.restore()
       repoService.get.restore()
       fs.writeFileSync.restore()
     })
@@ -125,9 +124,9 @@ fi
 
       subject(appExecutablePath)
 
-      expect(gitService.initRepo).to.have.been.calledWith('repo/one')
-      expect(gitService.initRepo).to.have.been.calledWith('repo/two')
-      expect(gitService.initRepo).to.have.been.calledTwice
+      expect(repoService.add).to.have.been.calledWith('repo/one')
+      expect(repoService.add).to.have.been.calledWith('repo/two')
+      expect(repoService.add).to.have.been.calledTwice
     })
   })
 })

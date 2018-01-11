@@ -9,10 +9,10 @@
     "lint:main": "eslint ./src/common",
     "lint:renderer": "eslint ./src/client",
     "osx:sign": "node ./scripts/osx-sign",
-    "package:all": "npm run package:macos && npm run package:linux && npm run package:win32",
+    "package:all": "npm run package:macos && npm run package:linux && npm run package:windows",
     "package:linux": "electron-forge package --platform=linux --arch=x64",
     "package:macos": "electron-forge package --platform=darwin --arch=x64",
-    "package:win32": "electron-forge package --platform=win32",
+    "package:windows": "electron-forge package --platform=win32",
     "packages:zip": "node ./scripts/package-zipper",
     "precommit": "npm run lint && npm run test && npm run build",
     "release:clean": "rm -rf ./out",
@@ -110,8 +110,6 @@
         "packageManager": "npm",
         "prune": true,
         "overwrite": true,
-        "protocol": "git-switch",
-        "protocolName": "git-switch-electron",
         "icon": "./src/assets/icons/icon",
         "ignore": [
           "\\.idea"

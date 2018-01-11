@@ -8,7 +8,7 @@ Cross-platform electron app for managing git users while pair/mob programming
 * Enjoy!
 
 ## Development
-To run git-swtich from source, run the following command:
+To run git-switch from source, run the following command:
 ```
 npm run start
 ```

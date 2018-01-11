@@ -198,7 +198,7 @@ describe('services/git', () => {
           postCommitExists = true
         })
 
-        it('merges git-swtich call into post-commit', () => {
+        it('merges git-switch call into post-commit', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
