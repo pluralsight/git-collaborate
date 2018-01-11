@@ -10,7 +10,7 @@ import { ClearIcon, MoreIcon, RotateIcon } from '../icons'
 import css from './index.css'
 import { remote } from 'electron'
 
-@CSSModules(css)
+@CSSModules(css, { allowMultiple: true })
 export default class Users extends React.Component {
   static propTypes = {
     onAddUser: func.isRequired,
@@ -55,8 +55,12 @@ export default class Users extends React.Component {
       : ''
 
     return (
-      <li styleName="user" key={user.id} onClick={this.handleToggleActiveUser(user)}>
-        <div styleName="avatar" style={{ backgroundImage: `url("${photoUrl}")` }} />
+      <li styleName={`user ${user.active ? 'active' : 'inactive'}`} key={user.id} onClick={this.handleToggleActiveUser(user)}>
+        <div styleName="avatar">
+          <div styleName="avatar-image" style={{ backgroundImage: `url("${photoUrl}")` }} />
+          <div styleName="deactivate-icon"><ClearIcon styleName="deactivate-icon-icon" /></div>
+          <div styleName="activate-icon"><ClearIcon styleName="activate-icon-icon" /></div>
+        </div>
         <div styleName="user-info">
           <div styleName="name">{user.name}</div>
           {role && <div styleName="role">{role}</div>}

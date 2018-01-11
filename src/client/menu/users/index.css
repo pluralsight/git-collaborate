@@ -37,19 +37,61 @@
 .user:hover {
   background: #F7F7F7;
 }
+.user:hover .avatar-image {
+  opacity: 0;
+}
+
+.user.active:hover .deactivate-icon {
+  opacity: 1;
+}
+.user.inactive:hover .activate-icon {
+  opacity: 1;
+}
+
+.activate-icon, .deactivate-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background: white;
+  transition: opacity 0.2s;
+}
+.deactivate-icon-icon {
+  width: 18px;
+  height: 18px;
+}
+.activate-icon-icon {
+  composes: deactivate-icon-icon;
+  transform: rotate(45deg);
+}
 
 .active {
  cursor: pointer;
 }
 
 .avatar {
+  position: relative;
   width: 28px;
   min-width: 28px;
   height: 28px;
   margin-left: 8px;
   border-radius: 15px;
   background-size: cover;
+  overflow: hidden;
   box-shadow: 0 4px 16px 0 rgba(0,0,0,0.2)
+}
+.avatar-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: opacity 0.2s;
 }
 
 .user-info {
