@@ -137,9 +137,13 @@ describe('services/git', () => {
         .withArgs(repoPath).callsFake(() => pathExists)
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
+      sinon.stub(fs, 'statSync').callsFake(() => ({ mode: 33188 }))
+      sinon.stub(fs, 'chmodSync')
     })
     afterEach(() => {
       fs.existsSync.restore()
+      fs.statSync.restore()
+      fs.chmodSync.restore()
     })
 
     describe('when path is a git repo', () => {
@@ -180,13 +184,13 @@ describe('services/git', () => {
 
       it('marks the post-commit.git-switch file executable', () => {
         subject.initRepo(repoPath)
-        expect(execute.default).to.have.been.calledWith(`chmod +x ${postCommitGitSwitchPath}`)
+        expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
       })
 
       it('writes post-commit file to call post-commit.git-switch', () => {
         subject.initRepo(repoPath)
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, 'utf-8')
-        expect(execute.default).to.have.been.calledWith(`chmod +x ${postCommitPath}`)
+        expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
       })
 
       describe('when post-commit already exists', () => {
@@ -201,7 +205,7 @@ describe('services/git', () => {
           subject.initRepo(repoPath)
 
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected)
-          expect(execute.default).to.have.been.calledWith(`chmod +x ${postCommitPath}`)
+          expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
         })
       })
     })

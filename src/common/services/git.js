@@ -40,6 +40,21 @@ export async function updateAuthorAndCommitter(users) {
   await this.setCommitter(committer.name, committer.email)
 }
 
+function makeFileExecutable(destination) {
+  // get current permissions in octal form (i.e. 755, 644)
+  const fileMode = fs.statSync(destination).mode
+  const filePermissions = (fileMode & parseInt('777', 8)).toString(8)
+
+  let newPermissions = '0'
+  for (let char of filePermissions) {
+    newPermissions += parseInt(char) % 2 === 0
+      ? (parseInt(char) + 1).toString()
+      : char
+  }
+
+  fs.chmodSync(destination, newPermissions)
+}
+
 function copyGitSwitchPostCommit(gitHooksPath) {
   const source = path.join(GIT_SWITCH_PATH, 'post-commit')
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
@@ -48,7 +63,7 @@ function copyGitSwitchPostCommit(gitHooksPath) {
   const writePostCommit = fs.createWriteStream(destination, 'utf-8')
 
   readPostCommit.pipe(writePostCommit)
-  execute(`chmod +x ${destination}`)
+  makeFileExecutable(destination)
 }
 
 function mergePostCommitScripts(postCommitFile) {
@@ -68,7 +83,7 @@ function writePostCommit(gitHooksPath) {
     : POST_COMMIT_BASE
 
   fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
-  execute(`chmod +x ${postCommitFile}`)
+  makeFileExecutable(postCommitFile)
 }
 
 export function initRepo(repoPath) {
