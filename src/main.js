@@ -14,6 +14,7 @@ const state = { rotateOnOpen: false }
 const mb = menubar({
   dir: __dirname,
   index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
+  icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
   preloadWindow: true,
   alwaysOnTop: isDev,
   width: isDev ? 800 : 400,
