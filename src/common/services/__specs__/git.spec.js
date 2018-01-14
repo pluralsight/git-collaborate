@@ -121,6 +121,7 @@ describe('services/git', () => {
     let repoPath
     let pathExists
     let repoExists
+    let submoduleExists
     let postCommitExists
     let postCommitPath
     let postCommitGitSwitchPath
@@ -129,6 +130,7 @@ describe('services/git', () => {
       repoPath = '/repo/path'
       pathExists = true
       repoExists = true
+      submoduleExists = false
       postCommitExists = false
       postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
@@ -136,6 +138,7 @@ describe('services/git', () => {
       sinon.stub(fs, 'existsSync')
         .withArgs(repoPath).callsFake(() => pathExists)
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
+        .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
       sinon.stub(fs, 'statSync').callsFake(() => ({ mode: 33188 }))
       sinon.stub(fs, 'chmodSync')
@@ -208,6 +211,37 @@ describe('services/git', () => {
           expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
         })
       })
+
+      describe('when sub-modules exist', () => {
+        const submoduleDirs = ['mod1', 'mod2']
+
+        beforeEach(() => {
+          submoduleExists = true
+          sinon.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
+        })
+        afterEach(() => {
+          fs.readdirSync.restore()
+        })
+
+        it('installs post-commit files in sub-modules', () => {
+          const submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
+          const submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod2', 'hooks')
+
+          subject.initRepo(repoPath)
+
+          expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
+
+          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), 'utf-8')
+          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), '0755')
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
+          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), '0755')
+
+          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), 'utf-8')
+          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), '0755')
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
+          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), '0755')
+        })
+      })
     })
 
     describe('when path does not exist', () => {
@@ -229,18 +263,24 @@ describe('services/git', () => {
     const postCommitGitSwitch = '\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
     let postCommitScript
     let repoPath
+    let submoduleExists
     let postCommitExists
     let postCommitGitSwitchExists
     let postCommitGitSwitchPath
 
     beforeEach(() => {
       repoPath = '/repo/path'
+      submoduleExists = false
       postCommitExists = true
       postCommitGitSwitchExists = true
       postCommitScript = `#!/bin/bash${postCommitGitSwitch}\n\necho "Committed"`
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
 
       sinon.stub(fs, 'existsSync')
+        .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
+        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit.git-switch')).callsFake(() => submoduleExists)
+        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit')).callsFake(() => submoduleExists)
+        .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
         .withArgs(postCommitGitSwitchPath).callsFake(() => postCommitGitSwitchExists)
       sinon.stub(fs, 'unlinkSync')
@@ -269,7 +309,30 @@ describe('services/git', () => {
       it('deletes the post-commit hook', () => {
         postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
         subject.removeRepo(repoPath)
+        expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitSwitchPath)
         expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'))
+      })
+    })
+
+    describe('when sub modules exist', () => {
+      const submoduleDirs = ['mod1']
+
+      beforeEach(() => {
+        submoduleExists = true
+        postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
+        sinon.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
+      })
+      afterEach(() => {
+        fs.readdirSync.restore()
+      })
+
+      it('removes post-commit files in sub-modules', () => {
+        const submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
+
+        subject.removeRepo(repoPath)
+
+        expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'))
+        expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'))
       })
     })
   })

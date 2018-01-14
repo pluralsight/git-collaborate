@@ -86,15 +86,27 @@ function writePostCommit(gitHooksPath) {
   makeFileExecutable(postCommitFile)
 }
 
+function addPostCommitFiles(destination) {
+  copyGitSwitchPostCommit(destination)
+  writePostCommit(destination)
+}
+
+function addPostCommitFilesToSubModules(destination) {
+  if (fs.existsSync(destination)) {
+    for (let submoduleDir of fs.readdirSync(destination)) {
+      addPostCommitFiles(path.join(destination, submoduleDir, 'hooks'))
+    }
+  }
+}
+
 export function initRepo(repoPath) {
   if (!fs.existsSync(repoPath))
     throw new Error('The specified path does not exist')
   if (!fs.existsSync(path.join(repoPath, '.git')))
     throw new Error('The specified path does not contain a ".git" directory')
 
-  const gitHooksPath = path.join(repoPath, '.git', 'hooks')
-  copyGitSwitchPostCommit(gitHooksPath)
-  writePostCommit(gitHooksPath)
+  addPostCommitFiles(path.join(repoPath, '.git', 'hooks'))
+  addPostCommitFilesToSubModules(path.join(repoPath, '.git', 'modules'))
 }
 
 function removeGitSwitchPostCommitScript(gitHooksPath) {
@@ -117,8 +129,20 @@ function removePostCommitScript(gitHooksPath) {
   }
 }
 
+function removePostCommitFiles(target) {
+  removeGitSwitchPostCommitScript(target)
+  removePostCommitScript(target)
+}
+
+function removePostCommitFilesFromSubModules(target) {
+  if (fs.existsSync(target)) {
+    for (let submoduleDir of fs.readdirSync(target)) {
+      removePostCommitFiles(path.join(target, submoduleDir, 'hooks'))
+    }
+  }
+}
+
 export function removeRepo(repoPath) {
-  const gitHooksPath = path.join(repoPath, '.git', 'hooks')
-  removeGitSwitchPostCommitScript(gitHooksPath)
-  removePostCommitScript(gitHooksPath)
+  removePostCommitFiles(path.join(repoPath, '.git', 'hooks'))
+  removePostCommitFilesFromSubModules(path.join(repoPath, '.git', 'modules'))
 }
