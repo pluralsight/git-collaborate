@@ -107,6 +107,7 @@
         ]
       },
       "electronPackagerConfig": {
+        "appBundleId": "com.pluralsight.git-switch",
         "packageManager": "npm",
         "prune": true,
         "overwrite": true,
