@@ -64,9 +64,11 @@
 .deactivate-icon-icon {
   width: 18px;
   height: 18px;
+  color: #cb2431;
 }
 .activate-icon-icon {
   composes: deactivate-icon-icon;
+  color: #28A745;
   transform: rotate(45deg);
 }
 
