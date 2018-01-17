@@ -91,7 +91,6 @@ export default class Menu extends React.Component {
     })
   }
   handleAddRepo = path => {
-    reposApi.addRepo(path)
     this.setState({
       repos: reposApi.addRepo(path)
     })

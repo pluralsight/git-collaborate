@@ -32,8 +32,7 @@ export default class Repositories extends React.Component {
   }
   handleNewRepoSelected = paths => {
     this.setState({ isSelectingRepos: false })
-    const newRepos = paths.filter(p => !this.props.repos.some(r => r.path === p))
-    for (const path of newRepos) {
+    for (const path of paths) {
       this.props.onRepoAdded(path)
     }
   }
