@@ -8,9 +8,9 @@ export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 
-export default function(appExecutablePath) {
+export default function(appExecutablePath, isDev) {
   installConfigFile()
-  installPostCommitHook(appExecutablePath)
+  installPostCommitHook(appExecutablePath, isDev)
 }
 
 function installConfigFile() {
@@ -23,8 +23,14 @@ function installConfigFile() {
   }
 }
 
-function installPostCommitHook(appExecutablePath) {
-  appExecutablePath = appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')
+function getAutoRotateCommand(appExecutablePath, isDev) {
+  return isDev
+    ? 'echo "git-switch > Auto-rotate is disabled when running from npm"'
+    : `${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} rotate`
+}
+
+function installPostCommitHook(appExecutablePath, isDev) {
+  const autoRotate = getAutoRotateCommand(appExecutablePath, isDev)
   const postCommitScript = `#!/bin/sh
 
 actual_author=$(git log -1 HEAD --format="%an")
@@ -38,7 +44,7 @@ if [ "$actual_author" != "$expected_author" ]; then
   echo ""
 
   git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
-  ${appExecutablePath} rotate
+  ${autoRotate}
 fi
 `
 

@@ -11,6 +11,7 @@ describe('utils/install', () => {
   let configFileExsists
   let postCommitFileExists
   let appExecutablePath
+  let isDev
   let postCommitFileContents
   let existingPostCommitFileContents
 
@@ -19,6 +20,7 @@ describe('utils/install', () => {
     configFileExsists = true
     postCommitFileExists = true
     appExecutablePath = 'C:\\foo\\bar'
+    isDev = false
     postCommitFileContents = `#!/bin/sh
 
 actual_author=$(git log -1 HEAD --format="%an")
@@ -58,7 +60,7 @@ fi
       gitSwitchDirExists = false
       sinon.stub(fs, 'mkdirSync')
 
-      subject(appExecutablePath)
+      subject(appExecutablePath, isDev)
 
       expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH)
     })
@@ -73,7 +75,7 @@ fi
       configFileExsists = false
       sinon.stub(fs, 'writeFileSync')
 
-      subject(appExecutablePath)
+      subject(appExecutablePath, isDev)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
     })
@@ -81,7 +83,9 @@ fi
 
   describe('when post-commit file does not exist', () => {
     beforeEach(() => {
+      postCommitFileExists = false
       sinon.stub(repoService, 'get').returns([])
+      sinon.stub(fs, 'writeFileSync')
     })
     afterEach(() => {
       repoService.get.restore()
@@ -89,21 +93,45 @@ fi
     })
 
     it('creates .git-switch/post-commit', () => {
-      postCommitFileExists = false
-      sinon.stub(fs, 'writeFileSync')
-
-      subject(appExecutablePath)
-
+      subject(appExecutablePath, isDev)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+    })
+
+    describe('when isDev is true', () => {
+      beforeEach(() => {
+        postCommitFileExists = false
+        isDev = true
+        postCommitFileContents = postCommitFileContents = `#!/bin/sh
+
+actual_author=$(git log -1 HEAD --format="%an")
+expected_author=$(git config --global author.name)
+expected_author_email=$(git config --global author.email)
+committers=$(git config --global user.name)
+
+if [ "$actual_author" != "$expected_author" ]; then
+  echo "git-switch > Author: $expected_author"
+  echo "git-switch > Committer(s): $committers"
+  echo ""
+
+  git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
+  echo "git-switch > Auto-rotate is disabled when running from npm"
+fi
+`
+      })
+
+      it('the post-commit file echoes a message rather than auto-rotating', () => {
+        subject(appExecutablePath, isDev)
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+      })
     })
   })
 
   describe('when post-commit file is outdated', () => {
     beforeEach(() => {
       existingPostCommitFileContents = 'outdated-content-here'
-
       sinon.stub(repoService, 'add')
       sinon.stub(repoService, 'get').returns([{ path: 'repo/one' }, { path: 'repo/two' }])
+      sinon.stub(fs, 'writeFileSync')
     })
     afterEach(() => {
       repoService.add.restore()
@@ -112,17 +140,12 @@ fi
     })
 
     it('updates .git-switch/post-commit', () => {
-      sinon.stub(fs, 'writeFileSync')
-
-      subject(appExecutablePath)
-
+      subject(appExecutablePath, isDev)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
 
     it('re-initializes all the repos', () => {
-      sinon.stub(fs, 'writeFileSync')
-
-      subject(appExecutablePath)
+      subject(appExecutablePath, isDev)
 
       expect(repoService.add).to.have.been.calledWith('repo/one')
       expect(repoService.add).to.have.been.calledWith('repo/two')
