@@ -5,7 +5,22 @@ Cross-platform electron app for managing git users while pair/mob programming
 * You will find deployables for each of the 3 major platforms [here](https://github.com/pluralsight/git-switch-electron/releases).
 * Install git-switch for your platform and run it.
 * You should see a new tray item with the git-switch icon.
+* Add your git repos and pair/mob users.
 * Enjoy!
+
+## How it works
+Git Switch adds a post commit hook to the git repositories you specify.
+
+You select the users to add to you pair/mob, and commit changes to your code.
+
+With each commit, the git-switch commit hook amends the commit to designate the author separate from the committer(s).
+
+Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
+
+Add the following `git` alias to display commit history with author and committer(s) using `git lg`. [More on git aliases.](https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases)
+```
+lg = log --color --graph --abbrev-commit --pretty=format:'%C(cyan)%h%C(reset) -%C(magenta)%d%C(reset) %s %C(yellow)(%cr) %C(bold blue)<%an> (%cn)%C(reset)'
+```
 
 ## Development
 To run git-switch from source, run the following command:
@@ -59,6 +74,6 @@ Once a new release has been generated locally, you can drag the zipped `./out` p
 #### Publish via CLI
 You can publish releases programatically by installing [hub](https://github.com/github/hub) _(github's cross platform cli tool)_ by running:
 ```
-npm run release:publish 0.0.1 (insert semver release version)
+npm run release:publish <0.0.1> (insert semver release version)
 ```
 This will trigger the `hub release` command.
