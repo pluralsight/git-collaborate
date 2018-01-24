@@ -11,7 +11,7 @@ Cross-platform electron app for managing git users while pair/mob programming
 ## How it works
 Git Switch adds a post commit hook to the git repositories you specify.
 
-You select the users to add to you pair/mob, and commit changes to your code.
+You select the users to add to your pair/mob, and commit changes to your code.
 
 With each commit, the git-switch commit hook amends the commit to designate the author separate from the committer(s).
 

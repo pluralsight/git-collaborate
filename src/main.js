@@ -22,7 +22,7 @@ const mb = menubar({
 })
 
 const appExecutablePath = mb.app.getPath('exe')
-install(appExecutablePath, isDev)
+install(process.platform, appExecutablePath, isDev)
 
 const isSecondInstance = mb.app.makeSingleInstance(processAppArgs)
 if (isSecondInstance) {
