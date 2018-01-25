@@ -22,7 +22,7 @@ const mb = menubar({
 })
 
 const appExecutablePath = mb.app.getPath('exe')
-install(process.platform, appExecutablePath, isDev)
+install(process.platform, appExecutablePath)
 
 const isSecondInstance = mb.app.makeSingleInstance(processAppArgs)
 if (isSecondInstance) {
@@ -54,8 +54,8 @@ function handleAfterCreateWindow() {
 function processAppArgs(args) {
   if (args.length < 2) return
 
-  const command = args[1]
-  if (command === 'rotate') {
+  const options = args.slice(1)
+  if (options.some(o => o === 'rotate')) {
     if (mb.app.isReady()) {
       rotateUsers()
     } else {

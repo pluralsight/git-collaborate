@@ -13,11 +13,11 @@ function removePackageSrc(os) {
 }
 
 function getPackageSrcDir(os) {
-  return path.join(__dirname, '../../out', packageRelease[os])
+  return path.join(__dirname, '..', '..', 'out', packageRelease[os])
 }
 
 function getPackageZipDir(os) {
-  return path.join(__dirname, '../../out/', `git-switch-${os}.zip`)
+  return path.join(__dirname, '..', '..', 'out', `git-switch-${os}.zip`)
 }
 
 module.exports = {

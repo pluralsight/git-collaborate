@@ -8,10 +8,10 @@ export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 
-export default function(platform, appExecutablePath, isDev) {
+export default function(platform, appExecutablePath) {
   installConfigFile()
 
-  const autoRotate = getAutoRotateCommand(platform, appExecutablePath, isDev)
+  const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
   installPostCommitHook(autoRotate)
 }
 
@@ -25,9 +25,11 @@ function installConfigFile() {
   }
 }
 
-function getAutoRotateCommand(platform, appExecutablePath, isDev) {
-  if (isDev) {
-    return 'echo "git-switch > Auto-rotate is disabled when running from npm"'
+function getAutoRotateCommand(platform, appExecutablePath) {
+  if (path.basename(appExecutablePath) === 'electron') {
+    return `cd ${appExecutablePath.split('/node_modules')[0]}
+  npm run start --- -- rotate
+  cd $(dirname $0)/../../`
   }
 
   let prepend = ''
