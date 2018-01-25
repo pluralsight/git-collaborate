@@ -34,7 +34,6 @@ describe('utils/install', () => {
   let appExecutablePath
   let autoRotate
   let platform
-  let isDev
   let postCommitFileContents
 
   beforeEach(() => {
@@ -44,7 +43,6 @@ describe('utils/install', () => {
     appExecutablePath = '/foo/bar'
     autoRotate = '/foo/bar rotate > /dev/null 2>&1 &'
     platform = 'linux'
-    isDev = false
     postCommitFileContents = getPostCommitFileContents(autoRotate)
 
     sinon.stub(fs, 'existsSync')
@@ -65,7 +63,7 @@ describe('utils/install', () => {
       gitSwitchDirExists = false
       sinon.stub(fs, 'mkdirSync')
 
-      subject(platform, appExecutablePath, isDev)
+      subject(platform, appExecutablePath)
 
       expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH)
     })
@@ -80,7 +78,7 @@ describe('utils/install', () => {
       configFileExsists = false
       sinon.stub(fs, 'writeFileSync')
 
-      subject(platform, appExecutablePath, isDev)
+      subject(platform, appExecutablePath)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
     })
@@ -98,18 +96,21 @@ describe('utils/install', () => {
     })
 
     it('creates .git-switch/post-commit', () => {
-      subject(platform, appExecutablePath, isDev)
+      subject(platform, appExecutablePath)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
 
-    describe('when isDev is true', () => {
+    describe('when app executable is electron', () => {
       beforeEach(() => {
-        isDev = true
-        postCommitFileContents = getPostCommitFileContents('echo "git-switch > Auto-rotate is disabled when running from npm"')
+        appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/electron'
+        autoRotate = `cd /herp/derp
+  npm run start --- -- rotate
+  cd $(dirname $0)/../../`
+        postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
 
-      it('the post-commit file echoes a message rather than auto-rotating', () => {
-        subject(platform, appExecutablePath, isDev)
+      it('the post-commit file auto rotates by changing dirs and running npm', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
       })
     })
@@ -123,7 +124,7 @@ describe('utils/install', () => {
       })
 
       it('escapes and backgrounds the autoRotate specific to the platform', () => {
-        subject(platform, appExecutablePath, isDev)
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
       })
     })
@@ -147,12 +148,12 @@ describe('utils/install', () => {
     })
 
     it('updates .git-switch/post-commit', () => {
-      subject(platform, appExecutablePath, isDev)
+      subject(platform, appExecutablePath)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
 
     it('re-initializes all the repos', () => {
-      subject(platform, appExecutablePath, isDev)
+      subject(platform, appExecutablePath)
 
       expect(repoService.add).to.have.been.calledWith('repo/one')
       expect(repoService.add).to.have.been.calledWith('repo/two')
