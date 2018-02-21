@@ -49,11 +49,6 @@ export default class Menu extends React.Component {
       users: usersApi.rotateActiveUsers()
     })
   }
-  handleClearActiveUsers = async () => {
-    this.setState({
-      users: usersApi.clearActiveUsers()
-    })
-  }
   handleToggleActiveUser = async userId => {
     this.setState({
       users: usersApi.toggleUserActive(userId)
@@ -118,7 +113,6 @@ export default class Menu extends React.Component {
         users={this.state.users}
         onEditUser={this.handleEditUser}
         onAddUser={this.handleAddUser}
-        onActiveUsersCleared={this.handleClearActiveUsers}
         onUserActiveToggled={this.handleToggleActiveUser}
         onUserRemoved={this.handleRemoveUser}
         onUserUpdated={this.handleEditUser}

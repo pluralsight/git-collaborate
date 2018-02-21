@@ -10,10 +10,6 @@ export function rotateActiveUsers() {
   return ipcRenderer.sendSync(CHANNELS.ROTATE_ACTIVE_USERS)
 }
 
-export function clearActiveUsers() {
-  return ipcRenderer.sendSync(CHANNELS.CLEAR_ACTIVE_USERS)
-}
-
 export function toggleUserActive(userId) {
   return ipcRenderer.sendSync(CHANNELS.TOGGLE_USER_ACTIVE, userId)
 }

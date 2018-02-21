@@ -15,7 +15,6 @@ export default class Users extends React.Component {
   static propTypes = {
     onAddUser: func.isRequired,
     onEditUser: func.isRequired,
-    onActiveUsersCleared: func.isRequired,
     onUserActiveToggled: func.isRequired,
     onUserRemoved: func.isRequired,
     onUsersRotated: func.isRequired,
@@ -37,9 +36,6 @@ export default class Users extends React.Component {
   }
   handleRemoveUser = userId => {
     this.props.onUserRemoved(userId)
-  }
-  handleClearActiveUsers = () => {
-    this.props.onActiveUsersCleared()
   }
   handleShowUserActionsMenu = user => () => {
     remote.Menu.buildFromTemplate([
@@ -91,7 +87,6 @@ export default class Users extends React.Component {
           <span>Active</span>
           <div styleName="buttons">
             <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}><RotateIcon /></Button>
-            <Button onClick={this.handleClearActiveUsers}><ClearIcon /></Button>
           </div>
         </div>
         <ul styleName="users-list">

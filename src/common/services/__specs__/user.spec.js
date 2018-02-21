@@ -254,29 +254,4 @@ describe('services/user', () => {
       })
     })
   })
-
-  describe('#clearActive', () => {
-    it('unsets the active flag on all users', () => {
-      users = [
-        { ...users[0], active: true },
-        { ...users[1], active: true },
-        {
-          name: 'Third User',
-          email: 'third@email.com',
-          rsaKeyPath: '/foo/bar',
-          active: false
-        }
-      ]
-      const expected = {
-        users: users.map(u => ({ ...u, active: false }))
-      }
-      config = { users }
-
-      const actual = subject.clearActive()
-
-      expect(actual).to.eql(expected.users)
-      expect(configUtil.write).to.have.been.calledWith(expected)
-      expect(gitService.updateAuthorAndCommitter).to.have.been.calledWith(expected.users)
-    })
-  })
 })

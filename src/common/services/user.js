@@ -85,12 +85,3 @@ export function toggleActive(id) {
   gitService.updateAuthorAndCommitter(updatedUsers)
   return persisted
 }
-
-export function clearActive() {
-  const users = get()
-  const updatedUsers = users.map(u => ({ ...u, active: false }))
-
-  const persisted = persist(updatedUsers)
-  gitService.updateAuthorAndCommitter(updatedUsers)
-  return persisted
-}
