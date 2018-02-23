@@ -113,6 +113,12 @@ describe('utils/install', () => {
         subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
       })
+
+      it('ignores case on electron path basename', async () => {
+        appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/Electron'
+        subject(platform, appExecutablePath)
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+      })
     })
 
     describe('when platform is windows', () => {
