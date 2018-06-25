@@ -23,21 +23,21 @@ describe('utils/string', () => {
     })
   })
 
-  describe('#getCommiterLabel', () => {
-    it('returns "commiter" if userCount is 1', async () => {
-      expect(subject.getCommiterLabel(1)).to.eql('commiter')
+  describe('#getNotificationLabel', () => {
+    it('returns "author" if userCount is 1', async () => {
+      expect(subject.getNotificationLabel(1)).to.eql('author')
     })
 
     it('returns "pair" if userCount is 2', async () => {
-      expect(subject.getCommiterLabel(2)).to.eql('pair')
+      expect(subject.getNotificationLabel(2)).to.eql('pair')
     })
 
     it('returns "mob" if userCount is > 2', async () => {
-      expect(subject.getCommiterLabel(3)).to.eql('mob')
+      expect(subject.getNotificationLabel(3)).to.eql('mob')
     })
 
-    it('capitalizes if capitalize is true', async () => {
-      expect(subject.getCommiterLabel(4, true)).to.eql('Mob')
+    it('capitalizes if shouldCapitalize is true', async () => {
+      expect(subject.getNotificationLabel(4, true)).to.eql('Mob')
     })
   })
 })

@@ -6,10 +6,10 @@ export function formatActiveUserFirstNames(users) {
     : `${activeUserFirstNames.slice(0, -1).join(', ')} and ${activeUserFirstNames.slice(-1)}`
 }
 
-export function getCommiterLabel(userCount, capitalizeIt = false) {
-  const label = userCount < 2 ? 'commiter' : (userCount === 2 ? 'pair' : 'mob')
+export function getNotificationLabel(userCount, shouldCapitalize = false) {
+  const label = userCount < 2 ? 'author' : (userCount === 2 ? 'pair' : 'mob')
 
-  return capitalizeIt ? capitalize(label) : label
+  return shouldCapitalize ? capitalize(label) : label
 }
 
 function capitalize(str) {

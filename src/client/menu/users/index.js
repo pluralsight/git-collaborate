@@ -47,7 +47,7 @@ export default class Users extends React.Component {
   renderUser = (user, index) => {
     const photoUrl = `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mm&s=28`
     const role = user.active
-      ? index === 0 ? 'Author' : 'Committer'
+      ? index === 0 ? 'Author' : 'Co-Author'
       : ''
 
     return (
