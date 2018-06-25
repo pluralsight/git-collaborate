@@ -13,14 +13,9 @@ Git Switch adds a post commit hook to the git repositories you specify.
 
 You select the users to add to your pair/mob, and commit changes to your code.
 
-With each commit, the git-switch commit hook amends the commit to designate the author separate from the committer(s).
+With each commit, the git-switch commit hook amends the commit to designate the author separate from the co-author(s).
 
 Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
-
-Add the following `git` alias to display commit history with author and committer(s) using `git lg`. [More on git aliases.](https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases)
-```
-lg = log --color --graph --abbrev-commit --pretty=format:'%C(cyan)%h%C(reset) -%C(magenta)%d%C(reset) %s %C(yellow)(%cr) %C(bold blue)<%an> (%cn)%C(reset)'
-```
 
 ## Development
 To run git-switch from source, run the following command:

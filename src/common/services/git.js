@@ -7,37 +7,28 @@ import execute from '../utils/exec'
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
 
-const defaultAuthorAndCommitter = {
-  author: { name: '', email: '' },
-  committer: { name: '', email: '' }
-}
-
 export async function setAuthor(name, email) {
-  await execute(`git config --global author.name "${name}"`)
-  await execute(`git config --global author.email "${email}"`)
-}
-
-export async function setCommitter(name, email) {
   await execute(`git config --global user.name "${name}"`)
   await execute(`git config --global user.email "${email}"`)
 }
 
-export async function updateAuthorAndCommitter(users) {
+export async function setCoAuthors(coAuthors) {
+  const value = coAuthors
+    .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+    .join('\n')
+
+  await execute(`git config --global git-switch.co-authors "${value}"`)
+}
+
+export async function updateAuthorAndCoAuthors(users) {
   const activeUsers = users.filter(u => u.active)
   if (!activeUsers.length)
-    return defaultAuthorAndCommitter
+    return
 
-  const author = activeUsers.length === 1
-    ? activeUsers[0]
-    : activeUsers.shift()
-
-  const committer = {
-    name: activeUsers.map(u => u.name).join(' & '),
-    email: activeUsers.map(u => u.email).join(', ')
-  }
-
+  const author = activeUsers.shift()
   await this.setAuthor(author.name, author.email)
-  await this.setCommitter(committer.name, committer.email)
+
+  await this.setCoAuthors(activeUsers)
 }
 
 function makeFileExecutable(destination) {

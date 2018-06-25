@@ -2,26 +2,34 @@ import { expect } from 'chai'
 import fs from 'fs'
 import * as sinon from 'sinon'
 
-import * as repoService from '../../services/repo'
-
 import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
+import * as repoService from '../../services/repo'
 
 function getPostCommitFileContents(autoRotate) {
   return `#!/bin/sh
 
-actual_author=$(git log -1 HEAD --format="%an")
-expected_author=$(git config --global author.name)
-expected_author_email=$(git config --global author.email)
-committers=$(git config --global user.name)
+body=$(git log -1 HEAD --format="%b")
+co_authors=$(git config --global git-switch.co-authors)
 
-if [ "$actual_author" != "$expected_author" ]; then
-  echo "git-switch > Author: $expected_author"
-  echo "git-switch > Committer(s): $committers"
+if [[ "$body" != *$co_authors ]]; then
+  subject=$(git log -1 HEAD --format="%s")
+  author=$(git log -1 HEAD --format="%an <%ae>")
+
+  echo -e "git-switch > Author:\\n  $author"
+  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
   echo ""
 
-  git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
+  if [[ "$body" == Co-Authored-By* ]]; then
+    body=$co_authors
+  else
+    body=\${body//Co-Authored-By*/}
+    body="$body\n\n$co_authors"
+  fi
+
+  git commit --amend --no-verify --message="$subject\n\n$body"
+
   echo ""
-  echo "git-switch > Rotating author and committer(s)"
+  echo "git-switch > Rotating author and co-author(s)"
   ${autoRotate}
 fi
 `
@@ -35,6 +43,8 @@ describe('utils/install', () => {
   let autoRotate
   let platform
   let postCommitFileContents
+  let existingPostCommitFileContents
+  let existingRepos
 
   beforeEach(() => {
     gitSwitchDirExists = true
@@ -44,14 +54,20 @@ describe('utils/install', () => {
     autoRotate = '/foo/bar rotate > /dev/null 2>&1 &'
     platform = 'linux'
     postCommitFileContents = getPostCommitFileContents(autoRotate)
+    existingPostCommitFileContents = postCommitFileContents
+    existingRepos = []
 
     sinon.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
+    sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitFileContents)
+    sinon.stub(repoService, 'get').callsFake(() => existingRepos)
   })
   afterEach(() => {
     fs.existsSync.restore()
+    fs.readFileSync.restore()
+    repoService.get.restore()
   })
 
   describe('when config directory does not exist', () => {
@@ -87,11 +103,10 @@ describe('utils/install', () => {
   describe('when post-commit file does not exist', () => {
     beforeEach(() => {
       postCommitFileExists = false
-      sinon.stub(repoService, 'get').returns([])
+
       sinon.stub(fs, 'writeFileSync')
     })
     afterEach(() => {
-      repoService.get.restore()
       fs.writeFileSync.restore()
     })
 
@@ -136,26 +151,13 @@ describe('utils/install', () => {
     })
   })
 
-  describe('when post-commit file is outdated', () => {
-    let existingPostCommitFileContents
-
+  describe('when the config file exists', () => {
     beforeEach(() => {
-      existingPostCommitFileContents = 'outdated-content-here'
+      existingRepos = [{ path: 'repo/one' }, { path: 'repo/two' }]
       sinon.stub(repoService, 'add')
-      sinon.stub(repoService, 'get').returns([{ path: 'repo/one' }, { path: 'repo/two' }])
-      sinon.stub(fs, 'writeFileSync')
-      sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitFileContents)
     })
     afterEach(() => {
       repoService.add.restore()
-      repoService.get.restore()
-      fs.writeFileSync.restore()
-      fs.readFileSync.restore()
-    })
-
-    it('updates .git-switch/post-commit', () => {
-      subject(platform, appExecutablePath)
-      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
     })
 
     it('re-initializes all the repos', () => {
@@ -164,6 +166,29 @@ describe('utils/install', () => {
       expect(repoService.add).to.have.been.calledWith('repo/one')
       expect(repoService.add).to.have.been.calledWith('repo/two')
       expect(repoService.add).to.have.been.calledTwice
+    })
+
+    describe('when post-commit file is outdated', () => {
+      beforeEach(() => {
+        existingPostCommitFileContents = 'outdated-content-here'
+        sinon.stub(fs, 'writeFileSync')
+      })
+      afterEach(() => {
+        fs.writeFileSync.restore()
+      })
+
+      it('updates .git-switch/post-commit', () => {
+        subject(platform, appExecutablePath)
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+      })
+
+      it('re-initializes all the repos', () => {
+        subject(platform, appExecutablePath)
+
+        expect(repoService.add).to.have.been.calledWith('repo/one')
+        expect(repoService.add).to.have.been.calledWith('repo/two')
+        expect(repoService.add).to.have.been.calledTwice
+      })
     })
   })
 })

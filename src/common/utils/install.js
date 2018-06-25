@@ -45,30 +45,38 @@ function getAutoRotateCommand(platform, appExecutablePath) {
 function installPostCommitHook(autoRotate) {
   const postCommitScript = `#!/bin/sh
 
-actual_author=$(git log -1 HEAD --format="%an")
-expected_author=$(git config --global author.name)
-expected_author_email=$(git config --global author.email)
-committers=$(git config --global user.name)
+body=$(git log -1 HEAD --format="%b")
+co_authors=$(git config --global git-switch.co-authors)
 
-if [ "$actual_author" != "$expected_author" ]; then
-  echo "git-switch > Author: $expected_author"
-  echo "git-switch > Committer(s): $committers"
+if [[ "$body" != *$co_authors ]]; then
+  subject=$(git log -1 HEAD --format="%s")
+  author=$(git log -1 HEAD --format="%an <%ae>")
+
+  echo -e "git-switch > Author:\\n  $author"
+  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
   echo ""
 
-  git commit --amend --no-verify --no-edit --author="$expected_author <$expected_author_email>"
+  if [[ "$body" == Co-Authored-By* ]]; then
+    body=$co_authors
+  else
+    body=\${body//Co-Authored-By*/}
+    body="$body\n\n$co_authors"
+  fi
+
+  git commit --amend --no-verify --message="$subject\n\n$body"
+
   echo ""
-  echo "git-switch > Rotating author and committer(s)"
+  echo "git-switch > Rotating author and co-author(s)"
   ${autoRotate}
 fi
 `
 
-  const alreadyInstalled = fs.existsSync(POST_COMMIT_FILE) &&
+  const isPostCommitCurrent = fs.existsSync(POST_COMMIT_FILE) &&
     fs.readFileSync(POST_COMMIT_FILE, 'utf-8') === postCommitScript
-
-  if (alreadyInstalled) return
-
-  console.log('Installing post-commit hook')
-  fs.writeFileSync(POST_COMMIT_FILE, postCommitScript, 'utf-8')
+  if (!isPostCommitCurrent) {
+    console.log('Installing post-commit hook')
+    fs.writeFileSync(POST_COMMIT_FILE, postCommitScript, 'utf-8')
+  }
 
   const repos = repoService.get()
   for (const repo of repos) {

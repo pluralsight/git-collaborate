@@ -19,7 +19,7 @@ export function add({ name, email, rsaKeyPath }) {
   users.push({ id, name, email, rsaKeyPath, active: true })
 
   const updated = persist(users)
-  gitService.updateAuthorAndCommitter(users)
+  gitService.updateAuthorAndCoAuthors(users)
 
   return updated
 }
@@ -34,7 +34,7 @@ export function update(user) {
   }
 
   const updated = persist(users)
-  gitService.updateAuthorAndCommitter(users)
+  gitService.updateAuthorAndCoAuthors(users)
   return updated
 }
 
@@ -46,7 +46,7 @@ export function remove(id) {
   users.splice(foundIndex, 1)
 
   const updated = persist(users)
-  gitService.updateAuthorAndCommitter(users)
+  gitService.updateAuthorAndCoAuthors(users)
   return updated
 }
 
@@ -63,7 +63,7 @@ export function rotate() {
   ]
 
   const updated = persist(updatedUsers)
-  gitService.updateAuthorAndCommitter(updatedUsers)
+  gitService.updateAuthorAndCoAuthors(updatedUsers)
   return updated
 }
 
@@ -82,6 +82,6 @@ export function toggleActive(id) {
     ...inactiveUsers
   ]
   const persisted = persist(updatedUsers)
-  gitService.updateAuthorAndCommitter(updatedUsers)
+  gitService.updateAuthorAndCoAuthors(updatedUsers)
   return persisted
 }

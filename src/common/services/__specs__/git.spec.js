@@ -19,26 +19,38 @@ describe('services/git', () => {
     it('executes a git command to set author name and email', async () => {
       await subject.setAuthor('author-name', 'author-email')
 
-      expect(execute.default).to.have.been.calledWith('git config --global author.name "author-name"')
-      expect(execute.default).to.have.been.calledWith('git config --global author.email "author-email"')
+      expect(execute.default).to.have.been.calledWith('git config --global user.name "author-name"')
+      expect(execute.default).to.have.been.calledWith('git config --global user.email "author-email"')
     })
   })
 
-  describe('#setCommitter', () => {
-    it('executes a git command to set committer name and email', async () => {
-      await subject.setCommitter('committer-1 & committer-2', 'committer-1, committer-2')
+  describe('#setCoAuthors', () => {
+    it('executes a git command to set co-author(s)', async () => {
+      const coAuthors = [
+        { name: 'co-author-1', email: 'co-author1@email.com' },
+        { name: 'co-author-2', email: 'co-author-2@email.com' }
+      ]
+      const expectedCoAuthorValue = coAuthors
+        .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+        .join('\n')
 
-      expect(execute.default).to.have.been.calledWith('git config --global user.name "committer-1 & committer-2"')
-      expect(execute.default).to.have.been.calledWith('git config --global user.email "committer-1, committer-2"')
+      await subject.setCoAuthors(coAuthors)
+
+      expect(execute.default).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorValue}"`)
+    })
+
+    it('sets empty co-author(s) when none are provided', async () => {
+      await subject.setCoAuthors([])
+      expect(execute.default).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
     })
   })
 
-  describe('#updateAuthorAndCommitter', () => {
+  describe('#updateAuthorAndCoAuthors', () => {
     let users
 
     beforeEach(() => {
       sinon.stub(subject, 'setAuthor')
-      sinon.stub(subject, 'setCommitter')
+      sinon.stub(subject, 'setCoAuthors')
 
       users = [{
         name: 'First User',
@@ -65,54 +77,48 @@ describe('services/git', () => {
 
     afterEach(() => {
       subject.setAuthor.restore()
-      subject.setCommitter.restore()
+      subject.setCoAuthors.restore()
     })
 
-    describe('when this is one active user', () => {
-      it('uses one user as author and committer', async () => {
+    describe('when there is one active user', () => {
+      it('sets the author and sets an empty co-author', async () => {
         const user = users[0]
 
-        await subject.updateAuthorAndCommitter([user])
+        await subject.updateAuthorAndCoAuthors([user])
 
         expect(subject.setAuthor).to.have.been.calledWith(user.name, user.email)
-        expect(subject.setCommitter).to.have.been.calledWith(user.name, user.email)
+        expect(subject.setCoAuthors).to.have.been.calledWith([])
       })
     })
 
     describe('when there are two active users', () => {
-      it('uses the first as author and second as committer', async () => {
+      it('uses the first as author and second as co-author', async () => {
         users = [users[0], users[1], users[3]]
 
-        await subject.updateAuthorAndCommitter(users)
+        await subject.updateAuthorAndCoAuthors(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
-        expect(subject.setCommitter).to.have.been.calledWith(users[1].name, users[1].email)
+        expect(subject.setCoAuthors).to.have.been.calledWith([users[1]])
       })
     })
 
     describe('when there are three or more active users', () => {
-      it('uses the first as author and all others as committer', async () => {
+      it('uses the first as author and all others as co-authors', async () => {
         const activeUsers = users.filter(u => u.active).slice(1)
-        const committerName = activeUsers.map(u => u.name).join(' & ')
-        const committerEmail = activeUsers.map(u => u.email).join(', ')
 
-        await subject.updateAuthorAndCommitter(users)
+        await subject.updateAuthorAndCoAuthors(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
-        expect(subject.setCommitter).to.have.been.calledWith(committerName, committerEmail)
+        expect(subject.setCoAuthors).to.have.been.calledWith(activeUsers)
       })
     })
 
     describe('when no users are active', () => {
-      it('returns empty', async () => {
-        const expected = {
-          author: { name: '', email: '' },
-          committer: { name: '', email: '' }
-        }
+      it('does nothing', async () => {
+        await subject.updateAuthorAndCoAuthors([users[3]])
 
-        const actual = await subject.updateAuthorAndCommitter([users[3]])
-
-        expect(actual).to.eql(expected)
+        expect(subject.setAuthor).to.not.have.been.called
+        expect(subject.setCoAuthors).to.not.have.been.called
       })
     })
   })
@@ -153,11 +159,11 @@ describe('services/git', () => {
       let existingPostCommitScript
       let readStream
       let writeStream
-      let postCommitBuffer = []
+      const postCommitBuffer = []
 
       beforeEach(() => {
         existingPostCommitScript = ''
-        readStream = new Readable()
+        readStream = new Readable({ read: () => true })
         writeStream = new Writable({
           write: (data, enc, cb) => {
             postCommitBuffer.push(data)

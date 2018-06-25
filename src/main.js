@@ -4,7 +4,7 @@ import path from 'path'
 import CHANNELS from './common/ipc-channels'
 import * as notificationService from './common/services/notification'
 import * as userService from './common/services/user'
-import { getCommiterLabel } from './common/utils/string'
+import { getNotificationLabel } from './common/utils/string'
 import install from './common/utils/install'
 import IpcRouter from './ipc-router'
 
@@ -21,15 +21,15 @@ const mb = menubar({
   height: 600
 })
 
-const appExecutablePath = mb.app.getPath('exe')
-install(process.platform, appExecutablePath)
-
 const isSecondInstance = mb.app.makeSingleInstance(processAppArgs)
 if (isSecondInstance) {
   mb.app.exit()
 } else {
   processAppArgs(process.argv)
 }
+
+const appExecutablePath = mb.app.getPath('exe')
+install(process.platform, appExecutablePath)
 
 mb.on('ready', handleAppReady)
 mb.on('after-create-window', handleAfterCreateWindow)
@@ -43,7 +43,7 @@ function handleAppReady() {
     rotateUsers()
     state.rotateOnOpen = false
   } else if (!isDev) {
-    notificationService.showCurrentCommiters()
+    notificationService.showCurrentAuthors()
   }
 }
 
@@ -68,8 +68,8 @@ function rotateUsers() {
   const updatedUsers = userService.rotate()
   const activeUserCount = updatedUsers.filter(u => u.active).length
   if (activeUserCount > 1) {
-    const label = getCommiterLabel(activeUserCount, true)
-    notificationService.showCurrentCommiters({ title: `${label} rotated to:` })
+    const label = getNotificationLabel(activeUserCount, true)
+    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
     mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
   }
 }
