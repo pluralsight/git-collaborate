@@ -1,10 +1,13 @@
 {
   "application/javascript": {
     "plugins": [
-      "transform-decorators-legacy"
+      "transform-decorators-legacy",
+      "transform-async-to-generator",
+      "transform-object-rest-spread",
+      "transform-es2015-modules-commonjs"
     ],
     "presets": [
-      "es2015",
+      "es2017",
       "stage-0",
       "react"
     ]
