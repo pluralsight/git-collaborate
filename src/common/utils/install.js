@@ -2,7 +2,9 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import * as gitService from '../services/git'
 import * as repoService from '../services/repo'
+import * as userService from '../services/user'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
@@ -13,6 +15,8 @@ export default function(platform, appExecutablePath) {
 
   const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
   installPostCommitHook(autoRotate)
+
+  initializeGitConfig()
 }
 
 function installConfigFile() {
@@ -83,4 +87,9 @@ fi
     console.log(`Writing post-commit hook to repo "${repo.path}"`)
     repoService.add(repo.path)
   }
+}
+
+function initializeGitConfig() {
+  const users = userService.get()
+  gitService.updateAuthorAndCoAuthors(users)
 }
