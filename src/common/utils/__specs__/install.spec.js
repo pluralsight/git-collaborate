@@ -2,8 +2,10 @@ import { expect } from 'chai'
 import fs from 'fs'
 import * as sinon from 'sinon'
 
+import * as gitService from '../../services/git'
 import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
 import * as repoService from '../../services/repo'
+import * as userService from '../../services/user'
 
 function getPostCommitFileContents(autoRotate) {
   return `#!/bin/sh
@@ -45,6 +47,7 @@ describe('utils/install', () => {
   let postCommitFileContents
   let existingPostCommitFileContents
   let existingRepos
+  let users
 
   beforeEach(() => {
     gitSwitchDirExists = true
@@ -56,6 +59,7 @@ describe('utils/install', () => {
     postCommitFileContents = getPostCommitFileContents(autoRotate)
     existingPostCommitFileContents = postCommitFileContents
     existingRepos = []
+    users = []
 
     sinon.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
@@ -63,11 +67,15 @@ describe('utils/install', () => {
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
     sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitFileContents)
     sinon.stub(repoService, 'get').callsFake(() => existingRepos)
+    sinon.stub(userService, 'get').callsFake(() => users)
+    sinon.stub(gitService, 'updateAuthorAndCoAuthors')
   })
   afterEach(() => {
     fs.existsSync.restore()
     fs.readFileSync.restore()
     repoService.get.restore()
+    userService.get.restore()
+    gitService.updateAuthorAndCoAuthors.restore()
   })
 
   describe('when config directory does not exist', () => {
@@ -168,6 +176,12 @@ describe('utils/install', () => {
       expect(repoService.add).to.have.been.calledTwice
     })
 
+    it('initializes authors/co-authors in .gitconfig', () => {
+      subject(platform, appExecutablePath)
+      expect(userService.get).to.have.been.called
+      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
+    })
+
     describe('when post-commit file is outdated', () => {
       beforeEach(() => {
         existingPostCommitFileContents = 'outdated-content-here'
@@ -188,6 +202,12 @@ describe('utils/install', () => {
         expect(repoService.add).to.have.been.calledWith('repo/one')
         expect(repoService.add).to.have.been.calledWith('repo/two')
         expect(repoService.add).to.have.been.calledTwice
+      })
+
+      it('initializes authors/co-authors in .gitconfig', () => {
+        subject(platform, appExecutablePath)
+        expect(userService.get).to.have.been.called
+        expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
       })
     })
   })
