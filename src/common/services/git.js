@@ -33,8 +33,8 @@ export async function updateAuthorAndCoAuthors(users) {
 
 function makeFileExecutable(destination) {
   // get current permissions in octal form (i.e. 755, 644)
-  const fileMode = fs.statSync(destination).mode
-  const filePermissions = (fileMode & parseInt('777', 8)).toString(8)
+  const file = fs.statSync(destination)
+  const filePermissions = (file.mode & parseInt('777', 8)).toString(8)
 
   let newPermissions = '0'
   for (let char of filePermissions) {
@@ -85,7 +85,11 @@ function addPostCommitFiles(destination) {
 function addPostCommitFilesToSubModules(destination) {
   if (fs.existsSync(destination)) {
     for (let submoduleDir of fs.readdirSync(destination)) {
-      addPostCommitFiles(path.join(destination, submoduleDir, 'hooks'))
+      const submodulePath = path.join(destination, submoduleDir)
+      const dir = fs.statSync(submodulePath)
+
+      if (dir.isDirectory())
+        addPostCommitFiles(path.join(submodulePath, 'hooks'))
     }
   }
 }
