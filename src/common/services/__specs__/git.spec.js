@@ -128,6 +128,7 @@ describe('services/git', () => {
     let pathExists
     let repoExists
     let submoduleExists
+    let isSubmoduleDir
     let postCommitExists
     let postCommitPath
     let postCommitGitSwitchPath
@@ -137,6 +138,7 @@ describe('services/git', () => {
       pathExists = true
       repoExists = true
       submoduleExists = false
+      isSubmoduleDir = true
       postCommitExists = false
       postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
@@ -146,7 +148,7 @@ describe('services/git', () => {
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
-      sinon.stub(fs, 'statSync').callsFake(() => ({ mode: 33188 }))
+      sinon.stub(fs, 'statSync').callsFake(() => ({ mode: 33188, isDirectory: () => isSubmoduleDir }))
       sinon.stub(fs, 'chmodSync')
     })
     afterEach(() => {
@@ -219,10 +221,16 @@ describe('services/git', () => {
       })
 
       describe('when sub-modules exist', () => {
-        const submoduleDirs = ['mod1', 'mod2']
+        let submoduleDirs
+        let submodule1GitHooksPath
+        let submodule2GitHooksPath
 
         beforeEach(() => {
           submoduleExists = true
+          submoduleDirs = ['mod1', 'mod2']
+          submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
+          submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod2', 'hooks')
+
           sinon.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
         })
         afterEach(() => {
@@ -230,9 +238,6 @@ describe('services/git', () => {
         })
 
         it('installs post-commit files in sub-modules', () => {
-          const submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
-          const submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod2', 'hooks')
-
           subject.initRepo(repoPath)
 
           expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
@@ -246,6 +251,21 @@ describe('services/git', () => {
           expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), '0755')
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
           expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), '0755')
+        })
+
+        describe('when submodule items are not directories', () => {
+          beforeEach(() => {
+            isSubmoduleDir = false
+          })
+
+          it('does not install post-commit in sub-modules', () => {
+            subject.initRepo(repoPath)
+
+            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), 'utf-8')
+            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), 'utf-8')
+            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
+            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
+          })
         })
       })
     })
