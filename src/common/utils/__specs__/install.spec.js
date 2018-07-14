@@ -11,13 +11,15 @@ function getPostCommitFileContents(autoRotate) {
   return `#!/bin/sh
 
 body=$(git log -1 HEAD --format="%b")
-co_authors=$(git config --global git-switch.co-authors)
+author=$(git log -1 HEAD --format="%an <%ae>")
+co_authors_string=$(git config --global git-switch.co-authors)
+co_authors=$(echo $co_authors_string | tr ";" "\n")
+
+echo -e "git-switch > Author:\\n  $author"
 
 if [[ "$body" != *$co_authors ]]; then
   subject=$(git log -1 HEAD --format="%s")
-  author=$(git log -1 HEAD --format="%an <%ae>")
 
-  echo -e "git-switch > Author:\\n  $author"
   echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
   echo ""
 

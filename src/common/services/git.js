@@ -15,7 +15,7 @@ export async function setAuthor(name, email) {
 export async function setCoAuthors(coAuthors) {
   const value = coAuthors
     .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
-    .join('\n')
+    .join(';')
 
   await execute(`git config --global git-switch.co-authors "${value}"`)
 }
