@@ -32,7 +32,7 @@ describe('services/git', () => {
       ]
       const expectedCoAuthorValue = coAuthors
         .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
-        .join('\n')
+        .join(';')
 
       await subject.setCoAuthors(coAuthors)
 

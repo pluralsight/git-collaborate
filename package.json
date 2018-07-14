@@ -1,6 +1,6 @@
 {
   "name": "git-switch",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Cross-platform electron app for managing git users while pair/mob programming",
   "main": "src/index.js",
   "scripts": {
