@@ -3,51 +3,22 @@ import fs from 'fs'
 import * as sinon from 'sinon'
 
 import * as gitService from '../../services/git'
-import subject, { GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
+import subject, { GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
 import * as repoService from '../../services/repo'
 import * as userService from '../../services/user'
-
-function getPostCommitFileContents(autoRotate) {
-  return `#!/bin/sh
-
-body=$(git log -1 HEAD --format="%b")
-author=$(git log -1 HEAD --format="%an <%ae>")
-co_authors_string=$(git config --global git-switch.co-authors)
-co_authors=$(echo $co_authors_string | tr ";" "\n")
-
-echo -e "git-switch > Author:\\n  $author"
-
-if [[ "$body" != *$co_authors ]]; then
-  subject=$(git log -1 HEAD --format="%s")
-
-  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
-  echo ""
-
-  if [[ "$body" == Co-Authored-By* ]]; then
-    body=$co_authors
-  else
-    body=\${body//Co-Authored-By*/}
-    body="$body\n\n$co_authors"
-  fi
-
-  git commit --amend --no-verify --message="$subject\n\n$body"
-
-  echo ""
-  echo "git-switch > Rotating author and co-author(s)"
-  ${autoRotate}
-fi
-`
-}
 
 describe('utils/install', () => {
   let gitSwitchDirExists
   let configFileExsists
   let postCommitFileExists
+  let gitLogCoAuthorFileExists
   let appExecutablePath
   let autoRotate
   let platform
   let postCommitFileContents
+  let gitLogCoAuthorFileContents
   let existingPostCommitFileContents
+  let existingGitLogCoAuthorFileContents
   let existingRepos
   let users
 
@@ -55,11 +26,14 @@ describe('utils/install', () => {
     gitSwitchDirExists = true
     configFileExsists = true
     postCommitFileExists = true
+    gitLogCoAuthorFileExists = true
     appExecutablePath = '/foo/bar'
     autoRotate = '/foo/bar rotate > /dev/null 2>&1 &'
     platform = 'linux'
     postCommitFileContents = getPostCommitFileContents(autoRotate)
+    gitLogCoAuthorFileContents = getGitLogCoAuthorFileContents()
     existingPostCommitFileContents = postCommitFileContents
+    existingGitLogCoAuthorFileContents = gitLogCoAuthorFileContents
     existingRepos = []
     users = []
 
@@ -67,10 +41,14 @@ describe('utils/install', () => {
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
-    sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitFileContents)
+      .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => gitLogCoAuthorFileExists)
+    sinon.stub(fs, 'readFileSync')
+      .withArgs(POST_COMMIT_FILE).callsFake(() => existingPostCommitFileContents)
+      .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
     sinon.stub(repoService, 'get').callsFake(() => existingRepos)
     sinon.stub(userService, 'get').callsFake(() => users)
     sinon.stub(gitService, 'updateAuthorAndCoAuthors')
+    sinon.stub(gitService, 'setGitLogAlias')
   })
   afterEach(() => {
     fs.existsSync.restore()
@@ -78,6 +56,7 @@ describe('utils/install', () => {
     repoService.get.restore()
     userService.get.restore()
     gitService.updateAuthorAndCoAuthors.restore()
+    gitService.setGitLogAlias.restore()
   })
 
   describe('when config directory does not exist', () => {
@@ -122,7 +101,7 @@ describe('utils/install', () => {
 
     it('creates .git-switch/post-commit', () => {
       subject(platform, appExecutablePath)
-      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
     })
 
     describe('when app executable is electron', () => {
@@ -136,13 +115,13 @@ describe('utils/install', () => {
 
       it('the post-commit file auto rotates by changing dirs and running npm', () => {
         subject(platform, appExecutablePath)
-        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('ignores case on electron path basename', async () => {
         appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/Electron'
         subject(platform, appExecutablePath)
-        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
 
@@ -156,7 +135,7 @@ describe('utils/install', () => {
 
       it('escapes and backgrounds the autoRotate specific to the platform', () => {
         subject(platform, appExecutablePath)
-        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
   })
@@ -165,9 +144,11 @@ describe('utils/install', () => {
     beforeEach(() => {
       existingRepos = [{ path: 'repo/one' }, { path: 'repo/two' }]
       sinon.stub(repoService, 'add')
+      sinon.stub(fs, 'writeFileSync')
     })
     afterEach(() => {
       repoService.add.restore()
+      fs.writeFileSync.restore()
     })
 
     it('re-initializes all the repos', () => {
@@ -187,15 +168,11 @@ describe('utils/install', () => {
     describe('when post-commit file is outdated', () => {
       beforeEach(() => {
         existingPostCommitFileContents = 'outdated-content-here'
-        sinon.stub(fs, 'writeFileSync')
-      })
-      afterEach(() => {
-        fs.writeFileSync.restore()
       })
 
       it('updates .git-switch/post-commit', () => {
         subject(platform, appExecutablePath)
-        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('re-initializes all the repos', () => {
@@ -212,5 +189,152 @@ describe('utils/install', () => {
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
       })
     })
+
+    describe('when git-log-co-author file does not exist', () => {
+      beforeEach(() => {
+        gitLogCoAuthorFileExists = false
+      })
+
+      it('creates .git-switch/git-log-co-authors', () => {
+        subject(platform, appExecutablePath)
+        expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
+      })
+
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath)
+        expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
+      })
+    })
+
+    describe('when git-log-co-author is outdated', () => {
+      beforeEach(() => {
+        existingGitLogCoAuthorFileContents = 'outdated-content-here'
+      })
+
+      it('creates .git-switch/git-log-co-authors', () => {
+        subject(platform, appExecutablePath)
+        expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
+      })
+
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath)
+        expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
+      })
+    })
   })
 })
+
+function getPostCommitFileContents(autoRotate) {
+  return `#!/bin/sh
+
+body=$(git log -1 HEAD --format="%b")
+author=$(git log -1 HEAD --format="%an <%ae>")
+co_authors_string=$(git config --global git-switch.co-authors)
+co_authors=$(echo $co_authors_string | tr ";" "\n")
+
+echo -e "git-switch > Author:\\n  $author"
+
+if [[ "$body" != *$co_authors ]]; then
+  subject=$(git log -1 HEAD --format="%s")
+
+  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
+  echo ""
+
+  if [[ "$body" == Co-Authored-By* ]]; then
+    body=$co_authors
+  else
+    body=\${body//Co-Authored-By*/}
+    body="$body\n\n$co_authors"
+  fi
+
+  git commit --amend --no-verify --message="$subject\n\n$body"
+
+  echo ""
+  echo "git-switch > Rotating author and co-author(s)"
+  ${autoRotate}
+fi
+`
+}
+
+function getGitLogCoAuthorFileContents() {
+  return `#!/bin/bash
+
+# Pretty formatting for git logs with github's co-author support.
+
+commitHash=''
+nextHash=''
+author=''
+date=''
+description=''
+summary=''
+coAuthors=()
+
+us=$'\\037'
+OIFS=$IFS
+RED='\\033[01;31m'
+GREEN='\\033[01;32m'
+YELLOW='\\033[01;33m'
+BLUE='\\033[01;34m'
+MAGEN='\\033[01;35m'
+CYAN='\\033[01;36m'
+WHITE='\\033[01;37m'
+
+function main {
+  git log --pretty=format:"commitHash %h$us(%ar)$us%d$us%s$us<%an>$us%b" |
+  sed '/^[[:blank:]]*$/d' |
+  parseGitLog |
+  less -R
+}
+
+function parseGitLog {
+  IFS=$us
+  while read data
+  do
+    if [[ $data =~ (commitHash )(.*) ]]; then
+      a=($data)
+      nextHash=$( echo \${a[0]} | sed -e "s/commitHash \\(.*\\)/\\1/" );
+      if [[ $nextHash != $commitHash ]] && [[ $commitHash != '' ]]; then
+        printCommit
+      fi
+      commitHash=$nextHash
+      date=\${a[1]}
+      branch=\${a[2]}
+      summary=\${a[3]}
+      author=\${a[4]}
+      coAuthors=()
+      possibleCoAuthor=\${a[5]}
+    else
+      possibleCoAuthor=$data
+    fi
+    extractCoAuthor $possibleCoAuthor
+  done
+
+  printCommit
+  IFS=$OIFS
+}
+
+function extractCoAuthor {
+  if [[ $1 =~ (Co-Authored-By: )(.*)( <.*) ]]; then
+    authorFound=\${BASH_REMATCH[2]}
+    coAuthors+=($authorFound)
+  fi
+}
+
+function printCommit {
+  if [ \${#coAuthors[@]} -eq 0 ]; then
+    coAuthors=''
+  else
+    CIFS=$IFS
+    IFS=$OIFS
+    coAuthors=$(join_by ', ' "\${coAuthors[@]}")
+    IFS=$CIFS
+    coAuthors="($coAuthors)"
+  fi
+  echo -e "\${CYAN}$commitHash \${YELLOW}$date \${WHITE}-\${MAGEN}$branch \${WHITE}$summary \${BLUE}$author \${GREEN}$coAuthors"
+}
+
+function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "\${@/#/$d}"; }
+
+main
+`
+}

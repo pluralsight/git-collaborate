@@ -31,19 +31,8 @@ export async function updateAuthorAndCoAuthors(users) {
   await this.setCoAuthors(activeUsers)
 }
 
-function makeFileExecutable(destination) {
-  // get current permissions in octal form (i.e. 755, 644)
-  const file = fs.statSync(destination)
-  const filePermissions = (file.mode & parseInt('777', 8)).toString(8)
-
-  let newPermissions = '0'
-  for (let char of filePermissions) {
-    newPermissions += parseInt(char) % 2 === 0
-      ? (parseInt(char) + 1).toString()
-      : char
-  }
-
-  fs.chmodSync(destination, newPermissions)
+export async function setGitLogAlias(scriptPath) {
+  await execute(`git config --global alias.lg "!${scriptPath}"`)
 }
 
 function copyGitSwitchPostCommit(gitHooksPath) {
@@ -51,10 +40,9 @@ function copyGitSwitchPostCommit(gitHooksPath) {
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
 
   const readPostCommit = fs.createReadStream(source, 'utf-8')
-  const writePostCommit = fs.createWriteStream(destination, 'utf-8')
+  const writePostCommit = fs.createWriteStream(destination, { encoding: 'utf-8', mode: 0o755 })
 
   readPostCommit.pipe(writePostCommit)
-  makeFileExecutable(destination)
 }
 
 function mergePostCommitScripts(postCommitFile) {
@@ -73,8 +61,7 @@ function writePostCommit(gitHooksPath) {
     ? mergePostCommitScripts(postCommitFile)
     : POST_COMMIT_BASE
 
-  fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
-  makeFileExecutable(postCommitFile)
+  fs.writeFileSync(postCommitFile, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
 }
 
 function addPostCommitFiles(destination) {
@@ -119,7 +106,7 @@ function removePostCommitScript(gitHooksPath) {
       fs.unlinkSync(postCommitFile)
     } else {
       postCommitScript = postCommitScript.replace(POST_COMMIT_BASE, '#!/bin/bash')
-      fs.writeFileSync(postCommitFile, postCommitScript, 'utf-8')
+      fs.writeFileSync(postCommitFile, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
     }
   }
 }
