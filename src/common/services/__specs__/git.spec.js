@@ -123,6 +123,13 @@ describe('services/git', () => {
     })
   })
 
+  describe('#setGitLogAlias', () => {
+    it('executes a git command to set the `git lg` alias', async () => {
+      await subject.setGitLogAlias('path/to/git/log/script')
+      expect(execute.default).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
+    })
+  })
+
   describe('#initRepo', () => {
     let repoPath
     let pathExists
@@ -148,13 +155,11 @@ describe('services/git', () => {
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
-      sinon.stub(fs, 'statSync').callsFake(() => ({ mode: 33188, isDirectory: () => isSubmoduleDir }))
-      sinon.stub(fs, 'chmodSync')
+      sinon.stub(fs, 'statSync').callsFake(() => ({ isDirectory: () => isSubmoduleDir }))
     })
     afterEach(() => {
       fs.existsSync.restore()
       fs.statSync.restore()
-      fs.chmodSync.restore()
     })
 
     describe('when path is a git repo', () => {
@@ -189,19 +194,13 @@ describe('services/git', () => {
         subject.initRepo(repoPath)
         readStream.emit('data', '123')
         expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
-        expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, 'utf-8')
+        expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, { encoding: 'utf-8', mode: 0o755 })
         expect(postCommitBuffer.toString('utf-8')).to.eql('123')
-      })
-
-      it('marks the post-commit.git-switch file executable', () => {
-        subject.initRepo(repoPath)
-        expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
       })
 
       it('writes post-commit file to call post-commit.git-switch', () => {
         subject.initRepo(repoPath)
-        expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, 'utf-8')
-        expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
+        expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
 
       describe('when post-commit already exists', () => {
@@ -215,8 +214,7 @@ describe('services/git', () => {
 
           subject.initRepo(repoPath)
 
-          expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected)
-          expect(fs.chmodSync).to.have.been.calledWith(postCommitGitSwitchPath, '0755')
+          expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
         })
       })
 
@@ -242,15 +240,11 @@ describe('services/git', () => {
 
           expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
 
-          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), 'utf-8')
-          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), '0755')
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
-          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), '0755')
+          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), 'utf-8')
-          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), '0755')
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
-          expect(fs.chmodSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), '0755')
+          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
         })
 
         describe('when submodule items are not directories', () => {
@@ -261,10 +255,10 @@ describe('services/git', () => {
           it('does not install post-commit in sub-modules', () => {
             subject.initRepo(repoPath)
 
-            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), 'utf-8')
-            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), 'utf-8')
-            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
-            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, 'utf-8')
+            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
           })
         })
       })
@@ -328,7 +322,7 @@ describe('services/git', () => {
     it('removes the git switch call in post-commit', () => {
       const expected = postCommitScript.replace(postCommitGitSwitch, '')
       subject.removeRepo(repoPath)
-      expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, { encoding: 'utf-8', mode: 0o755 })
     })
 
     describe('when no other post-commit hooks exist', () => {
