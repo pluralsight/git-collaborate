@@ -8,8 +8,11 @@ import * as execute from '../../utils/exec'
 import * as subject from '../git'
 
 describe('services/git', () => {
+  let execResult
+
   beforeEach(() => {
-    sinon.stub(execute, 'default')
+    execResult = ''
+    sinon.stub(execute, 'default').callsFake(async () => execResult)
   })
   afterEach(() => {
     execute.default.restore()
@@ -190,16 +193,16 @@ describe('services/git', () => {
         fs.createWriteStream.restore()
       })
 
-      it('copies the post-commit.git-switch file', () => {
-        subject.initRepo(repoPath)
+      it('copies the post-commit.git-switch file', async () => {
+        await subject.initRepo(repoPath)
         readStream.emit('data', '123')
         expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
         expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, { encoding: 'utf-8', mode: 0o755 })
         expect(postCommitBuffer.toString('utf-8')).to.eql('123')
       })
 
-      it('writes post-commit file to call post-commit.git-switch', () => {
-        subject.initRepo(repoPath)
+      it('writes post-commit file to call post-commit.git-switch', async () => {
+        await subject.initRepo(repoPath)
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
 
@@ -208,11 +211,11 @@ describe('services/git', () => {
           postCommitExists = true
         })
 
-        it('merges git-switch call into post-commit', () => {
+        it('merges git-switch call into post-commit', async () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
-          subject.initRepo(repoPath)
+          await subject.initRepo(repoPath)
 
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
         })
@@ -220,46 +223,38 @@ describe('services/git', () => {
 
       describe('when sub-modules exist', () => {
         let submoduleDirs
+        let submoduleStatus
         let submodule1GitHooksPath
         let submodule2GitHooksPath
+        let submodule3GitHooksPath
 
         beforeEach(() => {
           submoduleExists = true
-          submoduleDirs = ['mod1', 'mod2']
+          submoduleDirs = ['mod1', 'subdir/mod2', 'subdir/mod3']
+          submoduleStatus = submoduleDirs
+            .map((dir, i) => `${i % 2 === 0 ? '+' : ' '}rando-commit-hash ${dir} (current/branch)`)
+            .join('\n') + '\n'
           submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
-          submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod2', 'hooks')
+          submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'subdir', 'mod2', 'hooks')
+          submodule3GitHooksPath = path.join(repoPath, '.git', 'modules', 'subdir', 'mod2', 'hooks')
 
-          sinon.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
-        })
-        afterEach(() => {
-          fs.readdirSync.restore()
+          execResult = submoduleStatus
         })
 
-        it('installs post-commit files in sub-modules', () => {
-          subject.initRepo(repoPath)
+        it('installs post-commit files in sub-modules', async () => {
+          await subject.initRepo(repoPath)
 
           expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
+          expect(execute.default).to.have.been.calledWith('git submodule status')
 
           expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
           expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
-        })
 
-        describe('when submodule items are not directories', () => {
-          beforeEach(() => {
-            isSubmoduleDir = false
-          })
-
-          it('does not install post-commit in sub-modules', () => {
-            subject.initRepo(repoPath)
-
-            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
-            expect(fs.createWriteStream).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
-            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
-            expect(fs.writeFileSync).to.not.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
-          })
+          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
         })
       })
     })
@@ -267,14 +262,14 @@ describe('services/git', () => {
     describe('when path does not exist', () => {
       it('throws an error', () => {
         pathExists = false
-        expect(() => subject.initRepo(repoPath)).to.throw
+        return expect(subject.initRepo(repoPath)).to.eventually.be.rejected
       })
     })
 
     describe('when path is not a git repo', () => {
       it('throws an error', () => {
         repoExists = false
-        expect(() => subject.initRepo(repoPath)).to.throw
+        return expect(subject.initRepo(repoPath)).to.eventually.be.rejected
       })
     })
   })

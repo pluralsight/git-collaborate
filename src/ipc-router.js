@@ -34,7 +34,7 @@ export default class IpcRouter {
   handleRemoveUser = (evt, userId) => evt.returnValue = userService.remove(userId)
 
   handleGetAllRepos = evt => evt.returnValue = repoService.get()
-  handleAddRepo = (evt, path) => evt.returnValue = repoService.add(path)
+  handleAddRepo = async (evt, path) => evt.returnValue = await repoService.add(path)
   handleRemoveRepo = (evt, path) => evt.returnValue = repoService.remove(path)
 
   listeners = {

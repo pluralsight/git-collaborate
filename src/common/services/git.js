@@ -69,26 +69,34 @@ function addPostCommitFiles(destination) {
   writePostCommit(destination)
 }
 
-function addPostCommitFilesToSubModules(destination) {
-  if (fs.existsSync(destination)) {
-    for (let submoduleDir of fs.readdirSync(destination)) {
-      const submodulePath = path.join(destination, submoduleDir)
-      const dir = fs.statSync(submodulePath)
+async function getSubmodulesForRepo(repoPath) {
+  const submodulesStatus = await execute('git submodule status', { cwd: repoPath })
+  const statuses = (submodulesStatus && submodulesStatus.trim().split('\n')) || []
 
-      if (dir.isDirectory())
-        addPostCommitFiles(path.join(submodulePath, 'hooks'))
-    }
+  return statuses.map(s => s.trim().split(' ')[1])
+}
+
+async function addPostCommitFilesToSubModules(repoPath) {
+  const submodulesPath = path.join(repoPath, '.git', 'modules')
+
+  if (fs.existsSync(submodulesPath)) {
+    const submodules = await getSubmodulesForRepo(repoPath)
+
+    submodules.map(modulePath => {
+      const hooksPath = path.join(submodulesPath, ...modulePath.split('/'), 'hooks')
+      addPostCommitFiles(hooksPath)
+    })
   }
 }
 
-export function initRepo(repoPath) {
+export async function initRepo(repoPath) {
   if (!fs.existsSync(repoPath))
     throw new Error('The specified path does not exist')
   if (!fs.existsSync(path.join(repoPath, '.git')))
     throw new Error('The specified path does not contain a ".git" directory')
 
   addPostCommitFiles(path.join(repoPath, '.git', 'hooks'))
-  addPostCommitFilesToSubModules(path.join(repoPath, '.git', 'modules'))
+  await addPostCommitFilesToSubModules(repoPath)
 }
 
 function removeGitSwitchPostCommitScript(gitHooksPath) {
