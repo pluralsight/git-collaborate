@@ -11,11 +11,11 @@ export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-author')
 
-export default function(platform, appExecutablePath) {
+export default async function(platform, appExecutablePath) {
   installConfigFile()
 
   const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
-  installPostCommitHook(autoRotate)
+  await installPostCommitHook(autoRotate)
   installGitLogCoAuthorsScript()
 
   initializeGitConfig()
@@ -48,7 +48,7 @@ function getAutoRotateCommand(platform, appExecutablePath) {
   return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} rotate${postpend}`
 }
 
-function installPostCommitHook(autoRotate) {
+async function installPostCommitHook(autoRotate) {
   const postCommitScript = `#!/bin/sh
 
 body=$(git log -1 HEAD --format="%b")
@@ -89,7 +89,7 @@ fi
   const repos = repoService.get()
   for (const repo of repos) {
     console.log(`Writing post-commit hook to repo "${repo.path}"`)
-    repoService.add(repo.path)
+    await repoService.add(repo.path)
   }
 }
 
