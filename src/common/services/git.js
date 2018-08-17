@@ -32,7 +32,7 @@ export async function updateAuthorAndCoAuthors(users) {
 }
 
 export async function setGitLogAlias(scriptPath) {
-  await execute(`git config --global alias.lg "!${scriptPath}"`)
+  await execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
 }
 
 function copyGitSwitchPostCommit(gitHooksPath) {

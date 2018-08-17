@@ -131,6 +131,11 @@ describe('services/git', () => {
       await subject.setGitLogAlias('path/to/git/log/script')
       expect(execute.default).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
     })
+
+    it('converts `\\` to `/`', async () => {
+      await subject.setGitLogAlias('windows\\style\\path\\to\\git\\log\\script')
+      expect(execute.default).to.have.been.calledWith('git config --global alias.lg "!windows/style/path/to/git/log/script"')
+    })
   })
 
   describe('#initRepo', () => {
