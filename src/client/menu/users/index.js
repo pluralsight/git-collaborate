@@ -54,8 +54,8 @@ export default class Users extends React.Component {
       <li styleName={`user ${user.active ? 'active' : 'inactive'}`} key={user.id} onClick={this.handleToggleActiveUser(user)}>
         <div styleName="avatar">
           <div styleName="avatar-image" style={{ backgroundImage: `url("${photoUrl}")` }} />
-          <div styleName="deactivate-icon"><ClearIcon styleName="deactivate-icon-icon" /></div>
-          <div styleName="activate-icon"><ClearIcon styleName="activate-icon-icon" /></div>
+          <div styleName="deactivate-icon"><ClearIcon styleName="deactivate-icon-icon button-icon" /></div>
+          <div styleName="activate-icon"><ClearIcon styleName="activate-icon-icon button-icon" /></div>
         </div>
         <div styleName="user-info">
           <div styleName="name">{user.name}</div>
@@ -86,7 +86,9 @@ export default class Users extends React.Component {
         <div styleName="users-list-header">
           <span>Active</span>
           <div styleName="buttons">
-            <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}><RotateIcon /></Button>
+            <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}>
+              <RotateIcon styleName="button-icon" />
+            </Button>
           </div>
         </div>
         <ul styleName="users-list">

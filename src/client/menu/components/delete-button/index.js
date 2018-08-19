@@ -8,7 +8,9 @@ import css from './index.css'
 
 function DeleteButton(props) {
   return (
-    <div styleName="container" onClick={props.onClick}><BinIcon /></div>
+    <div styleName="container" onClick={props.onClick}>
+      <BinIcon />
+    </div>
   )
 }
 
