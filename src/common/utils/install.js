@@ -88,7 +88,6 @@ fi
 
   const repos = repoService.get()
   for (const repo of repos) {
-    console.log(`Writing post-commit hook to repo "${repo.path}"`)
     await repoService.add(repo.path)
   }
 }

@@ -5,6 +5,7 @@ import { array, func } from 'prop-types'
 
 import Button from '../components/button'
 import DeleteButton from '../components/delete-button'
+import RefreshButton from '../components/refresh-button'
 
 import css from './index.css'
 
@@ -36,6 +37,9 @@ export default class Repositories extends React.Component {
       this.props.onRepoAdded(path)
     }
   }
+  handleRefreshRepo = repo => () => {
+    this.props.onRepoAdded(repo.path)
+  }
   handleRemoveRepo = repo => () => {
     this.props.onRepoRemoved(repo.path)
   }
@@ -60,6 +64,7 @@ export default class Repositories extends React.Component {
         </div>
         <div styleName="repo-path">{repo.path}</div>
       </div>
+      <RefreshButton onClick={this.handleRefreshRepo(repo)} />
       <DeleteButton onClick={this.handleRemoveRepo(repo)} />
     </li>
   )
