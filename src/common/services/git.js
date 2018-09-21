@@ -82,7 +82,7 @@ async function addPostCommitFilesToSubModules(repoPath) {
   if (fs.existsSync(submodulesPath)) {
     const submodules = await getSubmodulesForRepo(repoPath)
 
-    submodules.map(modulePath => {
+    submodules.forEach(modulePath => {
       const hooksPath = path.join(submodulesPath, ...modulePath.split('/'), 'hooks')
       addPostCommitFiles(hooksPath)
     })
