@@ -78,7 +78,7 @@
     "fs-extra": "4.0.1",
     "html-webpack-plugin": "2.29.0",
     "husky": "0.14.3",
-    "lodash": "4.6.0",
+    "lodash.orderby": "4.6.0",
     "mocha": "5.2.0",
     "normalize.css": "5.0.0",
     "postcss-cssnext": "2.9.0",

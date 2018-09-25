@@ -1,4 +1,4 @@
-import capitalize from 'lodash/capitalize'
+import capitalize from 'lodash.capitalize'
 
 export function formatActiveUserFirstNames(users) {
   const activeUserFirstNames = users.filter(u => u.active).map(u => u.name.split(' ')[0])
