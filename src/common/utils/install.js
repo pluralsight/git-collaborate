@@ -116,7 +116,7 @@ CYAN='\\033[01;36m'
 WHITE='\\033[01;37m'
 
 function main {
-  git log --pretty=format:"commitHash %h$us(%ar)$us%d$us%s$us<%an>$us%b" |
+  git log --date=short --pretty=format:"commitHash %h$us(%ad, %ar)$us%d$us%s$us<%an>$us%b" |
   sed '/^[[:blank:]]*$/d' |
   parseGitLog |
   less -R
