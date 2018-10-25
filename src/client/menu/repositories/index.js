@@ -33,7 +33,7 @@ export default class Repositories extends React.Component {
   }
   handleNewRepoSelected = paths => {
     this.setState({ isSelectingRepos: false })
-    for (const path of paths) {
+    for (const path of paths || []) {
       this.props.onRepoAdded(path)
     }
   }
