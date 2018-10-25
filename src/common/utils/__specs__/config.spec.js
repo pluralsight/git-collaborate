@@ -2,9 +2,9 @@ import { expect } from 'chai'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import * as sinon from 'sinon'
 
 import * as subject from '../config'
+import sandbox from '../../../../test/sandbox'
 
 const FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 
@@ -23,12 +23,11 @@ describe('utils/config', () => {
       }]
     }
 
-    sinon.stub(fs, 'existsSync').callsFake(() => configExists)
-    sinon.stub(fs, 'readFileSync').callsFake(() => JSON.stringify(config, null, 2))
+    sandbox.stub(fs, 'existsSync').callsFake(() => configExists)
+    sandbox.stub(fs, 'readFileSync').callsFake(() => JSON.stringify(config, null, 2))
   })
   afterEach(() => {
-    fs.existsSync.restore()
-    fs.readFileSync.restore()
+    sandbox.restore()
   })
 
   describe('#read', () => {
@@ -46,10 +45,7 @@ describe('utils/config', () => {
 
   describe('#write', () => {
     beforeEach(() => {
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
+      sandbox.stub(fs, 'writeFileSync')
     })
 
     it('merges existing config with new config', () => {

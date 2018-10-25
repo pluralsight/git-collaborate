@@ -1,9 +1,9 @@
 import { expect } from 'chai'
-import * as sinon from 'sinon'
 import uuid from 'uuid/v4'
 
 import * as configUtil from '../../utils/config'
 import * as gitService from '../git'
+import sandbox from '../../../../test/sandbox'
 import * as subject from '../user'
 
 describe('services/user', () => {
@@ -26,15 +26,13 @@ describe('services/user', () => {
     }]
     config = { users }
 
-    sinon.stub(configUtil, 'read').callsFake(() => config)
-    sinon.stub(configUtil, 'write')
-    sinon.stub(gitService, 'updateAuthorAndCoAuthors')
+    sandbox.stub(configUtil, 'read').callsFake(() => config)
+    sandbox.stub(configUtil, 'write')
+    sandbox.stub(gitService, 'updateAuthorAndCoAuthors')
   })
 
   afterEach(() => {
-    configUtil.read.restore()
-    configUtil.write.restore()
-    gitService.updateAuthorAndCoAuthors.restore()
+    sandbox.restore()
   })
 
   describe('#get', () => {
@@ -153,7 +151,9 @@ describe('services/user', () => {
     })
 
     describe('when a pair is active', () => {
-      it('switches the pair leaving inactive users last', () => {
+      let expected
+
+      beforeEach(() => {
         users = users
           .map(u => ({ ...u, active: true }))
           .concat({
@@ -162,7 +162,7 @@ describe('services/user', () => {
             rsaKeyPath: '/foo/bar',
             active: false
           })
-        const expected = {
+        expected = {
           users: [
             users[1],
             users[0],
@@ -170,7 +170,9 @@ describe('services/user', () => {
           ]
         }
         config = { users }
+      })
 
+      it('switches the pair leaving inactive users last', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(expected.users)
@@ -180,7 +182,9 @@ describe('services/user', () => {
     })
 
     describe('when a mob is active', () => {
-      it('moves the first user to the end of active users leaving inactive users last', () => {
+      let expected
+
+      beforeEach(() => {
         users = users
           .map(u => ({ ...u, active: true }))
           .concat([{
@@ -194,7 +198,7 @@ describe('services/user', () => {
             rsaKeyPath: '/herp/derp',
             active: false
           }])
-        const expected = {
+        expected = {
           users: [
             users[1],
             users[2],
@@ -203,7 +207,9 @@ describe('services/user', () => {
           ]
         }
         config = { users }
+      })
 
+      it('moves the first user to the end of active users leaving inactive users last', () => {
         const actual = subject.rotate()
 
         expect(actual).to.eql(expected.users)

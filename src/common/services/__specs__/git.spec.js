@@ -1,21 +1,21 @@
 import { expect } from 'chai'
 import fs from 'fs'
 import path from 'path'
-import * as sinon from 'sinon'
 import { Readable, Writable } from 'stream'
 
 import * as execute from '../../utils/exec'
 import * as subject from '../git'
+import sandbox from '../../../../test/sandbox'
 
 describe('services/git', () => {
   let execResult
 
   beforeEach(() => {
     execResult = ''
-    sinon.stub(execute, 'default').callsFake(async () => execResult)
+    sandbox.stub(execute, 'default').callsFake(async () => execResult)
   })
   afterEach(() => {
-    execute.default.restore()
+    sandbox.restore()
   })
 
   describe('#setAuthor', () => {
@@ -52,8 +52,8 @@ describe('services/git', () => {
     let users
 
     beforeEach(() => {
-      sinon.stub(subject, 'setAuthor')
-      sinon.stub(subject, 'setCoAuthors')
+      sandbox.stub(subject, 'setAuthor')
+      sandbox.stub(subject, 'setCoAuthors')
 
       users = [{
         name: 'First User',
@@ -76,11 +76,6 @@ describe('services/git', () => {
         rsaKeyPath: '/not/a/real/path',
         active: false
       }]
-    })
-
-    afterEach(() => {
-      subject.setAuthor.restore()
-      subject.setCoAuthors.restore()
     })
 
     describe('when there is one active user', () => {
@@ -158,16 +153,12 @@ describe('services/git', () => {
       postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
 
-      sinon.stub(fs, 'existsSync')
+      sandbox.stub(fs, 'existsSync')
         .withArgs(repoPath).callsFake(() => pathExists)
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
-      sinon.stub(fs, 'statSync').callsFake(() => ({ isDirectory: () => isSubmoduleDir }))
-    })
-    afterEach(() => {
-      fs.existsSync.restore()
-      fs.statSync.restore()
+      sandbox.stub(fs, 'statSync').callsFake(() => ({ isDirectory: () => isSubmoduleDir }))
     })
 
     describe('when path is a git repo', () => {
@@ -186,16 +177,10 @@ describe('services/git', () => {
           }
         })
 
-        sinon.stub(fs, 'readFileSync').callsFake(() => existingPostCommitScript)
-        sinon.stub(fs, 'writeFileSync')
-        sinon.stub(fs, 'createReadStream').callsFake(() => readStream)
-        sinon.stub(fs, 'createWriteStream').callsFake(() => writeStream)
-      })
-      afterEach(() => {
-        fs.readFileSync.restore()
-        fs.writeFileSync.restore()
-        fs.createReadStream.restore()
-        fs.createWriteStream.restore()
+        sandbox.stub(fs, 'readFileSync').callsFake(() => existingPostCommitScript)
+        sandbox.stub(fs, 'writeFileSync')
+        sandbox.stub(fs, 'createReadStream').callsFake(() => readStream)
+        sandbox.stub(fs, 'createWriteStream').callsFake(() => writeStream)
       })
 
       it('copies the post-commit.git-switch file', async () => {
@@ -296,22 +281,16 @@ describe('services/git', () => {
       postCommitScript = `#!/bin/bash${postCommitGitSwitch}\n\necho "Committed"`
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
 
-      sinon.stub(fs, 'existsSync')
+      sandbox.stub(fs, 'existsSync')
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit.git-switch')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
         .withArgs(postCommitGitSwitchPath).callsFake(() => postCommitGitSwitchExists)
-      sinon.stub(fs, 'unlinkSync')
-      sinon.stub(fs, 'readFileSync').callsFake(() => postCommitScript)
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.existsSync.restore()
-      fs.unlinkSync.restore()
-      fs.readFileSync.restore()
-      fs.writeFileSync.restore()
+      sandbox.stub(fs, 'unlinkSync')
+      sandbox.stub(fs, 'readFileSync').callsFake(() => postCommitScript)
+      sandbox.stub(fs, 'writeFileSync')
     })
 
     it('deletes the post-commit.git-switch file', () => {
@@ -340,10 +319,7 @@ describe('services/git', () => {
       beforeEach(() => {
         submoduleExists = true
         postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
-        sinon.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
-      })
-      afterEach(() => {
-        fs.readdirSync.restore()
+        sandbox.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
       })
 
       it('removes post-commit files in sub-modules', () => {

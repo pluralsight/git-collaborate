@@ -1,10 +1,10 @@
 import { expect } from 'chai'
 import fs from 'fs'
-import * as sinon from 'sinon'
 
 import * as gitService from '../../services/git'
 import subject, { GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
 import * as repoService from '../../services/repo'
+import sandbox from '../../../../test/sandbox'
 import * as userService from '../../services/user'
 
 describe('utils/install', () => {
@@ -37,36 +37,27 @@ describe('utils/install', () => {
     existingRepos = []
     users = []
 
-    sinon.stub(fs, 'existsSync')
+    sandbox.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => gitLogCoAuthorFileExists)
-    sinon.stub(fs, 'readFileSync')
+    sandbox.stub(fs, 'readFileSync')
       .withArgs(POST_COMMIT_FILE).callsFake(() => existingPostCommitFileContents)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
-    sinon.stub(repoService, 'get').callsFake(() => existingRepos)
-    sinon.stub(userService, 'get').callsFake(() => users)
-    sinon.stub(gitService, 'updateAuthorAndCoAuthors')
-    sinon.stub(gitService, 'setGitLogAlias')
+    sandbox.stub(repoService, 'get').callsFake(() => existingRepos)
+    sandbox.stub(userService, 'get').callsFake(() => users)
+    sandbox.stub(gitService, 'updateAuthorAndCoAuthors')
+    sandbox.stub(gitService, 'setGitLogAlias')
   })
   afterEach(() => {
-    fs.existsSync.restore()
-    fs.readFileSync.restore()
-    repoService.get.restore()
-    userService.get.restore()
-    gitService.updateAuthorAndCoAuthors.restore()
-    gitService.setGitLogAlias.restore()
+    sandbox.restore()
   })
 
   describe('when config directory does not exist', () => {
-    afterEach(() => {
-      fs.mkdirSync.restore()
-    })
-
     it('creates the .git-switch directory', async () => {
       gitSwitchDirExists = false
-      sinon.stub(fs, 'mkdirSync')
+      sandbox.stub(fs, 'mkdirSync')
 
       await subject(platform, appExecutablePath)
 
@@ -75,13 +66,9 @@ describe('utils/install', () => {
   })
 
   describe('when config files does not exist', () => {
-    afterEach(() => {
-      fs.writeFileSync.restore()
-    })
-
     it('creates .git-switch/config.json', async () => {
       configFileExsists = false
-      sinon.stub(fs, 'writeFileSync')
+      sandbox.stub(fs, 'writeFileSync')
 
       await subject(platform, appExecutablePath)
 
@@ -93,10 +80,7 @@ describe('utils/install', () => {
     beforeEach(() => {
       postCommitFileExists = false
 
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      fs.writeFileSync.restore()
+      sandbox.stub(fs, 'writeFileSync')
     })
 
     it('creates .git-switch/post-commit', async () => {
@@ -143,12 +127,8 @@ describe('utils/install', () => {
   describe('when the config file exists', () => {
     beforeEach(() => {
       existingRepos = [{ path: 'repo/one' }, { path: 'repo/two' }]
-      sinon.stub(repoService, 'add')
-      sinon.stub(fs, 'writeFileSync')
-    })
-    afterEach(() => {
-      repoService.add.restore()
-      fs.writeFileSync.restore()
+      sandbox.stub(repoService, 'add')
+      sandbox.stub(fs, 'writeFileSync')
     })
 
     it('re-initializes all the repos', async () => {

@@ -1,9 +1,9 @@
 import { expect } from 'chai'
-import * as sinon from 'sinon'
 
 import * as configUtil from '../../utils/config'
 import * as gitService from '../git'
 import * as subject from '../repo'
+import sandbox from '../../../../test/sandbox'
 
 describe('services/repo', () => {
   let repos
@@ -15,10 +15,10 @@ describe('services/repo', () => {
       { name: 'two', path: '/repo/two', isValid: true }
     ]
     config = { repos }
-    sinon.stub(configUtil, 'read').callsFake(() => config)
+    sandbox.stub(configUtil, 'read').callsFake(() => config)
   })
   afterEach(() => {
-    configUtil.read.restore()
+    sandbox.restore()
   })
 
   describe('#get', () => {
@@ -36,11 +36,7 @@ describe('services/repo', () => {
 
   describe('#add', () => {
     beforeEach(() => {
-      sinon.stub(configUtil, 'write')
-    })
-    afterEach(() => {
-      gitService.initRepo.restore()
-      configUtil.write.restore()
+      sandbox.stub(configUtil, 'write')
     })
 
     it('adds repo to config sorted by name', async () => {
@@ -49,7 +45,7 @@ describe('services/repo', () => {
         { name: 'bar', path: newRepo, isValid: true },
         ...repos
       ]
-      sinon.stub(gitService, 'initRepo')
+      sandbox.stub(gitService, 'initRepo')
 
       const actual = await subject.add(newRepo)
 
@@ -61,7 +57,7 @@ describe('services/repo', () => {
     describe('when a repo with the path already exists', () => {
       it('re-initializes the repo', async () => {
         const existingRepo = '/repo/one'
-        sinon.stub(gitService, 'initRepo')
+        sandbox.stub(gitService, 'initRepo')
         const expected = [
           { name: 'one', path: existingRepo, isValid: true },
           repos[1]
@@ -77,7 +73,7 @@ describe('services/repo', () => {
 
     describe('when git service fails to init repo hooks', () => {
       it('adds the repo with isValid set to false', async () => {
-        sinon.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
+        sandbox.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
         const expected = [
           { name: 'bar-2', path: '/foo/bar-2', isValid: false },
           ...repos
@@ -95,12 +91,8 @@ describe('services/repo', () => {
 
     beforeEach(() => {
       removeRepoStub = () => { }
-      sinon.stub(gitService, 'removeRepo').callsFake(removeRepoStub)
-      sinon.stub(configUtil, 'write')
-    })
-    afterEach(() => {
-      gitService.removeRepo.restore()
-      configUtil.write.restore()
+      sandbox.stub(gitService, 'removeRepo').callsFake(removeRepoStub)
+      sandbox.stub(configUtil, 'write')
     })
 
     it('removes the repo from config', () => {
