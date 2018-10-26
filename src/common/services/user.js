@@ -10,8 +10,6 @@ export function get() {
 
 function persist(users) {
   config.write({ users })
-
-  return users
 }
 
 function updateExternalServices(users) {
@@ -24,10 +22,10 @@ export function add({ name, email, rsaKeyPath }) {
   const id = uuid()
   users.push({ id, name, email, rsaKeyPath, active: true })
 
-  const updated = persist(users)
+  persist(users)
   updateExternalServices(users)
 
-  return updated
+  return users
 }
 
 export function update(user) {
@@ -39,10 +37,10 @@ export function update(user) {
     users.push(user)
   }
 
-  const updated = persist(users)
+  persist(users)
   updateExternalServices(users)
 
-  return updated
+  return users
 }
 
 export function remove(id) {
@@ -52,10 +50,10 @@ export function remove(id) {
 
   users.splice(foundIndex, 1)
 
-  const updated = persist(users)
+  persist(users)
   updateExternalServices(users)
 
-  return updated
+  return users
 }
 
 export function rotate() {
@@ -70,10 +68,10 @@ export function rotate() {
     ...inactiveUsers
   ]
 
-  const updated = persist(updatedUsers)
+  persist(updatedUsers)
   updateExternalServices(updatedUsers)
 
-  return updated
+  return updatedUsers
 }
 
 export function toggleActive(id) {
@@ -91,8 +89,8 @@ export function toggleActive(id) {
     ...inactiveUsers
   ]
 
-  const updated = persist(updatedUsers)
+  persist(updatedUsers)
   updateExternalServices(updatedUsers)
 
-  return updated
+  return updatedUsers
 }
