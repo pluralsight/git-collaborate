@@ -4,6 +4,7 @@ import uuid from 'uuid/v4'
 import * as configUtil from '../../utils/config'
 import * as gitService from '../git'
 import sandbox from '../../../../test/sandbox'
+import * as sshService from '../ssh'
 import * as subject from '../user'
 
 describe('services/user', () => {
@@ -29,6 +30,7 @@ describe('services/user', () => {
     sandbox.stub(configUtil, 'read').callsFake(() => config)
     sandbox.stub(configUtil, 'write')
     sandbox.stub(gitService, 'updateAuthorAndCoAuthors')
+    sandbox.stub(sshService, 'rotateIdentityFile')
   })
 
   afterEach(() => {
@@ -49,13 +51,13 @@ describe('services/user', () => {
   })
 
   describe('#add', () => {
-    it('adds user to config', () => {
-      const userToAdd = {
-        name: 'New User',
-        email: 'new@email.com',
-        rsaKeyPath: '/a/path/to/nowhere'
-      }
+    const userToAdd = {
+      name: 'New User',
+      email: 'new@email.com',
+      rsaKeyPath: '/a/path/to/nowhere'
+    }
 
+    it('adds user to config', () => {
       const actual = subject.add(userToAdd)
 
       const addedUser = actual[2]
@@ -65,16 +67,27 @@ describe('services/user', () => {
       expect(addedUser.email).to.eql(userToAdd.email)
       expect(addedUser.id).to.not.be.null
       expect(configUtil.write).to.have.been.calledWith(expected)
-      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(actual)
+    })
+
+    it('updates git authors and rsa keys', () => {
+      const updatedUsers = subject.add(userToAdd)
+
+      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
     })
   })
 
   describe('#update', () => {
-    it('updates the user in config', () => {
-      const userToUpdate = {
+    let userToUpdate
+
+    beforeEach(() => {
+      userToUpdate = {
         ...users[1],
         name: 'Changed Name'
       }
+    })
+
+    it('updates the user in config', () => {
       const expected = {
         users: [
           config.users[0],
@@ -86,12 +99,18 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
-      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(actual)
+    })
+
+    it('updates git authors and rsa keys', () => {
+      const updatedUsers = subject.update(userToUpdate)
+
+      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
     })
 
     describe('when updated user does not already exist', () => {
       it('adds user to config', () => {
-        const userToUpdate = {
+        userToUpdate = {
           name: 'New User',
           email: 'new@email.com',
           rsaKeyPath: '/a/path/to/nowhere'
@@ -119,7 +138,23 @@ describe('services/user', () => {
 
       expect(actual).to.eql(expected)
       expect(configUtil.write).to.have.been.calledWith(newConfig)
-      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(actual)
+    })
+
+    it('updates git authors and rsa keys', () => {
+      const updatedUsers = subject.remove(users[0].id)
+
+      expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
+    })
+
+    describe('when user does not exist', () => {
+      it('does nothing', () => {
+        subject.remove('not-a-user')
+
+        expect(configUtil.write).to.not.have.been.called
+        expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
+        expect(sshService.rotateIdentityFile).to.not.have.been.called
+      })
     })
   })
 
@@ -131,6 +166,7 @@ describe('services/user', () => {
         expect(actual).to.eql(users)
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
+        expect(sshService.rotateIdentityFile).to.not.have.been.called
       })
     })
 
@@ -147,6 +183,7 @@ describe('services/user', () => {
         expect(actual).to.eql(users)
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
+        expect(sshService.rotateIdentityFile).to.not.have.been.called
       })
     })
 
@@ -177,7 +214,13 @@ describe('services/user', () => {
 
         expect(actual).to.eql(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
+      })
+
+      it('updates git authors and rsa keys', () => {
+        subject.rotate()
+
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
+        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath)
       })
     })
 
@@ -214,12 +257,20 @@ describe('services/user', () => {
 
         expect(actual).to.eql(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
+      })
+
+      it('updates git authors and rsa keys', () => {
+        subject.rotate()
+
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
+        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath)
       })
     })
   })
 
   describe('#toggleActive', () => {
+    let expected
+
     beforeEach(() => {
       users = [
         { ...users[0], active: true },
@@ -232,23 +283,28 @@ describe('services/user', () => {
           active: false
         }
       ]
-      config = { users }
-    })
-
-    it('moves the user to the end of active users leaving inactive users last', () => {
-      const expected = {
+      expected = {
         users: [
           users[0],
           { ...users[2], active: true },
           users[1]
         ]
       }
+      config = { users }
+    })
 
+    it('moves the user to the end of active users leaving inactive users last', () => {
       const actual = subject.toggleActive(users[2].id)
 
       expect(actual).to.eql(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
+    })
+
+    it('updates git authors and rsa keys', () => {
+      subject.toggleActive(users[2].id)
+
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[0].rsaKeyPath)
     })
 
     describe('when user does not exist', () => {
@@ -257,6 +313,8 @@ describe('services/user', () => {
 
         expect(actual).to.eql(users)
         expect(configUtil.write).to.not.have.been.called
+        expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
+        expect(sshService.rotateIdentityFile).to.not.have.been.called
       })
     })
   })

@@ -2,6 +2,7 @@ import uuid from 'uuid/v4'
 
 import * as config from '../utils/config'
 import * as gitService from './git'
+import * as sshService from './ssh'
 
 export function get() {
   return config.read().users || []
@@ -13,13 +14,18 @@ function persist(users) {
   return users
 }
 
+function updateExternalServices(users) {
+  gitService.updateAuthorAndCoAuthors(users)
+  sshService.rotateIdentityFile(users[0].rsaKeyPath)
+}
+
 export function add({ name, email, rsaKeyPath }) {
   const users = get()
   const id = uuid()
   users.push({ id, name, email, rsaKeyPath, active: true })
 
   const updated = persist(users)
-  gitService.updateAuthorAndCoAuthors(users)
+  updateExternalServices(users)
 
   return updated
 }
@@ -34,7 +40,8 @@ export function update(user) {
   }
 
   const updated = persist(users)
-  gitService.updateAuthorAndCoAuthors(users)
+  updateExternalServices(users)
+
   return updated
 }
 
@@ -46,7 +53,8 @@ export function remove(id) {
   users.splice(foundIndex, 1)
 
   const updated = persist(users)
-  gitService.updateAuthorAndCoAuthors(users)
+  updateExternalServices(users)
+
   return updated
 }
 
@@ -63,7 +71,8 @@ export function rotate() {
   ]
 
   const updated = persist(updatedUsers)
-  gitService.updateAuthorAndCoAuthors(updatedUsers)
+  updateExternalServices(updatedUsers)
+
   return updated
 }
 
@@ -81,7 +90,9 @@ export function toggleActive(id) {
     user,
     ...inactiveUsers
   ]
-  const persisted = persist(updatedUsers)
-  gitService.updateAuthorAndCoAuthors(updatedUsers)
-  return persisted
+
+  const updated = persist(updatedUsers)
+  updateExternalServices(updatedUsers)
+
+  return updated
 }
