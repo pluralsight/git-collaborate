@@ -22,12 +22,13 @@ export default async function(platform, appExecutablePath) {
 }
 
 function installConfigFile() {
-  if (!fs.existsSync(GIT_SWITCH_PATH))
-    fs.mkdirSync(GIT_SWITCH_PATH)
+  if (!fs.existsSync(GIT_SWITCH_PATH)) {
+    fs.mkdirSync(GIT_SWITCH_PATH, 0o755)
+  }
 
   if (!fs.existsSync(CONFIG_FILE)) {
     console.log('Installing config file...')
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
   }
 }
 

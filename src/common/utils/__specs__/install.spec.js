@@ -61,18 +61,18 @@ describe('utils/install', () => {
 
       await subject(platform, appExecutablePath)
 
-      expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH)
+      expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH, 0o755)
     })
   })
 
-  describe('when config files does not exist', () => {
+  describe('when config file does not exist', () => {
     it('creates .git-switch/config.json', async () => {
       configFileExsists = false
       sandbox.stub(fs, 'writeFileSync')
 
       await subject(platform, appExecutablePath)
 
-      expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
     })
   })
 
