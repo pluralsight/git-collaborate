@@ -59,7 +59,7 @@ describe('utils/config', () => {
 
       subject.write(newConfig)
 
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2), 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(expected, null, 2), { encoding: 'utf-8', mode: 0o644 })
     })
 
     it('over-writes existing keys', () => {
@@ -74,7 +74,7 @@ describe('utils/config', () => {
 
       subject.write(newConfig)
 
-      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(newConfig, null, 2), 'utf-8')
+      expect(fs.writeFileSync).to.have.been.calledWith(FILE, JSON.stringify(newConfig, null, 2), { encoding: 'utf-8', mode: 0o644 })
     })
   })
 })

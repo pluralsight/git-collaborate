@@ -24,5 +24,5 @@ export function write(newConfig) {
     ...newConfig
   }
 
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8')
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: 'utf-8', mode: 0o644 })
 }
