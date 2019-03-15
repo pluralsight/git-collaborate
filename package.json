@@ -44,6 +44,8 @@
     "babel-preset-es2017": "6.16.0",
     "babel-preset-react": "6.22.0",
     "babel-preset-stage-0": "6.22.0",
+    "electron-compile": "6.4.2",
+    "electron-squirrel-startup": "1.0.0",
     "lodash.capitalize": "4.2.1",
     "lodash.orderby": "4.6.0",
     "md5": "2.2.1",
@@ -95,7 +97,13 @@
     "webpack-dev-server": "3.2.0"
   },
   "resolutions": {
-    "minimatch": "^3.0.2"
+    "minimatch": "^3.0.2",
+    "atob": "^2.1.0",
+    "cryptiles": "4.1.2",
+    "lodash": "^4.17.11",
+    "mime": "^1.4.1",
+    "hoek": "^4.2.1",
+    "uglify-js": "^2.6.0"
   },
   "config": {
     "forge": {
