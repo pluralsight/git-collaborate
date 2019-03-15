@@ -44,8 +44,6 @@
     "babel-preset-es2017": "6.16.0",
     "babel-preset-react": "6.22.0",
     "babel-preset-stage-0": "6.22.0",
-    "electron-compile": "6.4.2",
-    "electron-squirrel-startup": "1.0.0",
     "lodash.capitalize": "4.2.1",
     "lodash.orderby": "4.6.0",
     "md5": "2.2.1",
@@ -61,10 +59,10 @@
     "chai-as-promised": "7.1.1",
     "cross-env": "5.2.0",
     "css-loader": "0.26.1",
-    "electron-connect": "0.6.2",
+    "electron-connect": "0.6.3",
     "electron-connect-webpack-plugin": "0.1.1",
-    "electron-forge": "4.1.6",
-    "electron-osx-sign": "0.4.7",
+    "electron-forge": "5.2.4",
+    "electron-osx-sign": "0.4.11",
     "electron-prebuilt-compile": "1.7.9",
     "eslint": "3.19.0",
     "eslint-config-standard": "7.1.0",
@@ -95,6 +93,9 @@
     "svg-react-loader": "0.4.3",
     "webpack": "3.4.1",
     "webpack-dev-server": "3.2.0"
+  },
+  "resolutions": {
+    "minimatch": "^3.0.2"
   },
   "config": {
     "forge": {
