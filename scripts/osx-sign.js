@@ -3,12 +3,10 @@ const fs = require('fs-extra')
 const os = require('os')
 const path = require('path')
 
-const { getPackageSrcDir, removePackageSrc } = require('./utils/package')
-
-const osx = 'Darwin'
+const { getPackageSrcDir, MAC_OS_PLATFORM, osNames, removePackageSrc } = require('./package-helper')
 
 function checkMacPackageExistance() {
-  const macRelease = getPackageSrcDir('macos')
+  const macRelease = getPackageSrcDir(osNames.macos)
 
   if (!fs.existsSync(macRelease)) {
     const errMessage = 'Error: No macos package is present'.concat(
@@ -21,9 +19,9 @@ function checkMacPackageExistance() {
 
 function runOsxSign() {
   console.log('Signing macos package using the darwin certificate specified in keychain.')
-  const app = path.join(getPackageSrcDir('macos'), 'git-switch.app')
+  const app = path.join(getPackageSrcDir(osNames.macos), 'git-switch.app')
 
-  signAsync({ app, platform: 'darwin' }).then(() => {
+  signAsync({ app, platform: MAC_OS_PLATFORM.toLowercase() }).then(() => {
     console.log(`Successfully signed macos package '${app}'`)
   }).catch(err => {
     console.error(`Error: ${err}`)
@@ -40,9 +38,13 @@ function signOsxPackage() {
 function nonMacWarning() {
   console.warn('Warning: The macos package may only be signed from a mac.')
   console.log('Any existing macos release will now be removed and not signed.')
-  removePackageSrc('macos')
+  removePackageSrc(osNames.macos)
 }
 
-const execute = () => os.type() === osx ? signOsxPackage() : nonMacWarning()
+function execute() {
+  os.type() === MAC_OS_PLATFORM
+    ? signOsxPackage()
+    : nonMacWarning()
+}
 
 execute()
