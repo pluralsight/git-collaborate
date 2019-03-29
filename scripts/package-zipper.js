@@ -1,8 +1,7 @@
 const archiver = require('archiver')
 const fs = require('fs-extra')
-const os = require('os')
 
-const { getPackageSrcDir, getPackageZipDir, removePackageSrc } = require('./utils/package')
+const { getPackageSrcDir, getPackageZipDir, osNames, removePackageSrc } = require('./package-helper')
 
 function zipPackage(targetOS) {
   const zippedDir = getPackageZipDir(targetOS)
@@ -29,31 +28,12 @@ function zipPackage(targetOS) {
   zip.finalize()
 }
 
-function zipMacPackage(targetOs) {
-  const macOS = 'Darwin'
-  const isMacHost = os.type() === macOS
-  const sourceDir = getPackageSrcDir(targetOs)
-
-  if (!isMacHost) {
-    if (sourceDir) {
-      console.warn('Warning: The macos package may only be signed from a mac.')
-      console.log('Any existing macos release will now be removed and not zipped.')
-      console.log(`Removing unzipped build:`, sourceDir)
-      removePackageSrc('macos')
-    }
-
-    return
-  }
-
-  zipPackage(targetOs)
-}
-
 function execute() {
   console.log('Starting zip of all OS packages...')
 
-  zipMacPackage('macos')
-  zipPackage('linux')
-  zipPackage('windows')
+  zipPackage(osNames.macos)
+  zipPackage(osNames.linux)
+  zipPackage(osNames.windows)
 }
 
 execute()
