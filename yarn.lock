@@ -3879,7 +3879,7 @@ electron-installer-snap@^3.1.0:
     which "^1.3.0"
     yargs "^12.0.5"
 
-electron-osx-sign@0.4.11, electron-osx-sign@^0.4.1:
+electron-osx-sign@^0.4.1:
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/electron-osx-sign/-/electron-osx-sign-0.4.11.tgz#8377732fe7b207969f264b67582ee47029ce092f"
   integrity sha512-VVd40nrnVqymvFrY9ZkOYgHJOvexHHYTR3di/SN+mjJ0OWhR1I8BRVj3U+Yamw6hnkZZNKZp52rqL5EFAAPFkQ==
