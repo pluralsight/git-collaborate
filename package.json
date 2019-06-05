@@ -95,12 +95,14 @@
     "webpack-dev-server": "3.2.0"
   },
   "resolutions": {
-    "minimatch": "^3.0.2",
     "atob": "^2.1.0",
-    "cryptiles": "4.1.2",
-    "lodash": "^4.17.11",
-    "mime": "^1.4.1",
+    "cryptiles": "^4.1.2",
+    "fstream": "^1.0.12",
+    "handlebars": "^4.1.2",
     "hoek": "^4.2.1",
+    "lodash": "^4.17.11",
+    "minimatch": "^3.0.2",
+    "mime": "^1.4.1",
     "uglify-js": "^2.6.0"
   },
   "config": {
