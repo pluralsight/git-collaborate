@@ -1,4 +1,4 @@
-import menubar from 'menubar'
+import { menubar } from 'menubar'
 import path from 'path'
 
 import CHANNELS from './common/ipc-channels'
@@ -8,47 +8,48 @@ import { getNotificationLabel } from './common/utils/string'
 import install from './common/utils/install'
 import IpcRouter from './ipc-router'
 
-const isDev = process.env.NODE_ENV === 'dev'
-const state = { rotateOnOpen: false }
-
-const mb = menubar({
-  dir: __dirname,
-  index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
-  icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
-  preloadWindow: true,
-  alwaysOnTop: isDev,
-  width: isDev ? 800 : 400,
-  height: 600
-})
-
-const isSecondInstance = mb.app.makeSingleInstance(processAppArgs)
-if (isSecondInstance) {
-  mb.app.exit()
-} else {
-  processAppArgs(process.argv)
+const state = {
+  isDev: process.env.NODE_ENV === 'dev',
+  rotateOnOpen: false
 }
 
-const appExecutablePath = mb.app.getPath('exe')
-install(process.platform, appExecutablePath)
-
-mb.on('ready', handleAppReady)
-mb.on('after-create-window', handleAfterCreateWindow)
+const mb = menubar({
+  browserWindow: {
+    alwaysOnTop: state.isDev,
+    height: 600,
+    width: state.isDev ? 800 : 400
+  },
+  dir: __dirname,
+  icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
+  index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
+  preloadWindow: true
+})
 
 function handleAppReady() {
-  if (isDev) mb.showWindow()
+  if (state.isDev) mb.showWindow()
 
   new IpcRouter(mb.app)
 
   if (state.rotateOnOpen) {
     rotateUsers()
     state.rotateOnOpen = false
-  } else if (!isDev) {
+  } else if (!state.isDev) {
     notificationService.showCurrentAuthors()
   }
 }
 
 function handleAfterCreateWindow() {
-  if (isDev) mb.window.openDevTools()
+  if (state.isDev) mb.window.openDevTools()
+}
+
+function rotateUsers() {
+  const updatedUsers = userService.rotate()
+  const activeUserCount = updatedUsers.filter(u => u.active).length
+  if (activeUserCount > 1) {
+    const label = getNotificationLabel(activeUserCount, true)
+    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
+    mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+  }
 }
 
 function processAppArgs(args) {
@@ -64,12 +65,23 @@ function processAppArgs(args) {
   }
 }
 
-function rotateUsers() {
-  const updatedUsers = userService.rotate()
-  const activeUserCount = updatedUsers.filter(u => u.active).length
-  if (activeUserCount > 1) {
-    const label = getNotificationLabel(activeUserCount, true)
-    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
-    mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+function startUp() {
+  const isSecondInstance = !mb.app.requestSingleInstanceLock()
+  if (isSecondInstance) {
+    mb.app.exit()
+    return
   }
+
+  mb.on('ready', handleAppReady)
+  mb.on('after-create-window', handleAfterCreateWindow)
+  mb.app.on('second-instance', (_, argv) => {
+    processAppArgs(argv)
+  })
+
+  processAppArgs(process.argv)
+
+  const appExecutablePath = mb.app.getPath('exe')
+  install(process.platform, appExecutablePath)
 }
+
+startUp()
