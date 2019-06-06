@@ -19,8 +19,7 @@ export default class UserForm extends React.Component {
     user: userType,
     onConfirm: func.isRequired,
     onChange: func.isRequired,
-    onClose: func.isRequired,
-    confirmLabel: string.isRequired
+    onClose: func.isRequired
   }
 
   constructor(props) {
@@ -67,8 +66,15 @@ export default class UserForm extends React.Component {
   }
 
   render() {
-    const { confirmLabel, onClose, onConfirm } = this.props
-    const user = this.props.user || { name: '', email: '', rsaKeyPath: '', active: false }
+    const { onClose, onConfirm } = this.props
+    const user = {
+      name: '',
+      email: '',
+      rsaKeyPath: '',
+      active: false,
+      ...this.props.user
+    }
+    const confirmLabel = user.id ? 'Update user' : 'Add user'
 
     return (
       <div styleName="form">

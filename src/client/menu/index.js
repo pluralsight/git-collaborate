@@ -1,19 +1,17 @@
-import React from 'react'
-import CSSModules from 'react-css-modules'
 import { remote } from 'electron'
+import React from 'react'
 
 import * as appApi from '../api/app'
 import Button from './components/button'
 import { GitIcon, MenuIcon } from './icons'
-import * as reposApi from '../api/repositories'
 import Repositories from './repositories'
+import * as reposApi from '../api/repositories'
 import Users from './users'
 import * as usersApi from '../api/users'
 import UserForm from './users/components/user-form'
 
 import css from './index.css'
 
-@CSSModules(css)
 export default class Menu extends React.Component {
   constructor(props) {
     super(props)
@@ -129,27 +127,26 @@ export default class Menu extends React.Component {
     const overlayActive = userEdits || showRepositories
 
     return (
-      <div styleName="container">
-        <div styleName="header">
-          <GitIcon /><span styleName="header-title">switch</span>
-          <div styleName="menu-button-container">
-            <button styleName="menu-button" onClick={this.handleMenuButtonClick}><MenuIcon /></button>
+      <div className={css.container}>
+        <div className={css.header}>
+          <GitIcon /><span className={css.headerTitle}>switch</span>
+          <div className={css.menuButtonContainer}>
+            <button className={css.menuButton} onClick={this.handleMenuButtonClick}><MenuIcon /></button>
           </div>
         </div>
         {this.renderContent()}
-        <div styleName="footer">
+        <div className={css.footer}>
           <Button onClick={this.handleAddUser}>Add user</Button>
         </div>
-        <div styleName={overlayActive ? 'overlay-background-active' : 'overlay-background'} />
-        <div styleName="overlay-container" style={{ top: userEdits ? 65 : -150 }}>
+        <div className={overlayActive ? css.overlayBackgroundActive : css.overlayBackground} />
+        <div className={css.overlayContainer} style={{ top: userEdits ? 65 : -150 }}>
           <UserForm
             user={userEdits}
             onChange={this.handleEditUser}
             onConfirm={this.handleUserFormSubmit}
-            onClose={this.handleCancelUserForm}
-            confirmLabel={userEdits && userEdits.id ? 'Update user' : 'Add user'} />
+            onClose={this.handleCancelUserForm} />
         </div>
-        <div styleName="overlay-container" style={{ top: showRepositories ? 65 : -60 * this.state.repos.length - 100 }}>
+        <div className={css.overlayContainer} style={{ top: showRepositories ? 65 : -60 * this.state.repos.length - 100 }}>
           <Repositories repos={this.state.repos}
             onRepoAdded={this.handleAddRepo}
             onDone={this.toggleRepositories}
