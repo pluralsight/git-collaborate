@@ -2,7 +2,7 @@
   margin-bottom: 35px;
 }
 
-.users-list-header {
+.usersListHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -11,7 +11,7 @@
   font-weight: bold;
   margin: 18px 8px 4px 12px;
 }
-.users-list {
+.usersList {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -21,7 +21,7 @@
 .buttons > * {
   margin-left: 8px;
 }
-.button-icon {
+.buttonIcon {
   width: 18px;
   height: 18px;
 }
@@ -41,14 +41,14 @@
   opacity: 0;
 }
 
-.user.active:hover .deactivate-icon {
+.user.active:hover .deactivateIcon {
   opacity: 1;
 }
-.user.inactive:hover .activate-icon {
+.user.inactive:hover .activateIcon {
   opacity: 1;
 }
 
-.activate-icon, .deactivate-icon {
+.activateIcon, .deactivateIcon {
   position: absolute;
   top: 0;
   left: 0;
@@ -61,13 +61,13 @@
   background: white;
   transition: opacity 0.2s;
 }
-.deactivate-icon-icon {
+.deactivateIconIcon {
   width: 18px;
   height: 18px;
   color: #cb2431;
 }
-.activate-icon-icon {
-  composes: deactivate-icon-icon;
+.activateIconIcon {
+  composes: deactivateIconIcon;
   color: #28A745;
   transform: rotate(45deg);
 }
@@ -87,7 +87,7 @@
   overflow: hidden;
   box-shadow: 0 4px 16px 0 rgba(0,0,0,0.2)
 }
-.avatar-image {
+.avatarImage {
   position: absolute;
   top: 0;
   right: 0;
@@ -96,7 +96,7 @@
   transition: opacity 0.2s;
 }
 
-.user-info {
+.userInfo {
   flex-grow: 1;
   margin-left: 8px;
 }
@@ -109,27 +109,17 @@
   font-size: 12px;
 }
 
-.user-menu-button {
+.userMenuButton {
   padding: 2px;
   margin-right: 5px;
   background: none;
   border: 0;
   cursor: pointer;
 }
-.user-actions-container {
-  display: flex;
-  align-items: center;
-}
-.back-button-container {
-  margin-left: 8px;
-}
 
-.empty-message {
+.emptyMessage {
   padding: 30px;
   text-align: center;
   color: #b3b3b3;
   font-size: 18px;
-}
-.empty-message-sub {
-  font-size: 12px;
 }

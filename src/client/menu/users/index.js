@@ -1,6 +1,6 @@
-import React from 'react'
-import CSSModules from 'react-css-modules'
+import { remote } from 'electron'
 import md5 from 'md5'
+import React from 'react'
 
 import { array, func } from 'prop-types'
 
@@ -8,9 +8,7 @@ import Button from '../components/button'
 import { ClearIcon, MoreIcon, RotateIcon } from '../icons'
 
 import css from './index.css'
-import { remote } from 'electron'
 
-@CSSModules(css, { allowMultiple: true })
 export default class Users extends React.Component {
   static propTypes = {
     onAddUser: func.isRequired,
@@ -51,17 +49,17 @@ export default class Users extends React.Component {
       : ''
 
     return (
-      <li styleName={`user ${user.active ? 'active' : 'inactive'}`} key={user.id} onClick={this.handleToggleActiveUser(user)}>
-        <div styleName="avatar">
-          <div styleName="avatar-image" style={{ backgroundImage: `url("${photoUrl}")` }} />
-          <div styleName="deactivate-icon"><ClearIcon styleName="deactivate-icon-icon button-icon" /></div>
-          <div styleName="activate-icon"><ClearIcon styleName="activate-icon-icon button-icon" /></div>
+      <li className={`${css.user} ${user.active ? css.active : css.inactive}`} key={user.id} onClick={this.handleToggleActiveUser(user)}>
+        <div className={css.avatar}>
+          <div className={css.avatarImage} style={{ backgroundImage: `url("${photoUrl}")` }} />
+          <div className={css.deactivateIcon}><ClearIcon className={`${css.deactivateIconIcon} ${css.buttonIcon}`} /></div>
+          <div className={css.activateIcon}><ClearIcon className={`${css.activateIconIcon} ${css.buttonIcon}`} /></div>
         </div>
-        <div styleName="user-info">
-          <div styleName="name">{user.name}</div>
-          {role && <div styleName="role">{role}</div>}
+        <div className={css.userInfo}>
+          <div className={css.name}>{user.name}</div>
+          {role && <div className={css.role}>{role}</div>}
         </div>
-        <button onClick={this.handleShowUserActionsMenu(user)} styleName="user-menu-button">
+        <button onClick={this.handleShowUserActionsMenu(user)} className={css.userMenuButton}>
           <MoreIcon />
         </button>
       </li>
@@ -72,7 +70,7 @@ export default class Users extends React.Component {
     if (this.props.users.length) return
 
     return (
-      <div styleName="empty-message">
+      <div className={css.emptyMessage}>
         No users yet
       </div>
     )
@@ -83,15 +81,15 @@ export default class Users extends React.Component {
 
     return (
       <div>
-        <div styleName="users-list-header">
+        <div className={css.usersListHeader}>
           <span>Active</span>
-          <div styleName="buttons">
+          <div className={css.buttons}>
             <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}>
-              <RotateIcon styleName="button-icon" />
+              <RotateIcon className={css.buttonIcon} />
             </Button>
           </div>
         </div>
-        <ul styleName="users-list">
+        <ul className={css.usersList}>
           {activeUsers.map(this.renderUser)}
         </ul>
       </div>
@@ -103,8 +101,8 @@ export default class Users extends React.Component {
 
     return (
       <div>
-        <div styleName="users-list-header">Inactive</div>
-        <ul styleName="users-list">
+        <div className={css.usersListHeader}>Inactive</div>
+        <ul className={css.usersList}>
           {inactiveUsers.map(this.renderUser)}
         </ul>
       </div>
@@ -123,7 +121,7 @@ export default class Users extends React.Component {
   render() {
     return (
       <div>
-        <div styleName="container">
+        <div className={css.container}>
           {this.renderEmptyMessage()}
           {this.renderUserLists()}
         </div>
