@@ -88,7 +88,6 @@
     "postcss-nested": "1.0.1",
     "prop-types": "15.7.2",
     "react": "15.6.2",
-    "react-css-modules": "4.7.11",
     "react-dom": "15.6.2",
     "rimraf": "2.6.3",
     "sinon": "2.4.1",
