@@ -99,7 +99,6 @@ export default class UserForm extends React.Component {
               placeholder="Path to RSA key"
               onChange={this.handleFieldChange} />
             <Button
-              className={css.browseButton}
               onClick={this.handleAddRsaKey}
               disabled={this.state.isSelectingRsaKey}>
               Browse

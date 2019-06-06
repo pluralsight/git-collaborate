@@ -1,7 +1,6 @@
-import CSSModules from 'react-css-modules'
 import React from 'react'
 
-import { bool, func, node, oneOf, string } from 'prop-types'
+import { bool, func, node, oneOf } from 'prop-types'
 
 import css from './index.css'
 
@@ -10,14 +9,12 @@ const TYPES = {
   confirm: 'confirm'
 }
 
-@CSSModules(css)
 export default class Button extends React.Component {
   static propTypes = {
     onClick: func.isRequired,
     children: node.isRequired,
     disabled: bool,
-    type: oneOf(Object.keys(TYPES)),
-    className: string
+    type: oneOf(Object.keys(TYPES))
   }
   static defaultProps = {
     type: 'default'
@@ -26,10 +23,11 @@ export default class Button extends React.Component {
   render() {
     return (
       <button
-        className={this.props.className}
+        className={this.props.type === TYPES.confirm ? css.confirm : css.default}
         disabled={this.props.disabled}
-        onClick={this.props.onClick}
-        styleName={`button-${this.props.type}`}>{this.props.children}</button>
+        onClick={this.props.onClick}>
+        {this.props.children}
+      </button>
     )
   }
 }

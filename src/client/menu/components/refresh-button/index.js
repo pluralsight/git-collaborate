@@ -1,12 +1,10 @@
-import React from 'react'
-import CssModules from 'react-css-modules'
 import { func } from 'prop-types'
+import React from 'react'
 
 import { RotateIcon } from '../../icons'
 
 import css from './index.css'
 
-@CssModules(css, { allowMultiple: true })
 export default class RefreshButton extends React.Component {
   static propTypes = {
     onClick: func.isRequired
@@ -34,8 +32,8 @@ export default class RefreshButton extends React.Component {
 
   render() {
     return (
-      <div styleName="container" title="Re-initialize git hooks" onClick={this.handleClick}>
-        <RotateIcon styleName={`refresh-icon${this.state.wasClicked ? ' refresh-icon-spin' : ''}`} />
+      <div className={css.container} title="Re-initialize git hooks" onClick={this.handleClick}>
+        <RotateIcon className={`${css.refreshIcon}${this.state.wasClicked ? ` ${css.refreshIconSpin}` : ''}`} />
       </div>
     )
   }
