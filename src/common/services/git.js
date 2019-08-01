@@ -128,7 +128,7 @@ function removePostCommitFiles(target) {
 
 function removePostCommitFilesFromSubModules(target) {
   if (fs.existsSync(target)) {
-    for (let submoduleDir of fs.readdirSync(target)) {
+    for (const submoduleDir of fs.readdirSync(target)) {
       removePostCommitFiles(path.join(target, submoduleDir, 'hooks'))
     }
   }
