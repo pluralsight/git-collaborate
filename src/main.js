@@ -41,6 +41,8 @@ const getCliArgs = args => {
 }
 
 const startUp = () => {
+  const iconFile = process.platform === 'darwin' ? 'tray-icon-osx.png' : 'tray-icon.png'
+
   const menubar = getMenubar({
     browserWindow: {
       alwaysOnTop: isDev,
@@ -48,7 +50,7 @@ const startUp = () => {
       width: isDev ? 800 : 400
     },
     dir: __dirname,
-    icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
+    icon: path.join(__dirname, 'assets', 'icons', iconFile),
     index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
     preloadWindow: true
   })
