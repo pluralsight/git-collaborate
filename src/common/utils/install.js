@@ -180,8 +180,9 @@ main
   if (!isGitLogCoAuthorCurrent) {
     console.log('Installing git log co-author script')
     fs.writeFileSync(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorScript, { encoding: 'utf-8', mode: 0o755 })
-    gitService.setGitLogAlias(GIT_LOG_CO_AUTHOR_FILE)
   }
+
+  gitService.setGitLogAlias(GIT_LOG_CO_AUTHOR_FILE)
 }
 
 function initializeGitConfig() {

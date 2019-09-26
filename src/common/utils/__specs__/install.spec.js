@@ -201,6 +201,13 @@ describe('utils/install', () => {
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
+
+    describe('when git-log-co-author exists', () => {
+      it('creates a git log alias', async () => {
+        await subject(platform, appExecutablePath)
+        expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
+      })
+    })
   })
 })
 
