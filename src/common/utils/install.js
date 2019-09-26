@@ -5,6 +5,7 @@ import path from 'path'
 import * as gitService from '../services/git'
 import * as repoService from '../services/repo'
 import * as userService from '../services/user'
+import * as logger from './logger'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
@@ -27,7 +28,7 @@ function installConfigFile() {
   }
 
   if (!fs.existsSync(CONFIG_FILE)) {
-    console.log('Installing config file...')
+    logger.info('Installing config file...')
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
   }
 }
@@ -83,7 +84,7 @@ fi
   const isPostCommitCurrent = fs.existsSync(POST_COMMIT_FILE) &&
     fs.readFileSync(POST_COMMIT_FILE, 'utf-8') === postCommitScript
   if (!isPostCommitCurrent) {
-    console.log('Installing post-commit hook')
+    logger.info('Installing post-commit hook')
     fs.writeFileSync(POST_COMMIT_FILE, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
   }
 
@@ -178,7 +179,7 @@ main
   const isGitLogCoAuthorCurrent = fs.existsSync(GIT_LOG_CO_AUTHOR_FILE) &&
     fs.readFileSync(GIT_LOG_CO_AUTHOR_FILE, 'utf-8') === gitLogCoAuthorScript
   if (!isGitLogCoAuthorCurrent) {
-    console.log('Installing git log co-author script')
+    logger.info('Installing git log co-author script')
     fs.writeFileSync(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorScript, { encoding: 'utf-8', mode: 0o755 })
   }
 

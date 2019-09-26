@@ -3,6 +3,7 @@ import os from 'os'
 import path from 'path'
 
 import { execute } from '../utils/exec'
+import * as logger from '../utils/logger'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
@@ -95,7 +96,7 @@ export async function initRepo(repoPath) {
   if (!fs.existsSync(path.join(repoPath, '.git')))
     throw new Error('The specified path does not contain a ".git" directory')
 
-  console.log(`Writing post-commit hook to repo "${repoPath}"`)
+  logger.info(`Writing post-commit hook to repo "${repoPath}"`)
 
   addPostCommitFiles(path.join(repoPath, '.git', 'hooks'))
   await addPostCommitFilesToSubModules(repoPath)

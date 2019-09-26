@@ -1,3 +1,4 @@
+import * as logger from '../../../common/utils/logger'
 import { get as getRepos } from '../../../common/services/repo'
 import { getLongestString } from '../../../common/utils/string'
 
@@ -63,5 +64,5 @@ export const handler = () => {
     ...getUserLines(columns)
   ]
 
-  lines.forEach(l => console.log(l))
+  lines.forEach(l => logger.info(l))
 }

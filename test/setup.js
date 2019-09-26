@@ -2,6 +2,7 @@ import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import sinonChai from 'sinon-chai'
 
+global.logToConsoleDisabled = true
 global.describe = chai.describe
 global.beforeEach = chai.beforeEach
 global.it = chai.it
