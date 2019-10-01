@@ -3,24 +3,26 @@ import orderBy from 'lodash.orderby'
 import * as config from '../utils/config'
 import { initRepo, removeRepo } from './git'
 
-export function get() {
+export const get = () => {
   return config.read().repos || []
 }
 
-function getNameFromPath(path) {
-  const lastSlashIndex = (path.lastIndexOf('/') || path.lastIndexOf('\\')) + 1
-  return path.substring(lastSlashIndex)
-}
+// find string after last '/' or '\'
+const getNameFromPath = path => path.match(/(?:[^/\\](?![/\\]))+$/g)[0]
+// remove trailing '/' or '\'
+const normalizePath = path => path.replace(/[/\\]$/, '')
 
-function persist(repos) {
+const persist = repos => {
   repos = orderBy(repos, r => r.name)
   config.write({ repos })
 
   return repos
 }
 
-export function add(path) {
+export const add = path => {
   let repos = get()
+
+  path = normalizePath(path)
   const name = getNameFromPath(path)
 
   const existingRepo = repos.find(r => r.path === path)
@@ -40,7 +42,7 @@ export function add(path) {
   ])
 }
 
-export function remove(path) {
+export const remove = path => {
   const repos = get()
   const foundIndex = repos.findIndex(r => r.path === path)
   if (foundIndex === -1) return repos

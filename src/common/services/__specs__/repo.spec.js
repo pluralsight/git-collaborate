@@ -71,6 +71,41 @@ describe('services/repo', () => {
       })
     })
 
+    describe('when the repo has a trailing slash', () => {
+      it('adds removes the trailing slash', () => {
+        const newRepo = '/foo/bar/'
+        const modifiedRepo = '/foo/bar'
+        const expected = [
+          { name: 'bar', path: modifiedRepo, isValid: true },
+          ...repos
+        ]
+        sandbox.stub(gitService, 'initRepo')
+
+        const actual = subject.add(newRepo)
+
+        expect(gitService.initRepo).to.have.been.calledWith(modifiedRepo)
+        expect(configUtil.write).to.have.been.calledWith({ repos: expected })
+        expect(actual).to.eql(expected)
+      })
+    })
+
+    describe('when using windows paths', () => {
+      it('adds repo to config sorted by name', () => {
+        const newRepo = 'C:\\foo\\bar'
+        const expected = [
+          { name: 'bar', path: newRepo, isValid: true },
+          ...repos
+        ]
+        sandbox.stub(gitService, 'initRepo')
+
+        const actual = subject.add(newRepo)
+
+        expect(gitService.initRepo).to.have.been.calledWith(newRepo)
+        expect(configUtil.write).to.have.been.calledWith({ repos: expected })
+        expect(actual).to.eql(expected)
+      })
+    })
+
     describe('when git service fails to init repo hooks', () => {
       it('adds the repo with isValid set to false', () => {
         sandbox.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
