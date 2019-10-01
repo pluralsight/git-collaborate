@@ -55,22 +55,22 @@ describe('utils/install', () => {
   })
 
   describe('when config directory does not exist', () => {
-    it('creates the .git-switch directory', async () => {
+    it('creates the .git-switch directory', () => {
       gitSwitchDirExists = false
       sandbox.stub(fs, 'mkdirSync')
 
-      await subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath)
 
       expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH, 0o755)
     })
   })
 
   describe('when config file does not exist', () => {
-    it('creates .git-switch/config.json', async () => {
+    it('creates .git-switch/config.json', () => {
       configFileExsists = false
       sandbox.stub(fs, 'writeFileSync')
 
-      await subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
     })
@@ -83,8 +83,8 @@ describe('utils/install', () => {
       sandbox.stub(fs, 'writeFileSync')
     })
 
-    it('creates .git-switch/post-commit', async () => {
-      await subject(platform, appExecutablePath)
+    it('creates .git-switch/post-commit', () => {
+      subject(platform, appExecutablePath)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
     })
 
@@ -97,14 +97,14 @@ describe('utils/install', () => {
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
 
-      it('the post-commit file auto rotates by changing dirs and running npm', async () => {
-        await subject(platform, appExecutablePath)
+      it('the post-commit file auto rotates by changing dirs and running npm', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('ignores case on electron path basename', async () => {
+      it('ignores case on electron path basename', () => {
         appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/Electron'
-        await subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
@@ -117,8 +117,8 @@ describe('utils/install', () => {
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
 
-      it('escapes and backgrounds the autoRotate specific to the platform', async () => {
-        await subject(platform, appExecutablePath)
+      it('escapes and backgrounds the autoRotate specific to the platform', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
@@ -131,16 +131,16 @@ describe('utils/install', () => {
       sandbox.stub(fs, 'writeFileSync')
     })
 
-    it('re-initializes all the repos', async () => {
-      await subject(platform, appExecutablePath)
+    it('re-initializes all the repos', () => {
+      subject(platform, appExecutablePath)
 
       expect(repoService.add).to.have.been.calledWith('repo/one')
       expect(repoService.add).to.have.been.calledWith('repo/two')
       expect(repoService.add).to.have.been.calledTwice
     })
 
-    it('initializes authors/co-authors in .gitconfig', async () => {
-      await subject(platform, appExecutablePath)
+    it('initializes authors/co-authors in .gitconfig', () => {
+      subject(platform, appExecutablePath)
       expect(userService.get).to.have.been.called
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
     })
@@ -150,21 +150,21 @@ describe('utils/install', () => {
         existingPostCommitFileContents = 'outdated-content-here'
       })
 
-      it('updates .git-switch/post-commit', async () => {
-        await subject(platform, appExecutablePath)
+      it('updates .git-switch/post-commit', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('re-initializes all the repos', async () => {
-        await subject(platform, appExecutablePath)
+      it('re-initializes all the repos', () => {
+        subject(platform, appExecutablePath)
 
         expect(repoService.add).to.have.been.calledWith('repo/one')
         expect(repoService.add).to.have.been.calledWith('repo/two')
         expect(repoService.add).to.have.been.calledTwice
       })
 
-      it('initializes authors/co-authors in .gitconfig', async () => {
-        await subject(platform, appExecutablePath)
+      it('initializes authors/co-authors in .gitconfig', () => {
+        subject(platform, appExecutablePath)
         expect(userService.get).to.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
       })
@@ -175,13 +175,13 @@ describe('utils/install', () => {
         gitLogCoAuthorFileExists = false
       })
 
-      it('creates .git-switch/git-log-co-authors', async () => {
-        await subject(platform, appExecutablePath)
+      it('creates .git-switch/git-log-co-authors', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('creates a git log alias', async () => {
-        await subject(platform, appExecutablePath)
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
@@ -191,20 +191,20 @@ describe('utils/install', () => {
         existingGitLogCoAuthorFileContents = 'outdated-content-here'
       })
 
-      it('creates .git-switch/git-log-co-authors', async () => {
-        await subject(platform, appExecutablePath)
+      it('creates .git-switch/git-log-co-authors', () => {
+        subject(platform, appExecutablePath)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('creates a git log alias', async () => {
-        await subject(platform, appExecutablePath)
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
 
     describe('when git-log-co-author exists', () => {
-      it('creates a git log alias', async () => {
-        await subject(platform, appExecutablePath)
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })

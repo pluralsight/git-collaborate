@@ -15,13 +15,13 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = async args => {
+export const handler = args => {
   const { paths, doWork, verbose } = args
 
   let updatedRepos = []
   if (doWork) {
     for (const path of paths) {
-      updatedRepos = await addRepo(path)
+      updatedRepos = addRepo(path)
     }
   } else {
     updatedRepos = getRepos()

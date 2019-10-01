@@ -8,32 +8,32 @@ import * as logger from '../utils/logger'
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
 
-export async function setAuthor(name, email) {
-  await execute(`git config --global user.name "${name}"`)
-  await execute(`git config --global user.email "${email}"`)
+export function setAuthor(name, email) {
+  execute(`git config --global user.name "${name}"`)
+  execute(`git config --global user.email "${email}"`)
 }
 
-export async function setCoAuthors(coAuthors) {
+export function setCoAuthors(coAuthors) {
   const value = coAuthors
     .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
     .join(';')
 
-  await execute(`git config --global git-switch.co-authors "${value}"`)
+  execute(`git config --global git-switch.co-authors "${value}"`)
 }
 
-export async function updateAuthorAndCoAuthors(users) {
+export function updateAuthorAndCoAuthors(users) {
   const activeUsers = users.filter(u => u.active)
   if (!activeUsers.length)
     return
 
   const author = activeUsers.shift()
-  await this.setAuthor(author.name, author.email)
+  this.setAuthor(author.name, author.email)
 
-  await this.setCoAuthors(activeUsers)
+  this.setCoAuthors(activeUsers)
 }
 
-export async function setGitLogAlias(scriptPath) {
-  await execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
+export function setGitLogAlias(scriptPath) {
+  execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
 }
 
 function copyGitSwitchPostCommit(gitHooksPath) {
@@ -70,18 +70,18 @@ function addPostCommitFiles(destination) {
   writePostCommit(destination)
 }
 
-async function getSubmodulesForRepo(repoPath) {
-  const submodulesStatus = await execute('git submodule status', { cwd: repoPath })
+function getSubmodulesForRepo(repoPath) {
+  const submodulesStatus = execute('git submodule status', { cwd: repoPath })
   const statuses = (submodulesStatus && submodulesStatus.trim().split('\n')) || []
 
   return statuses.map(s => s.trim().split(' ')[1])
 }
 
-async function addPostCommitFilesToSubModules(repoPath) {
+function addPostCommitFilesToSubModules(repoPath) {
   const submodulesPath = path.join(repoPath, '.git', 'modules')
 
   if (fs.existsSync(submodulesPath)) {
-    const submodules = await getSubmodulesForRepo(repoPath)
+    const submodules = getSubmodulesForRepo(repoPath)
 
     submodules.forEach(modulePath => {
       const hooksPath = path.join(submodulesPath, ...modulePath.split('/'), 'hooks')
@@ -90,7 +90,7 @@ async function addPostCommitFilesToSubModules(repoPath) {
   }
 }
 
-export async function initRepo(repoPath) {
+export function initRepo(repoPath) {
   if (!fs.existsSync(repoPath))
     throw new Error('The specified path does not exist')
   if (!fs.existsSync(path.join(repoPath, '.git')))
@@ -99,7 +99,7 @@ export async function initRepo(repoPath) {
   logger.info(`Writing post-commit hook to repo "${repoPath}"`)
 
   addPostCommitFiles(path.join(repoPath, '.git', 'hooks'))
-  await addPostCommitFilesToSubModules(repoPath)
+  addPostCommitFilesToSubModules(repoPath)
 }
 
 function removeGitSwitchPostCommitScript(gitHooksPath) {

@@ -39,7 +39,7 @@ describe('services/repo', () => {
       sandbox.stub(configUtil, 'write')
     })
 
-    it('adds repo to config sorted by name', async () => {
+    it('adds repo to config sorted by name', () => {
       const newRepo = '/foo/bar'
       const expected = [
         { name: 'bar', path: newRepo, isValid: true },
@@ -47,7 +47,7 @@ describe('services/repo', () => {
       ]
       sandbox.stub(gitService, 'initRepo')
 
-      const actual = await subject.add(newRepo)
+      const actual = subject.add(newRepo)
 
       expect(gitService.initRepo).to.have.been.calledWith(newRepo)
       expect(configUtil.write).to.have.been.calledWith({ repos: expected })
@@ -55,7 +55,7 @@ describe('services/repo', () => {
     })
 
     describe('when a repo with the path already exists', () => {
-      it('re-initializes the repo', async () => {
+      it('re-initializes the repo', () => {
         const existingRepo = '/repo/one'
         sandbox.stub(gitService, 'initRepo')
         const expected = [
@@ -63,7 +63,7 @@ describe('services/repo', () => {
           repos[1]
         ]
 
-        const actual = await subject.add(existingRepo)
+        const actual = subject.add(existingRepo)
 
         expect(gitService.initRepo).to.have.been.calledWith(existingRepo)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
@@ -72,14 +72,14 @@ describe('services/repo', () => {
     })
 
     describe('when git service fails to init repo hooks', () => {
-      it('adds the repo with isValid set to false', async () => {
+      it('adds the repo with isValid set to false', () => {
         sandbox.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
         const expected = [
           { name: 'bar-2', path: '/foo/bar-2', isValid: false },
           ...repos
         ]
 
-        const actual = await subject.add('/foo/bar-2')
+        const actual = subject.add('/foo/bar-2')
 
         expect(actual).to.eql(expected)
       })

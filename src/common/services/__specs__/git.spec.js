@@ -12,15 +12,15 @@ describe('services/git', () => {
 
   beforeEach(() => {
     execResult = ''
-    sandbox.stub(exec, 'execute').callsFake(async () => execResult)
+    sandbox.stub(exec, 'execute').callsFake(() => execResult)
   })
   afterEach(() => {
     sandbox.restore()
   })
 
   describe('#setAuthor', () => {
-    it('executes a git command to set author name and email', async () => {
-      await subject.setAuthor('author-name', 'author-email')
+    it('executes a git command to set author name and email', () => {
+      subject.setAuthor('author-name', 'author-email')
 
       expect(exec.execute).to.have.been.calledWith('git config --global user.name "author-name"')
       expect(exec.execute).to.have.been.calledWith('git config --global user.email "author-email"')
@@ -28,7 +28,7 @@ describe('services/git', () => {
   })
 
   describe('#setCoAuthors', () => {
-    it('executes a git command to set co-author(s)', async () => {
+    it('executes a git command to set co-author(s)', () => {
       const coAuthors = [
         { name: 'co-author-1', email: 'co-author1@email.com' },
         { name: 'co-author-2', email: 'co-author-2@email.com' }
@@ -37,13 +37,13 @@ describe('services/git', () => {
         .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
         .join(';')
 
-      await subject.setCoAuthors(coAuthors)
+      subject.setCoAuthors(coAuthors)
 
       expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorValue}"`)
     })
 
-    it('sets empty co-author(s) when none are provided', async () => {
-      await subject.setCoAuthors([])
+    it('sets empty co-author(s) when none are provided', () => {
+      subject.setCoAuthors([])
       expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
     })
   })
@@ -79,10 +79,10 @@ describe('services/git', () => {
     })
 
     describe('when there is one active user', () => {
-      it('sets the author and sets an empty co-author', async () => {
+      it('sets the author and sets an empty co-author', () => {
         const user = users[0]
 
-        await subject.updateAuthorAndCoAuthors([user])
+        subject.updateAuthorAndCoAuthors([user])
 
         expect(subject.setAuthor).to.have.been.calledWith(user.name, user.email)
         expect(subject.setCoAuthors).to.have.been.calledWith([])
@@ -90,10 +90,10 @@ describe('services/git', () => {
     })
 
     describe('when there are two active users', () => {
-      it('uses the first as author and second as co-author', async () => {
+      it('uses the first as author and second as co-author', () => {
         users = [users[0], users[1], users[3]]
 
-        await subject.updateAuthorAndCoAuthors(users)
+        subject.updateAuthorAndCoAuthors(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
         expect(subject.setCoAuthors).to.have.been.calledWith([users[1]])
@@ -101,10 +101,10 @@ describe('services/git', () => {
     })
 
     describe('when there are three or more active users', () => {
-      it('uses the first as author and all others as co-authors', async () => {
+      it('uses the first as author and all others as co-authors', () => {
         const activeUsers = users.filter(u => u.active).slice(1)
 
-        await subject.updateAuthorAndCoAuthors(users)
+        subject.updateAuthorAndCoAuthors(users)
 
         expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
         expect(subject.setCoAuthors).to.have.been.calledWith(activeUsers)
@@ -112,8 +112,8 @@ describe('services/git', () => {
     })
 
     describe('when no users are active', () => {
-      it('does nothing', async () => {
-        await subject.updateAuthorAndCoAuthors([users[3]])
+      it('does nothing', () => {
+        subject.updateAuthorAndCoAuthors([users[3]])
 
         expect(subject.setAuthor).to.not.have.been.called
         expect(subject.setCoAuthors).to.not.have.been.called
@@ -122,13 +122,13 @@ describe('services/git', () => {
   })
 
   describe('#setGitLogAlias', () => {
-    it('executes a git command to set the `git lg` alias', async () => {
-      await subject.setGitLogAlias('path/to/git/log/script')
+    it('executes a git command to set the `git lg` alias', () => {
+      subject.setGitLogAlias('path/to/git/log/script')
       expect(exec.execute).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
     })
 
-    it('converts `\\` to `/`', async () => {
-      await subject.setGitLogAlias('windows\\style\\path\\to\\git\\log\\script')
+    it('converts `\\` to `/`', () => {
+      subject.setGitLogAlias('windows\\style\\path\\to\\git\\log\\script')
       expect(exec.execute).to.have.been.calledWith('git config --global alias.lg "!windows/style/path/to/git/log/script"')
     })
   })
@@ -183,16 +183,16 @@ describe('services/git', () => {
         sandbox.stub(fs, 'createWriteStream').callsFake(() => writeStream)
       })
 
-      it('copies the post-commit.git-switch file', async () => {
-        await subject.initRepo(repoPath)
+      it('copies the post-commit.git-switch file', () => {
+        subject.initRepo(repoPath)
         readStream.emit('data', '123')
         expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
         expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, { encoding: 'utf-8', mode: 0o755 })
         expect(postCommitBuffer.toString('utf-8')).to.eql('123')
       })
 
-      it('writes post-commit file to call post-commit.git-switch', async () => {
-        await subject.initRepo(repoPath)
+      it('writes post-commit file to call post-commit.git-switch', () => {
+        subject.initRepo(repoPath)
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
 
@@ -201,11 +201,11 @@ describe('services/git', () => {
           postCommitExists = true
         })
 
-        it('merges git-switch call into post-commit', async () => {
+        it('merges git-switch call into post-commit', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
-          await subject.initRepo(repoPath)
+          subject.initRepo(repoPath)
 
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
         })
@@ -231,8 +231,8 @@ describe('services/git', () => {
           execResult = submoduleStatus
         })
 
-        it('installs post-commit files in sub-modules', async () => {
-          await subject.initRepo(repoPath)
+        it('installs post-commit files in sub-modules', () => {
+          subject.initRepo(repoPath)
 
           expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
           expect(exec.execute).to.have.been.calledWith('git submodule status')
@@ -252,14 +252,14 @@ describe('services/git', () => {
     describe('when path does not exist', () => {
       it('throws an error', () => {
         pathExists = false
-        return expect(subject.initRepo(repoPath)).to.eventually.be.rejected
+        expect(() => subject.initRepo(repoPath)).to.throw
       })
     })
 
     describe('when path is not a git repo', () => {
       it('throws an error', () => {
         repoExists = false
-        return expect(subject.initRepo(repoPath)).to.eventually.be.rejected
+        expect(() => subject.initRepo(repoPath)).to.throw
       })
     })
   })

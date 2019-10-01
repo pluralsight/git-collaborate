@@ -59,7 +59,6 @@
     "babel-register": "6.26.0",
     "babel-require": "1.0.1",
     "chai": "4.2.0",
-    "chai-as-promised": "7.1.1",
     "cross-env": "5.2.0",
     "css-loader": "0.28.11",
     "electron-connect": "0.6.3",

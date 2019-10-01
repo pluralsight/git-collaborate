@@ -19,7 +19,7 @@ function persist(repos) {
   return repos
 }
 
-export async function add(path) {
+export function add(path) {
   let repos = get()
   const name = getNameFromPath(path)
 
@@ -29,7 +29,7 @@ export async function add(path) {
 
   let isValid = true
   try {
-    await initRepo(path)
+    initRepo(path)
   } catch (err) {
     isValid = false
   }
