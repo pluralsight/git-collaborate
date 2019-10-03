@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import uuid from 'uuid/v4'
 
 import * as configUtil from '../../utils/config'
 import * as gitService from '../git'
@@ -13,13 +12,13 @@ describe('services/user', () => {
 
   beforeEach(() => {
     users = [{
-      id: uuid(),
+      id: subject.getId(),
       name: 'First User',
       email: 'first@email.com',
       rsaKeyPath: '/not/a/real/path',
       active: false
     }, {
-      id: uuid(),
+      id: subject.getId(),
       name: 'Second User',
       email: 'second@email.com',
       rsaKeyPath: '/not/a/real/path',
@@ -39,14 +38,21 @@ describe('services/user', () => {
 
   describe('#get', () => {
     it('returns the users in config', () => {
-      expect(subject.get()).to.eql(users)
+      expect(subject.get()).to.deep.equal(users)
     })
 
     describe('when users is null', () => {
       it('returns empty array', () => {
         config = {}
-        expect(subject.get()).to.eql([])
+        expect(subject.get()).to.deep.equal([])
       })
+    })
+  })
+
+  describe('#getId', () => {
+    it('returns an eight char id', () => {
+      const id = subject.getId()
+      expect(id.length).to.equal(8)
     })
   })
 
@@ -63,8 +69,9 @@ describe('services/user', () => {
       const addedUser = actual[2]
       const expected = { ...config, users: actual }
 
-      expect(addedUser.name).to.eql(userToAdd.name)
-      expect(addedUser.email).to.eql(userToAdd.email)
+      expect(addedUser.id.length).to.equal(8)
+      expect(addedUser.name).to.equal(userToAdd.name)
+      expect(addedUser.email).to.equal(userToAdd.email)
       expect(addedUser.id).to.not.be.null
       expect(configUtil.write).to.have.been.calledWith(expected)
     })
@@ -97,7 +104,7 @@ describe('services/user', () => {
 
       const actual = subject.update(userToUpdate)
 
-      expect(actual).to.eql(expected.users)
+      expect(actual).to.deep.equal(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
@@ -124,7 +131,7 @@ describe('services/user', () => {
 
         const actual = subject.update(userToUpdate)
 
-        expect(actual).to.eql(expected.users)
+        expect(actual).to.deep.equal(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })
@@ -136,7 +143,7 @@ describe('services/user', () => {
       const expected = [users[1]]
       const actual = subject.remove(users[0].id)
 
-      expect(actual).to.eql(expected)
+      expect(actual).to.deep.equal(expected)
       expect(configUtil.write).to.have.been.calledWith(newConfig)
     })
 
@@ -163,7 +170,7 @@ describe('services/user', () => {
       it('returns current users', () => {
         const actual = subject.rotate()
 
-        expect(actual).to.eql(users)
+        expect(actual).to.deep.equal(users)
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
         expect(sshService.rotateIdentityFile).to.not.have.been.called
@@ -180,7 +187,7 @@ describe('services/user', () => {
 
         const actual = subject.rotate()
 
-        expect(actual).to.eql(users)
+        expect(actual).to.deep.equal(users)
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
         expect(sshService.rotateIdentityFile).to.not.have.been.called
@@ -212,7 +219,7 @@ describe('services/user', () => {
       it('switches the pair leaving inactive users last', () => {
         const actual = subject.rotate()
 
-        expect(actual).to.eql(expected.users)
+        expect(actual).to.deep.equal(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
       })
 
@@ -255,7 +262,7 @@ describe('services/user', () => {
       it('moves the first user to the end of active users leaving inactive users last', () => {
         const actual = subject.rotate()
 
-        expect(actual).to.eql(expected.users)
+        expect(actual).to.deep.equal(expected.users)
         expect(configUtil.write).to.have.been.calledWith(expected)
       })
 
@@ -276,7 +283,7 @@ describe('services/user', () => {
         { ...users[0], active: true },
         users[1],
         {
-          id: uuid(),
+          id: subject.getId(),
           name: 'Third User',
           email: 'third@email.com',
           rsaKeyPath: '/foo/bar',
@@ -296,7 +303,7 @@ describe('services/user', () => {
     it('moves the user to the end of active users leaving inactive users last', () => {
       const actual = subject.toggleActive(users[2].id)
 
-      expect(actual).to.eql(expected.users)
+      expect(actual).to.deep.equal(expected.users)
       expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
@@ -309,9 +316,9 @@ describe('services/user', () => {
 
     describe('when user does not exist', () => {
       it('returns current users', () => {
-        const actual = subject.toggleActive(uuid())
+        const actual = subject.toggleActive(subject.getId())
 
-        expect(actual).to.eql(users)
+        expect(actual).to.deep.equal(users)
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
         expect(sshService.rotateIdentityFile).to.not.have.been.called

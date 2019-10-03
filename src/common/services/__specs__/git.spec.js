@@ -84,30 +84,38 @@ describe('services/git', () => {
 
         subject.updateAuthorAndCoAuthors([user])
 
-        expect(subject.setAuthor).to.have.been.calledWith(user.name, user.email)
-        expect(subject.setCoAuthors).to.have.been.calledWith([])
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${user.name}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${user.email}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
       })
     })
 
     describe('when there are two active users', () => {
       it('uses the first as author and second as co-author', () => {
-        users = [users[0], users[1], users[3]]
+        const author = users[0]
+        const coAuthor = users[1]
+        const expectedCoAuthorsConfig = `Co-Authored-By: ${coAuthor.name} <${coAuthor.email}>`
 
-        subject.updateAuthorAndCoAuthors(users)
+        subject.updateAuthorAndCoAuthors([author, coAuthor, users[3]])
 
-        expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
-        expect(subject.setCoAuthors).to.have.been.calledWith([users[1]])
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${author.name}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${author.email}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorsConfig}"`)
       })
     })
 
     describe('when there are three or more active users', () => {
       it('uses the first as author and all others as co-authors', () => {
-        const activeUsers = users.filter(u => u.active).slice(1)
+        const coAuthors = users.filter(u => u.active).slice(1)
+        const expectedCoAuthorsConfig = coAuthors
+          .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+          .join(';')
 
         subject.updateAuthorAndCoAuthors(users)
 
-        expect(subject.setAuthor).to.have.been.calledWith(users[0].name, users[0].email)
-        expect(subject.setCoAuthors).to.have.been.calledWith(activeUsers)
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${users[0].name}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${users[0].email}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorsConfig}"`)
       })
     })
 
@@ -115,8 +123,7 @@ describe('services/git', () => {
       it('does nothing', () => {
         subject.updateAuthorAndCoAuthors([users[3]])
 
-        expect(subject.setAuthor).to.not.have.been.called
-        expect(subject.setCoAuthors).to.not.have.been.called
+        expect(exec.execute).to.not.have.been.called
       })
     })
   })
@@ -188,7 +195,7 @@ describe('services/git', () => {
         readStream.emit('data', '123')
         expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
         expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, { encoding: 'utf-8', mode: 0o755 })
-        expect(postCommitBuffer.toString('utf-8')).to.eql('123')
+        expect(postCommitBuffer.toString('utf-8')).to.equal('123')
       })
 
       it('writes post-commit file to call post-commit.git-switch', () => {

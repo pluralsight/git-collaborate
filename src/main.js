@@ -34,8 +34,8 @@ const handleSecondInstanceArgs = args => {
 }
 
 const getCliArgs = args => {
-  // contains node_modules dir (i.e. running with npm) or equals '.'
-  const regex = /([/\\]node_modules)|(^\.$)/
+  // contains `node_modules` dir (i.e. running with npm), is the `git-switch` command, or equals '.'
+  const regex = /([/\\]?(node_modules|git-switch))|(^\.$)/
 
   return args.filter(arg => !regex.test(arg))
 }
@@ -66,7 +66,7 @@ const startUp = () => {
   menubar.app.on('second-instance', (_, argv) => handleSecondInstanceArgs(getCliArgs(argv)))
 
   const appExecutablePath = menubar.app.getPath('exe')
-  return install(process.platform, appExecutablePath)
+  install(process.platform, appExecutablePath)
 }
 
 startUp()

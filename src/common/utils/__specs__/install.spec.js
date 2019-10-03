@@ -47,6 +47,7 @@ describe('utils/install', () => {
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
     sandbox.stub(repoService, 'get').callsFake(() => existingRepos)
     sandbox.stub(userService, 'get').callsFake(() => users)
+    sandbox.stub(userService, 'shortenUserIds')
     sandbox.stub(gitService, 'updateAuthorAndCoAuthors')
     sandbox.stub(gitService, 'setGitLogAlias')
   })

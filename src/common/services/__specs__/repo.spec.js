@@ -23,13 +23,13 @@ describe('services/repo', () => {
 
   describe('#get', () => {
     it('returns the repos in config', () => {
-      expect(subject.get()).to.eql(repos)
+      expect(subject.get()).to.deep.equal(repos)
     })
 
     describe('when repos is null', () => {
       it('returns empty array', () => {
         config = {}
-        expect(subject.get()).to.eql([])
+        expect(subject.get()).to.deep.equal([])
       })
     })
   })
@@ -51,7 +51,7 @@ describe('services/repo', () => {
 
       expect(gitService.initRepo).to.have.been.calledWith(newRepo)
       expect(configUtil.write).to.have.been.calledWith({ repos: expected })
-      expect(actual).to.eql(expected)
+      expect(actual).to.deep.equal(expected)
     })
 
     describe('when a repo with the path already exists', () => {
@@ -67,7 +67,7 @@ describe('services/repo', () => {
 
         expect(gitService.initRepo).to.have.been.calledWith(existingRepo)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
-        expect(actual).to.eql(expected)
+        expect(actual).to.deep.equal(expected)
       })
     })
 
@@ -85,7 +85,7 @@ describe('services/repo', () => {
 
         expect(gitService.initRepo).to.have.been.calledWith(modifiedRepo)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
-        expect(actual).to.eql(expected)
+        expect(actual).to.deep.equal(expected)
       })
     })
 
@@ -102,7 +102,7 @@ describe('services/repo', () => {
 
         expect(gitService.initRepo).to.have.been.calledWith(newRepo)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
-        expect(actual).to.eql(expected)
+        expect(actual).to.deep.equal(expected)
       })
     })
 
@@ -116,7 +116,7 @@ describe('services/repo', () => {
 
         const actual = subject.add('/foo/bar-2')
 
-        expect(actual).to.eql(expected)
+        expect(actual).to.deep.equal(expected)
       })
     })
   })

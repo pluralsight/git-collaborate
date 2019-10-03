@@ -14,6 +14,7 @@ export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-aut
 
 export default function(platform, appExecutablePath) {
   installConfigFile()
+  userService.shortenUserIds()
 
   const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
   installPostCommitHook(autoRotate)
