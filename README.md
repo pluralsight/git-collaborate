@@ -17,6 +17,33 @@ With each commit, the git-switch commit hook amends the commit to designate the 
 
 Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
 
+## CLI Usage
+In addition to managing users and repositories in the electron app, git-switch can also be used as a CLI i.e.
+
+```
+git-switch users add --name "<User Name>" --email "<user@email.com>"
+git-switch repos list
+```
+
+The available command structure is:
+
+```
+git-switch
+  users
+    add
+    remove
+    list
+    active
+      toggle
+      rotate
+  repos
+    add
+    remove
+    list
+```
+
+Running `--help` on any command/sub-command will provide usage information
+
 ## Development
 To run git-switch from source, run the following command:
 ```

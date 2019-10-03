@@ -1,22 +1,14 @@
 import { get as getUsers, toggleActive } from '../../../../common/services/user'
 import { events, publish, showNotification } from '../../../utils'
 
-export const command = 'set [userIds..]'
-export const describe = 'Manage users\' active status'
+export const command = 'toggle [userIds..]'
+export const describe = 'Toggle users\' active status'
 
 export const builder = yargs =>
   yargs
-    .usage('Usage:\n  git-switch users active set [userIds..]')
-    .options({
-      isActive: {
-        alias: 'a',
-        describe: 'Set the users\' isActive flag',
-        boolean: true,
-        default: true
-      }
-    })
+    .usage('Usage:\n  git-switch users active toggle [userIds..]')
     .positional('userIds', {
-      describe: 'The ids of the users to set',
+      describe: 'The ids of the users to toggle',
       string: true,
       array: true,
       demandOption: true

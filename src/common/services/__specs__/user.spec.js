@@ -54,19 +54,39 @@ describe('services/user', () => {
       const id = subject.getId()
       expect(id.length).to.equal(8)
     })
+
+    it('returns a minimum of one alpha character', () => {
+      for (let i = 0; i < 100; i++) {
+        const id = subject.getId()
+        expect(id).to.match(/[a-f]+/)
+      }
+    })
   })
 
   describe('#add', () => {
-    const userToAdd = {
-      name: 'New User',
-      email: 'new@email.com',
-      rsaKeyPath: '/a/path/to/nowhere'
-    }
+    let userToAdd
+
+    beforeEach(() => {
+      userToAdd = {
+        name: 'New User',
+        email: 'new@email.com',
+        rsaKeyPath: '/a/path/to/nowhere'
+      }
+
+      users = [
+        {
+          ...users[0],
+          active: true
+        },
+        users[1]
+      ]
+      config = { users }
+    })
 
     it('adds user to config', () => {
       const actual = subject.add(userToAdd)
 
-      const addedUser = actual[2]
+      const addedUser = actual[1]
       const expected = { ...config, users: actual }
 
       expect(addedUser.id.length).to.equal(8)

@@ -17,17 +17,32 @@ const updateExternalServices = users => {
   sshService.rotateIdentityFile(users[0].rsaKeyPath)
 }
 
-export const getId = () => uuid().substring(0, 8)
+export const getId = () => {
+  let id
+  do {
+    id = uuid().split('-')[0]
+  } while (id.match(/\d{8}/))
+
+  return id
+}
 
 export const add = ({ name, email, rsaKeyPath }) => {
   const users = get()
-  const id = getId()
-  users.push({ id, name, email, rsaKeyPath, active: true })
+  const activeUsers = users.filter(u => u.active)
+  const inactiveUsers = users.filter(u => !u.active)
 
-  persist(users)
-  updateExternalServices(users)
+  const newUser = { id: getId(), name, email, rsaKeyPath, active: true }
 
-  return users
+  const updatedUsers = [
+    ...activeUsers,
+    newUser,
+    ...inactiveUsers
+  ]
+
+  persist(updatedUsers)
+  updateExternalServices(updatedUsers)
+
+  return updatedUsers
 }
 
 export const update = user => {
