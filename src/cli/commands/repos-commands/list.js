@@ -24,9 +24,20 @@ const getField = (value, minWidth, paddingChar = ' ', startWidth = 0) => {
   return value.padStart(startWidth, paddingChar).padEnd(minWidth, paddingChar)
 }
 
+const getBoarderLines = columns => {
+  const { name, path, isValid } = columns
+
+  return [` -\
+${getField('', name.width, '-')}---\
+${getField('', path.width, '-')}---\
+${getField('', isValid.width, '-')}- `
+  ]
+}
+
 const getHeaderLines = columns => {
   const { name, path, isValid } = columns
 
+  const topLine = getBoarderLines(columns)
   const headerLine = `| \
 ${getField(name.header, name.width)} | \
 ${getField(path.header, path.width)} | \
@@ -36,7 +47,7 @@ ${getField('', name.width, '-')}-|-\
 ${getField('', path.width, '-')}-|-\
 ${getField('', isValid.width, '-')}-|`
 
-  return [headerLine, dividerLine]
+  return [...topLine, headerLine, dividerLine]
 }
 
 const getUserLines = columns => {
@@ -51,7 +62,9 @@ ${getField(isValid.values[i] ? '✓' : '', isValid.width, ' ', 5)} |`
   })
 }
 
-export const handler = () => {
+export const handler = args => {
+  if (!args.doWork) return
+
   const repos = getRepos()
 
   const columns = {
@@ -61,7 +74,8 @@ export const handler = () => {
   }
   const lines = [
     ...getHeaderLines(columns),
-    ...getUserLines(columns)
+    ...getUserLines(columns),
+    ...getBoarderLines(columns)
   ]
 
   lines.forEach(l => logger.info(l))

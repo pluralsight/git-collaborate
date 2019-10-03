@@ -1,6 +1,5 @@
-import CHANNELS from '../../../common/ipc-channels'
-import { getMenubar } from '../../../common/utils/menubar'
-import { add as addRepo } from '../../../common/services/repo'
+import { add as addRepo, get as getRepos } from '../../../common/services/repo'
+import { events, publish } from '../../utils'
 
 export const command = 'add [paths..]'
 export const describe = 'Add repositories'
@@ -17,12 +16,18 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = async args => {
-  const { paths } = args
+  const { paths, doWork, verbose } = args
 
   let updatedRepos = []
-  for (const path of paths) {
-    updatedRepos = await addRepo(path)
+  if (doWork) {
+    for (const path of paths) {
+      updatedRepos = await addRepo(path)
+    }
+  } else {
+    updatedRepos = getRepos()
   }
 
-  getMenubar().window.webContents.send(CHANNELS.REPOS_UPDATED, updatedRepos)
+  if (verbose) {
+    publish(events.repos, updatedRepos)
+  }
 }

@@ -1,71 +1,71 @@
 import path from 'path'
 
-import { processCli } from './cli'
+import { handleCli } from './cli'
 import install from './common/utils/install'
 import IpcRouter from './ipc-router'
 import { getMenubar } from './common/utils/menubar'
 import { showCurrentAuthors } from './common/services/notification'
 
-const state = {
-  isDev: process.env.NODE_ENV === 'dev',
-  startupArgs: []
-}
+const isDev = process.env.NODE_ENV === 'dev'
 
-const mb = getMenubar({
-  browserWindow: {
-    alwaysOnTop: state.isDev,
-    height: 600,
-    width: state.isDev ? 800 : 400
-  },
-  dir: __dirname,
-  icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
-  index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
-  preloadWindow: true
-})
+const handleAppReady = menubar => () => {
+  new IpcRouter(menubar.app)
 
-function handleAppReady() {
-  if (state.isDev) mb.showWindow()
-
-  new IpcRouter(mb.app)
-
-  if (state.startupArgs.length) {
-    processCli(state.startupArgs)
-    state.startupArgs = []
-  } else if (!state.isDev) {
+  if (isDev) {
+    menubar.showWindow()
+  } else {
     showCurrentAuthors()
   }
 }
 
-function handleAfterCreateWindow() {
-  if (state.isDev) mb.window.openDevTools()
-}
-
-function processAppArgs(args) {
-  const regex = /([/\\]node_modules)|(^\.$)/ // contains node_modules dir (i.e. running with npm) or equals '.'
-  const filteredArgs = args.filter(arg => !regex.test(arg))
-
-  if (mb.app.isReady()) {
-    processCli(filteredArgs)
-  } else {
-    state.startupArgs = filteredArgs
+const handleAfterCreateWindow = menubar => () => {
+  if (isDev) {
+    menubar.window.openDevTools()
   }
 }
 
-function startUp() {
-  const isSecondInstance = !mb.app.requestSingleInstanceLock()
-  if (isSecondInstance) {
-    mb.app.exit()
-    return
+const handleSecondInstanceArgs = args => {
+  if (args.includes('--help')) return
+
+  args = [...args, '--verbose', '--doWork', 'false']
+
+  setTimeout(() => handleCli(args), 100)
+}
+
+const getCliArgs = args => {
+  // contains node_modules dir (i.e. running with npm) or equals '.'
+  const regex = /([/\\]node_modules)|(^\.$)/
+
+  return args.filter(arg => !regex.test(arg))
+}
+
+const startUp = () => {
+  const menubar = getMenubar({
+    browserWindow: {
+      alwaysOnTop: isDev,
+      height: 600,
+      width: isDev ? 800 : 400
+    },
+    dir: __dirname,
+    icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
+    index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
+    preloadWindow: true
+  })
+
+  const isPrimaryInstance = menubar.app.requestSingleInstanceLock()
+  const cliArgs = getCliArgs(process.argv)
+
+  if (!isPrimaryInstance || cliArgs.length) {
+    handleCli(cliArgs)
+    return menubar.app.exit()
   }
 
-  mb.on('ready', handleAppReady)
-  mb.on('after-create-window', handleAfterCreateWindow)
-  mb.app.on('second-instance', (_, argv) => processAppArgs(argv))
+  menubar.on('ready', handleAppReady(menubar))
+  menubar.on('after-create-window', handleAfterCreateWindow(menubar))
+  menubar.app.on('second-instance', (_, argv) => handleSecondInstanceArgs(getCliArgs(argv)))
 
-  processAppArgs(process.argv)
-
-  const appExecutablePath = mb.app.getPath('exe')
-  install(process.platform, appExecutablePath)
+  const appExecutablePath = menubar.app.getPath('exe')
+  return install(process.platform, appExecutablePath)
 }
 
 startUp()

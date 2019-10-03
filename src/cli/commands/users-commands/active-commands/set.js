@@ -1,7 +1,5 @@
-import CHANNELS from '../../../../common/ipc-channels'
-import { getMenubar } from '../../../../common/utils/menubar'
-import { showCurrentAuthors } from '../../../../common/services/notification'
-import { toggleActive } from '../../../../common/services/user'
+import { get as getUsers, toggleActive } from '../../../../common/services/user'
+import { events, publish, showNotification } from '../../../utils'
 
 export const command = 'set [userIds..]'
 export const describe = 'Manage users\' active status'
@@ -26,13 +24,19 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = args => {
-  const { userIds } = args
+  const { userIds, doWork, verbose } = args
 
   let updatedUsers
-  for (const id of userIds) {
-    updatedUsers = toggleActive(id)
+  if (doWork) {
+    for (const id of userIds) {
+      updatedUsers = toggleActive(id)
+    }
+  } else {
+    updatedUsers = getUsers()
   }
 
-  showCurrentAuthors()
-  getMenubar().window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+  if (verbose) {
+    showNotification()
+    publish(events.users, updatedUsers)
+  }
 }

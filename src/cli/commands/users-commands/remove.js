@@ -1,6 +1,5 @@
-import CHANNELS from '../../../common/ipc-channels'
-import { getMenubar } from '../../../common/utils/menubar'
-import { remove as removeUser } from '../../../common/services/user'
+import { get as getUsers, remove as removeUser } from '../../../common/services/user'
+import { events, publish } from '../../utils'
 
 export const command = 'remove [userIds..]'
 export const describe = 'Remove users'
@@ -17,12 +16,18 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = args => {
-  const { userIds } = args
+  const { userIds, doWork, verbose } = args
 
   let updatedUsers
-  for (const id of userIds) {
-    updatedUsers = removeUser(id)
+  if (doWork) {
+    for (const id of userIds) {
+      updatedUsers = removeUser(id)
+    }
+  } else {
+    updatedUsers = getUsers()
   }
 
-  getMenubar().window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+  if (verbose) {
+    publish(events.users, updatedUsers)
+  }
 }

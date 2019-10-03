@@ -1,7 +1,5 @@
-import CHANNELS from '../../../common/ipc-channels'
-import { getMenubar } from '../../../common/utils/menubar'
-import { showCurrentAuthors } from '../../../common/services/notification'
-import { add as addUser } from '../../../common/services/user'
+import { add as addUser, get as getUsers } from '../../../common/services/user'
+import { events, publish, showNotification } from '../../utils'
 
 export const command = 'add'
 export const describe = 'Add a new user'
@@ -32,9 +30,17 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = args => {
-  const { name, email, key: rsaKeyPath } = args
-  const updatedUsers = addUser({ name, email, rsaKeyPath })
+  const { name, email, key: rsaKeyPath, doWork, verbose } = args
 
-  showCurrentAuthors()
-  getMenubar().window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+  let updatedUsers
+  if (doWork) {
+    updatedUsers = addUser({ name, email, rsaKeyPath })
+  } else {
+    updatedUsers = getUsers()
+  }
+
+  if (verbose) {
+    showNotification()
+    publish(events.users, updatedUsers)
+  }
 }

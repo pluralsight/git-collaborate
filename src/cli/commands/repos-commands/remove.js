@@ -1,6 +1,5 @@
-import CHANNELS from '../../../common/ipc-channels'
-import { getMenubar } from '../../../common/utils/menubar'
-import { remove as removeRepo } from '../../../common/services/repo'
+import { get as getRepos, remove as removeRepo } from '../../../common/services/repo'
+import { events, publish } from '../../utils'
 
 export const command = 'remove [paths..]'
 export const describe = 'Remove repositories'
@@ -17,12 +16,18 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = args => {
-  const { paths } = args
+  const { paths, doWork, verbose } = args
 
   let updatedRepos
-  for (const path of paths) {
-    updatedRepos = removeRepo(path)
+  if (doWork) {
+    for (const path of paths) {
+      updatedRepos = removeRepo(path)
+    }
+  } else {
+    updatedRepos = getRepos()
   }
 
-  getMenubar().window.webContents.send(CHANNELS.REPOS_UPDATED, updatedRepos)
+  if (verbose) {
+    publish(events.repos, updatedRepos)
+  }
 }

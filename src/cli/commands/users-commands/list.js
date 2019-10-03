@@ -8,6 +8,14 @@ export const describe = 'List users'
 export const builder = yargs =>
   yargs
     .usage('Usage:\n  git-switch users list')
+    .options({
+      isActive: {
+        alias: 'a',
+        describe: 'List only active users',
+        boolean: true,
+        default: false
+      }
+    })
     .version(false)
 
 const getColumn = (users, header, key) => {
@@ -24,9 +32,22 @@ const getField = (value, minWidth, paddingChar = ' ', startWidth = 0) => {
   return value.padStart(startWidth, paddingChar).padEnd(minWidth, paddingChar)
 }
 
+const getBoarderLines = columns => {
+  const { id, name, email, rsaKeyPath, active } = columns
+
+  return [` -\
+${getField('', id.width, '-')}---\
+${getField('', name.width, '-')}---\
+${getField('', email.width, '-')}---\
+${getField('', rsaKeyPath.width, '-')}---\
+${getField('', active.width, '-')}- `
+  ]
+}
+
 const getHeaderLines = columns => {
   const { id, name, email, rsaKeyPath, active } = columns
 
+  const topLine = getBoarderLines(columns)
   const headerLine = `| \
 ${getField(id.header, id.width)} | \
 ${getField(name.header, name.width)} | \
@@ -40,7 +61,7 @@ ${getField('', email.width, '-')}-|-\
 ${getField('', rsaKeyPath.width, '-')}-|-\
 ${getField('', active.width, '-')}-|`
 
-  return [headerLine, dividerLine]
+  return [...topLine, headerLine, dividerLine]
 }
 
 const getUserLines = columns => {
@@ -57,8 +78,15 @@ ${getField(active.values[i] ? '✓' : '', active.width, ' ', 5)} |`
   })
 }
 
-export const handler = () => {
-  const users = getUsers()
+export const handler = args => {
+  const { isActive, doWork } = args
+
+  if (!doWork) return
+
+  let users = getUsers()
+  if (isActive) {
+    users = users.filter(u => u.active)
+  }
 
   const columns = {
     id: getColumn(users, 'ID', 'id'),
@@ -69,7 +97,8 @@ export const handler = () => {
   }
   const lines = [
     ...getHeaderLines(columns),
-    ...getUserLines(columns)
+    ...getUserLines(columns),
+    ...getBoarderLines(columns)
   ]
 
   lines.forEach(l => logger.info(l))

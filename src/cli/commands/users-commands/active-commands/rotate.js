@@ -1,8 +1,6 @@
-import CHANNELS from '../../../../common/ipc-channels'
-import { getMenubar } from '../../../../common/utils/menubar'
-import { showCurrentAuthors } from '../../../../common/services/notification'
 import { getNotificationLabel } from '../../../../common/utils/string'
-import { rotate } from '../../../../common/services/user'
+import { get as getUsers, rotate } from '../../../../common/services/user'
+import { events, publish, showNotification } from '../../../utils'
 
 export const command = 'rotate'
 export const describe = 'Rotate active users'
@@ -12,13 +10,21 @@ export const builder = yargs =>
     .usage('Usage:\n  git-switch users active rotate')
     .version(false)
 
-export const handler = () => {
-  const updatedUsers = rotate()
+export const handler = args => {
+  const { doWork, verbose } = args
+  let updatedUsers
+
+  if (doWork) {
+    updatedUsers = rotate()
+  } else {
+    updatedUsers = getUsers()
+  }
+
   const activeUserCount = updatedUsers.filter(u => u.active).length
 
-  if (activeUserCount > 1) {
+  if (verbose && activeUserCount > 1) {
     const label = getNotificationLabel(activeUserCount, true)
-    showCurrentAuthors({ title: `${label} rotated to:` })
-    getMenubar().window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+    showNotification({ title: `${label} rotated to:` })
+    publish(events.users, updatedUsers)
   }
 }
