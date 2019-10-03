@@ -44,7 +44,10 @@ export const add = path => {
 
 export const remove = path => {
   const repos = get()
+
+  path = normalizePath(path)
   const foundIndex = repos.findIndex(r => r.path === path)
+
   if (foundIndex === -1) return repos
 
   if (repos[foundIndex].isValid) removeRepo(path)

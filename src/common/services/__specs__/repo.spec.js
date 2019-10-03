@@ -150,6 +150,21 @@ describe('services/repo', () => {
       })
     })
 
+    describe('when path has trailing slash', () => {
+      it('removes the repo from config', () => {
+        const normalizedPath = repos[1].path
+        const repoToDelete = `${repos[1].path}/`
+        const expected = {
+          repos: [repos[0]]
+        }
+
+        subject.remove(repoToDelete)
+
+        expect(gitService.removeRepo).to.have.been.calledWith(normalizedPath)
+        expect(configUtil.write).to.have.been.calledWith(expected)
+      })
+    })
+
     describe('when repo hooks are not configured', () => {
       it('does not call git service', () => {
         const repoToDelete = repos[0].path
