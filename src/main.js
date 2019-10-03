@@ -1,19 +1,17 @@
-import { menubar } from 'menubar'
 import path from 'path'
 
-import CHANNELS from './common/ipc-channels'
-import * as notificationService from './common/services/notification'
-import * as userService from './common/services/user'
-import { getNotificationLabel } from './common/utils/string'
+import { processCli } from './cli'
 import install from './common/utils/install'
 import IpcRouter from './ipc-router'
+import { getMenubar } from './common/utils/menubar'
+import { showCurrentAuthors } from './common/services/notification'
 
 const state = {
   isDev: process.env.NODE_ENV === 'dev',
-  rotateOnOpen: false
+  startupArgs: []
 }
 
-const mb = menubar({
+const mb = getMenubar({
   browserWindow: {
     alwaysOnTop: state.isDev,
     height: 600,
@@ -30,11 +28,11 @@ function handleAppReady() {
 
   new IpcRouter(mb.app)
 
-  if (state.rotateOnOpen) {
-    rotateUsers()
-    state.rotateOnOpen = false
+  if (state.startupArgs.length) {
+    processCli(state.startupArgs)
+    state.startupArgs = []
   } else if (!state.isDev) {
-    notificationService.showCurrentAuthors()
+    showCurrentAuthors()
   }
 }
 
@@ -42,26 +40,14 @@ function handleAfterCreateWindow() {
   if (state.isDev) mb.window.openDevTools()
 }
 
-function rotateUsers() {
-  const updatedUsers = userService.rotate()
-  const activeUserCount = updatedUsers.filter(u => u.active).length
-  if (activeUserCount > 1) {
-    const label = getNotificationLabel(activeUserCount, true)
-    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
-    mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
-  }
-}
-
 function processAppArgs(args) {
-  if (args.length < 2) return
+  const regex = /([/\\]node_modules)|(^\.$)/ // contains node_modules dir (i.e. running with npm) or equals '.'
+  const filteredArgs = args.filter(arg => !regex.test(arg))
 
-  const options = args.slice(1)
-  if (options.some(o => o === 'rotate')) {
-    if (mb.app.isReady()) {
-      rotateUsers()
-    } else {
-      state.rotateOnOpen = true
-    }
+  if (mb.app.isReady()) {
+    processCli(filteredArgs)
+  } else {
+    state.startupArgs = filteredArgs
   }
 }
 
@@ -74,9 +60,7 @@ function startUp() {
 
   mb.on('ready', handleAppReady)
   mb.on('after-create-window', handleAfterCreateWindow)
-  mb.app.on('second-instance', (_, argv) => {
-    processAppArgs(argv)
-  })
+  mb.app.on('second-instance', (_, argv) => processAppArgs(argv))
 
   processAppArgs(process.argv)
 

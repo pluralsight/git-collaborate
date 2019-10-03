@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { Readable, Writable } from 'stream'
 
-import * as execute from '../../utils/exec'
+import * as exec from '../../utils/exec'
 import * as subject from '../git'
 import sandbox from '../../../../test/sandbox'
 
@@ -12,7 +12,7 @@ describe('services/git', () => {
 
   beforeEach(() => {
     execResult = ''
-    sandbox.stub(execute, 'default').callsFake(async () => execResult)
+    sandbox.stub(exec, 'execute').callsFake(async () => execResult)
   })
   afterEach(() => {
     sandbox.restore()
@@ -22,8 +22,8 @@ describe('services/git', () => {
     it('executes a git command to set author name and email', async () => {
       await subject.setAuthor('author-name', 'author-email')
 
-      expect(execute.default).to.have.been.calledWith('git config --global user.name "author-name"')
-      expect(execute.default).to.have.been.calledWith('git config --global user.email "author-email"')
+      expect(exec.execute).to.have.been.calledWith('git config --global user.name "author-name"')
+      expect(exec.execute).to.have.been.calledWith('git config --global user.email "author-email"')
     })
   })
 
@@ -39,12 +39,12 @@ describe('services/git', () => {
 
       await subject.setCoAuthors(coAuthors)
 
-      expect(execute.default).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorValue}"`)
+      expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorValue}"`)
     })
 
     it('sets empty co-author(s) when none are provided', async () => {
       await subject.setCoAuthors([])
-      expect(execute.default).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
+      expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
     })
   })
 
@@ -124,12 +124,12 @@ describe('services/git', () => {
   describe('#setGitLogAlias', () => {
     it('executes a git command to set the `git lg` alias', async () => {
       await subject.setGitLogAlias('path/to/git/log/script')
-      expect(execute.default).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
+      expect(exec.execute).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
     })
 
     it('converts `\\` to `/`', async () => {
       await subject.setGitLogAlias('windows\\style\\path\\to\\git\\log\\script')
-      expect(execute.default).to.have.been.calledWith('git config --global alias.lg "!windows/style/path/to/git/log/script"')
+      expect(exec.execute).to.have.been.calledWith('git config --global alias.lg "!windows/style/path/to/git/log/script"')
     })
   })
 
@@ -235,7 +235,7 @@ describe('services/git', () => {
           await subject.initRepo(repoPath)
 
           expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
-          expect(execute.default).to.have.been.calledWith('git submodule status')
+          expect(exec.execute).to.have.been.calledWith('git submodule status')
 
           expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })

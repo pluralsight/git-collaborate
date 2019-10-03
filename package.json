@@ -48,7 +48,8 @@
     "lodash.orderby": "4.6.0",
     "md5": "2.2.1",
     "menubar": "6.0.3",
-    "uuid": "3.3.2"
+    "uuid": "3.3.2",
+    "yargs": "14.0.0"
   },
   "devDependencies": {
     "archiver": "2.1.1",

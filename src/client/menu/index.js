@@ -26,6 +26,7 @@ export default class Menu extends React.Component {
 
   async componentDidMount() {
     usersApi.onUsersUpdated(this.handleUsersUpdated)
+    reposApi.onReposUpdated(this.handleReposUpdated)
 
     const users = usersApi.getAllUsers()
     const repos = reposApi.getAllRepos()
@@ -39,9 +40,10 @@ export default class Menu extends React.Component {
 
   componentWillUnmount() {
     usersApi.removeUsersUpdatedListener(this.handleUsersUpdated)
+    reposApi.removeReposUpdatedListener(this.handleReposUpdated)
   }
 
-  handleUsersUpdated = (event, users) => {
+  handleUsersUpdated = (_event, users) => {
     this.setState({ users })
   }
   handleRotateUsers = async () => {
@@ -84,6 +86,9 @@ export default class Menu extends React.Component {
     this.setState({
       users: usersApi.removeUser(userId)
     })
+  }
+  handleReposUpdated = (_event, repos) => {
+    this.setState({ repos })
   }
   handleAddRepo = path => {
     this.setState({

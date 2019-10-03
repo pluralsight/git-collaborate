@@ -28,7 +28,7 @@ describe('utils/install', () => {
     postCommitFileExists = true
     gitLogCoAuthorFileExists = true
     appExecutablePath = '/foo/bar'
-    autoRotate = '/foo/bar rotate > /dev/null 2>&1 &'
+    autoRotate = '/foo/bar users active rotate > /dev/null 2>&1 &'
     platform = 'linux'
     postCommitFileContents = getPostCommitFileContents(autoRotate)
     gitLogCoAuthorFileContents = getGitLogCoAuthorFileContents()
@@ -92,7 +92,7 @@ describe('utils/install', () => {
       beforeEach(() => {
         appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/electron'
         autoRotate = `cd /herp/derp
-  npm run start --- -- rotate
+  npm run start -- -- users active rotate
   cd $(dirname $0)/../../`
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
@@ -113,7 +113,7 @@ describe('utils/install', () => {
       beforeEach(() => {
         platform = 'win32'
         appExecutablePath = 'C:\\foo\\bar'
-        autoRotate = 'start C:\\\\foo\\\\bar rotate'
+        autoRotate = 'start C:\\\\foo\\\\bar users active rotate'
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
 

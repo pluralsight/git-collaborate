@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import proc from 'child_process'
 
-import subject from '../exec'
+import { execute as subject } from '../exec'
 import sandbox from '../../../../test/sandbox'
 
 describe('utils/exec', () => {
