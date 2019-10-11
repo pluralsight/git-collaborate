@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import fs from 'fs'
 import path from 'path'
-import { Readable, Writable } from 'stream'
 
 import * as exec from '../../utils/exec'
 import * as subject from '../git'
@@ -149,6 +148,7 @@ describe('services/git', () => {
     let postCommitExists
     let postCommitPath
     let postCommitGitSwitchPath
+    let gitHookPath
 
     beforeEach(() => {
       repoPath = '/repo/path'
@@ -159,6 +159,7 @@ describe('services/git', () => {
       postCommitExists = false
       postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
       postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
+      gitHookPath = path.join(subject.GIT_SWITCH_PATH, 'post-commit')
 
       sandbox.stub(fs, 'existsSync')
         .withArgs(repoPath).callsFake(() => pathExists)
@@ -170,32 +171,23 @@ describe('services/git', () => {
 
     describe('when path is a git repo', () => {
       let existingPostCommitScript
-      let readStream
-      let writeStream
-      const postCommitBuffer = []
+      let gitHookContents
 
       beforeEach(() => {
         existingPostCommitScript = ''
-        readStream = new Readable({ read: () => true })
-        writeStream = new Writable({
-          write: (data, enc, cb) => {
-            postCommitBuffer.push(data)
-            cb()
-          }
-        })
+        gitHookContents = '# do some git-switching'
 
-        sandbox.stub(fs, 'readFileSync').callsFake(() => existingPostCommitScript)
+        sandbox.stub(fs, 'readFileSync')
+          .withArgs(postCommitPath).callsFake(() => existingPostCommitScript)
+          .withArgs(gitHookPath).callsFake(() => gitHookContents)
         sandbox.stub(fs, 'writeFileSync')
-        sandbox.stub(fs, 'createReadStream').callsFake(() => readStream)
-        sandbox.stub(fs, 'createWriteStream').callsFake(() => writeStream)
       })
 
       it('copies the post-commit.git-switch file', () => {
         subject.initRepo(repoPath)
-        readStream.emit('data', '123')
-        expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
-        expect(fs.createWriteStream).to.have.been.calledWith(postCommitGitSwitchPath, { encoding: 'utf-8', mode: 0o755 })
-        expect(postCommitBuffer.toString('utf-8')).to.equal('123')
+
+        expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(postCommitGitSwitchPath, gitHookContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('writes post-commit file to call post-commit.git-switch', () => {
@@ -241,16 +233,16 @@ describe('services/git', () => {
         it('installs post-commit files in sub-modules', () => {
           subject.initRepo(repoPath)
 
-          expect(fs.createReadStream).to.have.been.calledWith(path.join(subject.GIT_SWITCH_PATH, 'post-commit'), 'utf-8')
+          expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
           expect(exec.execute).to.have.been.calledWith('git submodule status')
 
-          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.createWriteStream).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-switch'), { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
         })
       })

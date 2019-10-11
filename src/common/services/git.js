@@ -40,10 +40,8 @@ const copyGitSwitchPostCommit = gitHooksPath => {
   const source = path.join(GIT_SWITCH_PATH, 'post-commit')
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
 
-  const readPostCommit = fs.createReadStream(source, 'utf-8')
-  const writePostCommit = fs.createWriteStream(destination, { encoding: 'utf-8', mode: 0o755 })
-
-  readPostCommit.pipe(writePostCommit)
+  const postCommitContents = fs.readFileSync(source, 'utf-8')
+  fs.writeFileSync(destination, postCommitContents, { encoding: 'utf-8', mode: 0o755 })
 }
 
 const mergePostCommitScripts = postCommitFile => {
