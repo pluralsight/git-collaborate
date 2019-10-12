@@ -31,6 +31,7 @@ The available command structure is:
 git-switch
   users
     add
+    edit
     remove
     list
     active
