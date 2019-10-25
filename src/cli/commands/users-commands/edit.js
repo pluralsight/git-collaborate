@@ -1,6 +1,6 @@
+import * as logger from '../../../common/utils/logger'
 import { update as updateUser, get as getUsers } from '../../../common/services/user'
 import { events, publish } from '../../utils'
-import { logger } from 'handlebars'
 
 export const command = 'edit [userId]'
 export const describe = 'Edit an existing user'
