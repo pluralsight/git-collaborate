@@ -5,17 +5,19 @@ import path from 'path'
 import * as gitService from '../services/git'
 import * as repoService from '../services/repo'
 import * as userService from '../services/user'
+import * as logger from './logger'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-author')
 
-export default async function(platform, appExecutablePath) {
+export default function(platform, appExecutablePath) {
   installConfigFile()
+  userService.shortenUserIds()
 
   const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
-  await installPostCommitHook(autoRotate)
+  installPostCommitHook(autoRotate)
   installGitLogCoAuthorsScript()
 
   initializeGitConfig()
@@ -27,7 +29,7 @@ function installConfigFile() {
   }
 
   if (!fs.existsSync(CONFIG_FILE)) {
-    console.log('Installing config file...')
+    logger.info('Installing config file...')
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
   }
 }
@@ -35,7 +37,7 @@ function installConfigFile() {
 function getAutoRotateCommand(platform, appExecutablePath) {
   if (path.basename(appExecutablePath).match(/electron/i)) {
     return `cd ${appExecutablePath.split('/node_modules')[0]}
-  npm run start --- -- rotate
+  npm run start -- -- users active rotate
   cd $(dirname $0)/../../`
   }
 
@@ -46,10 +48,10 @@ function getAutoRotateCommand(platform, appExecutablePath) {
     postpend = ''
   }
 
-  return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} rotate${postpend}`
+  return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} users active rotate${postpend}`
 }
 
-async function installPostCommitHook(autoRotate) {
+function installPostCommitHook(autoRotate) {
   const postCommitScript = `#!/bin/sh
 
 body=$(git log -1 HEAD --format="%b")
@@ -83,13 +85,13 @@ fi
   const isPostCommitCurrent = fs.existsSync(POST_COMMIT_FILE) &&
     fs.readFileSync(POST_COMMIT_FILE, 'utf-8') === postCommitScript
   if (!isPostCommitCurrent) {
-    console.log('Installing post-commit hook')
+    logger.info('Installing post-commit hook')
     fs.writeFileSync(POST_COMMIT_FILE, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
   }
 
   const repos = repoService.get()
   for (const repo of repos) {
-    await repoService.add(repo.path)
+    repoService.add(repo.path)
   }
 }
 
@@ -178,7 +180,7 @@ main
   const isGitLogCoAuthorCurrent = fs.existsSync(GIT_LOG_CO_AUTHOR_FILE) &&
     fs.readFileSync(GIT_LOG_CO_AUTHOR_FILE, 'utf-8') === gitLogCoAuthorScript
   if (!isGitLogCoAuthorCurrent) {
-    console.log('Installing git log co-author script')
+    logger.info('Installing git log co-author script')
     fs.writeFileSync(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorScript, { encoding: 'utf-8', mode: 0o755 })
   }
 

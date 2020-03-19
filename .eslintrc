@@ -1,5 +1,8 @@
 {
-  "extends": [ "standard", "standard-react" ],
+  "extends": [
+    "standard",
+    "standard-react"
+  ],
   "env": {
     "mocha": true
   },
@@ -14,19 +17,44 @@
   "rules": {
     "curly": "off",
     "generator-star-spacing": "off",
-    "jsx-quotes": [ "error", "prefer-double" ],
+    "jsx-quotes": [
+      "error",
+      "prefer-double"
+    ],
     "lines-between-class-members": "off",
     "mocha/no-exclusive-tests": "error",
+    "no-console": "error",
     "no-new": "off",
-    "no-unused-vars": [2, { "vars": "all", "args": "none", "ignoreRestSiblings": true }],
+    "no-unused-vars": [
+      2,
+      {
+        "vars": "all",
+        "args": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
     "no-unused-expressions": "off",
-    "react/prop-types": [2, { "skipUndeclared": true }],
-    "space-before-function-paren": [ "error", {
-      "anonymous": "never",
-      "named": "never",
-      "asyncArrow": "always"
-    }],
-    "yield-star-spacing": [ "error", { "before": false, "after": true } ]
+    "react/prop-types": [
+      2,
+      {
+        "skipUndeclared": true
+      }
+    ],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "never",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "yield-star-spacing": [
+      "error",
+      {
+        "before": false,
+        "after": true
+      }
+    ]
   },
   "parserOptions": {
     "ecmaFeatures": {

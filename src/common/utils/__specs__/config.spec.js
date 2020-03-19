@@ -32,13 +32,13 @@ describe('utils/config', () => {
 
   describe('#read', () => {
     it('returns the users in config', () => {
-      expect(subject.read()).to.eql(config)
+      expect(subject.read()).to.deep.equal(config)
     })
 
     describe('when file does not exist', () => {
       it('returns default config', () => {
         configExists = false
-        expect(subject.read()).to.eql({ users: [] })
+        expect(subject.read()).to.deep.equal({ users: [] })
       })
     })
   })

@@ -2,50 +2,49 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import execute from '../utils/exec'
+import { execute } from '../utils/exec'
+import * as logger from '../utils/logger'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
 
-export async function setAuthor(name, email) {
-  await execute(`git config --global user.name "${name}"`)
-  await execute(`git config --global user.email "${email}"`)
+export const setAuthor = (name, email) => {
+  execute(`git config --global user.name "${name}"`)
+  execute(`git config --global user.email "${email}"`)
 }
 
-export async function setCoAuthors(coAuthors) {
+export const setCoAuthors = coAuthors => {
   const value = coAuthors
     .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
     .join(';')
 
-  await execute(`git config --global git-switch.co-authors "${value}"`)
+  execute(`git config --global git-switch.co-authors "${value}"`)
 }
 
-export async function updateAuthorAndCoAuthors(users) {
+export const updateAuthorAndCoAuthors = users => {
   const activeUsers = users.filter(u => u.active)
   if (!activeUsers.length)
     return
 
   const author = activeUsers.shift()
-  await this.setAuthor(author.name, author.email)
+  setAuthor(author.name, author.email)
 
-  await this.setCoAuthors(activeUsers)
+  setCoAuthors(activeUsers)
 }
 
-export async function setGitLogAlias(scriptPath) {
-  await execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
+export const setGitLogAlias = scriptPath => {
+  execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
 }
 
-function copyGitSwitchPostCommit(gitHooksPath) {
+const copyGitSwitchPostCommit = gitHooksPath => {
   const source = path.join(GIT_SWITCH_PATH, 'post-commit')
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
 
-  const readPostCommit = fs.createReadStream(source, 'utf-8')
-  const writePostCommit = fs.createWriteStream(destination, { encoding: 'utf-8', mode: 0o755 })
-
-  readPostCommit.pipe(writePostCommit)
+  const postCommitContents = fs.readFileSync(source, 'utf-8')
+  fs.writeFileSync(destination, postCommitContents, { encoding: 'utf-8', mode: 0o755 })
 }
 
-function mergePostCommitScripts(postCommitFile) {
+const mergePostCommitScripts = postCommitFile => {
   let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
   if (!postCommitScript.includes(POST_COMMIT_BASE)) {
     const temp = postCommitScript.substring(postCommitScript.indexOf('\n'))
@@ -55,7 +54,7 @@ function mergePostCommitScripts(postCommitFile) {
   return postCommitScript
 }
 
-function writePostCommit(gitHooksPath) {
+const writePostCommit = gitHooksPath => {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   const postCommitScript = fs.existsSync(postCommitFile)
     ? mergePostCommitScripts(postCommitFile)
@@ -64,23 +63,23 @@ function writePostCommit(gitHooksPath) {
   fs.writeFileSync(postCommitFile, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
 }
 
-function addPostCommitFiles(destination) {
+const addPostCommitFiles = destination => {
   copyGitSwitchPostCommit(destination)
   writePostCommit(destination)
 }
 
-async function getSubmodulesForRepo(repoPath) {
-  const submodulesStatus = await execute('git submodule status', { cwd: repoPath })
+const getSubmodulesForRepo = (repoPath) => {
+  const submodulesStatus = execute('git submodule status', { cwd: repoPath })
   const statuses = (submodulesStatus && submodulesStatus.trim().split('\n')) || []
 
   return statuses.map(s => s.trim().split(' ')[1])
 }
 
-async function addPostCommitFilesToSubModules(repoPath) {
+const addPostCommitFilesToSubModules = repoPath => {
   const submodulesPath = path.join(repoPath, '.git', 'modules')
 
   if (fs.existsSync(submodulesPath)) {
-    const submodules = await getSubmodulesForRepo(repoPath)
+    const submodules = getSubmodulesForRepo(repoPath)
 
     submodules.forEach(modulePath => {
       const hooksPath = path.join(submodulesPath, ...modulePath.split('/'), 'hooks')
@@ -89,26 +88,26 @@ async function addPostCommitFilesToSubModules(repoPath) {
   }
 }
 
-export async function initRepo(repoPath) {
+export const initRepo = repoPath => {
   if (!fs.existsSync(repoPath))
     throw new Error('The specified path does not exist')
   if (!fs.existsSync(path.join(repoPath, '.git')))
     throw new Error('The specified path does not contain a ".git" directory')
 
-  console.log(`Writing post-commit hook to repo "${repoPath}"`)
+  logger.info(`Writing post-commit hook to repo "${repoPath}"`)
 
   addPostCommitFiles(path.join(repoPath, '.git', 'hooks'))
-  await addPostCommitFilesToSubModules(repoPath)
+  addPostCommitFilesToSubModules(repoPath)
 }
 
-function removeGitSwitchPostCommitScript(gitHooksPath) {
+const removeGitSwitchPostCommitScript = gitHooksPath => {
   const postCommitGitSwitchFile = path.join(gitHooksPath, 'post-commit.git-switch')
   if (fs.existsSync(postCommitGitSwitchFile)) {
     fs.unlinkSync(postCommitGitSwitchFile)
   }
 }
 
-function removePostCommitScript(gitHooksPath) {
+const removePostCommitScript = gitHooksPath => {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   if (fs.existsSync(postCommitFile)) {
     let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
@@ -121,12 +120,12 @@ function removePostCommitScript(gitHooksPath) {
   }
 }
 
-function removePostCommitFiles(target) {
+const removePostCommitFiles = target => {
   removeGitSwitchPostCommitScript(target)
   removePostCommitScript(target)
 }
 
-function removePostCommitFilesFromSubModules(target) {
+const removePostCommitFilesFromSubModules = target => {
   if (fs.existsSync(target)) {
     for (const submoduleDir of fs.readdirSync(target)) {
       removePostCommitFiles(path.join(target, submoduleDir, 'hooks'))
@@ -134,7 +133,7 @@ function removePostCommitFilesFromSubModules(target) {
   }
 }
 
-export function removeRepo(repoPath) {
+export const removeRepo = repoPath => {
   removePostCommitFiles(path.join(repoPath, '.git', 'hooks'))
   removePostCommitFilesFromSubModules(path.join(repoPath, '.git', 'modules'))
 }

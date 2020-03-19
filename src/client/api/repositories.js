@@ -13,3 +13,11 @@ export function addRepo(path) {
 export function removeRepo(path) {
   return ipcRenderer.sendSync(CHANNELS.REMOVE_REPO, path)
 }
+
+export function onReposUpdated(callback) {
+  ipcRenderer.on(CHANNELS.REPOS_UPDATED, callback)
+}
+
+export function removeReposUpdatedListener(callback) {
+  ipcRenderer.removeListener(CHANNELS.REPOS_UPDATED, callback)
+}

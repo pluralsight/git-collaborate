@@ -1,86 +1,71 @@
-import { menubar } from 'menubar'
 import path from 'path'
 
-import CHANNELS from './common/ipc-channels'
-import * as notificationService from './common/services/notification'
-import * as userService from './common/services/user'
-import { getNotificationLabel } from './common/utils/string'
+import { handleCli } from './cli'
 import install from './common/utils/install'
 import IpcRouter from './ipc-router'
+import { getMenubar } from './common/utils/menubar'
+import { showCurrentAuthors } from './common/services/notification'
 
-const state = {
-  isDev: process.env.NODE_ENV === 'dev',
-  rotateOnOpen: false
-}
+const isDev = process.env.NODE_ENV === 'dev'
 
-const mb = menubar({
-  browserWindow: {
-    alwaysOnTop: state.isDev,
-    height: 600,
-    width: state.isDev ? 800 : 400
-  },
-  dir: __dirname,
-  icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
-  index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
-  preloadWindow: true
-})
+const handleAppReady = menubar => () => {
+  new IpcRouter(menubar.app)
 
-function handleAppReady() {
-  if (state.isDev) mb.showWindow()
-
-  new IpcRouter(mb.app)
-
-  if (state.rotateOnOpen) {
-    rotateUsers()
-    state.rotateOnOpen = false
-  } else if (!state.isDev) {
-    notificationService.showCurrentAuthors()
+  if (isDev) {
+    menubar.showWindow()
+  } else {
+    showCurrentAuthors()
   }
 }
 
-function handleAfterCreateWindow() {
-  if (state.isDev) mb.window.openDevTools()
-}
-
-function rotateUsers() {
-  const updatedUsers = userService.rotate()
-  const activeUserCount = updatedUsers.filter(u => u.active).length
-  if (activeUserCount > 1) {
-    const label = getNotificationLabel(activeUserCount, true)
-    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
-    mb.window.webContents.send(CHANNELS.USERS_UPDATED, updatedUsers)
+const handleAfterCreateWindow = menubar => () => {
+  if (isDev) {
+    menubar.window.openDevTools()
   }
 }
 
-function processAppArgs(args) {
-  if (args.length < 2) return
+const handleSecondInstanceArgs = args => {
+  if (args.includes('--help')) return
 
-  const options = args.slice(1)
-  if (options.some(o => o === 'rotate')) {
-    if (mb.app.isReady()) {
-      rotateUsers()
-    } else {
-      state.rotateOnOpen = true
-    }
-  }
+  // update the ui and give notifications to the user, but do not make changes
+  args = [...args, '--verbose', '--doWork', 'false']
+
+  setTimeout(() => handleCli(args), 100)
 }
 
-function startUp() {
-  const isSecondInstance = !mb.app.requestSingleInstanceLock()
-  if (isSecondInstance) {
-    mb.app.exit()
-    return
-  }
+const getCliArgs = args => {
+  // contains `node_modules` dir (i.e. running with npm), is the `git-switch` command, or equals '.'
+  const regex = /([/\\]?(node_modules|git-switch))|(^\.$)/
 
-  mb.on('ready', handleAppReady)
-  mb.on('after-create-window', handleAfterCreateWindow)
-  mb.app.on('second-instance', (_, argv) => {
-    processAppArgs(argv)
+  return args.filter(arg => !regex.test(arg))
+}
+
+const startUp = () => {
+  const menubar = getMenubar({
+    browserWindow: {
+      alwaysOnTop: isDev,
+      height: 600,
+      width: isDev ? 800 : 400
+    },
+    dir: __dirname,
+    icon: path.join(__dirname, 'assets', 'icons', 'trayIconTemplate.png'),
+    index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
+    preloadWindow: true
   })
 
-  processAppArgs(process.argv)
+  const isPrimaryInstance = menubar.app.requestSingleInstanceLock()
+  const cliArgs = getCliArgs(process.argv)
 
-  const appExecutablePath = mb.app.getPath('exe')
+  if (!isPrimaryInstance || cliArgs.length) {
+    handleCli(cliArgs)
+    return menubar.app.exit()
+  }
+
+  menubar.on('ready', handleAppReady(menubar))
+  menubar.on('after-create-window', handleAfterCreateWindow(menubar))
+  menubar.app.on('second-instance', (_, argv) => handleSecondInstanceArgs(getCliArgs(argv)))
+
+  const appExecutablePath = menubar.app.getPath('exe')
   install(process.platform, appExecutablePath)
 }
 
