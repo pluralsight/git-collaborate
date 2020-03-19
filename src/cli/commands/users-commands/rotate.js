@@ -1,13 +1,13 @@
-import { getNotificationLabel } from '../../../../common/utils/string'
-import { get as getUsers, rotate } from '../../../../common/services/user'
-import { events, publish, showNotification } from '../../../utils'
+import { getNotificationLabel } from '../../../common/utils/string'
+import { get as getUsers, rotate } from '../../../common/services/user'
+import { events, publish, showNotification } from '../../utils'
 
 export const command = 'rotate'
 export const describe = 'Rotate active users'
 
 export const builder = yargs =>
   yargs
-    .usage('Usage:\n  git-switch users active rotate')
+    .usage('Usage:\n  git-switch users rotate')
     .version(false)
 
 export const handler = args => {

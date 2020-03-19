@@ -34,9 +34,8 @@ git-switch
     edit
     remove
     list
-    active
-      toggle
-      rotate
+    rotate
+    toggle
   repos
     add
     remove
