@@ -1,7 +1,6 @@
-import React from 'react'
-import CSSModules from 'react-css-modules'
 import { remote } from 'electron'
 import { array, func } from 'prop-types'
+import React from 'react'
 
 import Button from '../components/button'
 import DeleteButton from '../components/delete-button'
@@ -9,7 +8,6 @@ import RefreshButton from '../components/refresh-button'
 
 import css from './index.css'
 
-@CSSModules(css)
 export default class Repositories extends React.Component {
   static propTypes = {
     onRepoAdded: func.isRequired,
@@ -47,9 +45,9 @@ export default class Repositories extends React.Component {
   renderEmptyMessage = () => {
     if (!this.props.repos.length) {
       return (
-        <div styleName="empty-message">
+        <div className={css.emptyMessage}>
           No repositories yet
-          <div styleName="empty-message-sub">
+          <div className={css.emptyMessageSub}>
             Add repositories you want to use with git-switch
           </div>
         </div>
@@ -57,12 +55,12 @@ export default class Repositories extends React.Component {
     }
   }
   renderRepo = repo => (
-    <li styleName={repo.isValid ? 'repo' : 'repo-invalid'} key={repo.path}>
-      <div styleName="repo-info">
-        <div styleName="repo-name">
-          {repo.name}{repo.isValid ? null : <span styleName="invalid-message">(not a git repo)</span>}
+    <li className={repo.isValid ? css.repo : css.repoInvalid} key={repo.path}>
+      <div className={css.repoInfo}>
+        <div className={css.repoName}>
+          {repo.name}{repo.isValid ? null : <span className={css.invalidMessage}>(not a git repo)</span>}
         </div>
-        <div styleName="repo-path">{repo.path}</div>
+        <div className={css.repoPath}>{repo.path}</div>
       </div>
       <RefreshButton onClick={this.handleRefreshRepo(repo)} />
       <DeleteButton onClick={this.handleRemoveRepo(repo)} />
@@ -72,10 +70,10 @@ export default class Repositories extends React.Component {
     return (
       <div>
         {this.renderEmptyMessage()}
-        <ul styleName="repos-list">
+        <ul className={css.reposList}>
           {this.props.repos.map(this.renderRepo)}
         </ul>
-        <div styleName="buttons">
+        <div className={css.buttons}>
           <Button onClick={this.handleAddRepo} disabled={this.state.isSelectingRepos}>Add repos</Button>
           <Button onClick={this.props.onDone}>Done</Button>
         </div>

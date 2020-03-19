@@ -4,13 +4,13 @@
   cursor: pointer;
 }
 
-.refresh-icon {
+.refreshIcon {
   height: 18px;
   width: 18px;
   fill: #28A745;
 }
 
-.refresh-icon-spin {
+.refreshIconSpin {
   animation: refresh 1s ease-in reverse 1;
 }
 

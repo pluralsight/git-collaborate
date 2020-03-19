@@ -1,14 +1,13 @@
-import React from 'react'
-import CssModules from 'react-css-modules'
 import { func } from 'prop-types'
+import React from 'react'
 
 import { BinIcon } from '../../icons'
 
 import css from './index.css'
 
-function DeleteButton(props) {
+export default function DeleteButton(props) {
   return (
-    <div styleName="container" onClick={props.onClick}>
+    <div className={css.container} onClick={props.onClick}>
       <BinIcon />
     </div>
   )
@@ -17,5 +16,3 @@ function DeleteButton(props) {
 DeleteButton.propTypes = {
   onClick: func.isRequired
 }
-
-export default CssModules(DeleteButton, css)
