@@ -25,7 +25,8 @@ export default class Button extends React.Component {
       <button
         className={this.props.type === TYPES.confirm ? css.confirm : css.default}
         disabled={this.props.disabled}
-        onClick={this.props.onClick}>
+        onClick={this.props.onClick}
+      >
         {this.props.children}
       </button>
     )

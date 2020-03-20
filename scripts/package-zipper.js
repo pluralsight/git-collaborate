@@ -1,5 +1,5 @@
 const archiver = require('archiver')
-const fs = require('fs-extra')
+const fs = require('fs')
 
 const { getPackageSrcDir, getPackageZipDir, osNames, removePackageSrc } = require('./package-helper')
 
@@ -17,7 +17,7 @@ function zipPackage(targetOS) {
   zippedPackage.on('close', () => {
     console.log(`${targetOS} package:`, zip.pointer() + ' total bytes')
     console.log(`Compression has completed for git-switch-${targetOS}.zip and the output file descriptor has closed.`)
-    console.log(`Removing unzipped build:`, sourceDir)
+    console.log('Removing unzipped build:', sourceDir)
     removePackageSrc(targetOS)
     console.log(`Finished zipping git-switch-${targetOS}.zip`)
   })

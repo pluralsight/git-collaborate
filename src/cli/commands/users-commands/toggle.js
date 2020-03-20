@@ -2,7 +2,7 @@ import { get as getUsers, toggleActive } from '../../../common/services/user'
 import { events, publish, showNotification } from '../../utils'
 
 export const command = 'toggle [userIds..]'
-export const describe = `Toggle users' active status`
+export const describe = 'Toggle users\' active status'
 
 export const builder = yargs =>
   yargs

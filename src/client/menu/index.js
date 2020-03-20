@@ -100,13 +100,13 @@ export default class Menu extends React.Component {
   }
   handleMenuButtonClick = () => {
     remote.Menu.buildFromTemplate([
-      { label: 'Edit repositories', click: () => this.toggleRepositories() },
+      { label: 'Edit repositories', click: () => this.handleToggleRepositories() },
       { type: 'separator' },
       { label: 'Quit', click: appApi.quit }
     ]).popup()
   }
 
-  toggleRepositories = () => {
+  handleToggleRepositories = () => {
     this.setState({ showRepositories: !this.state.showRepositories })
   }
 
@@ -119,9 +119,11 @@ export default class Menu extends React.Component {
         onUserActiveToggled={this.handleToggleActiveUser}
         onUserRemoved={this.handleRemoveUser}
         onUserUpdated={this.handleEditUser}
-        onUsersRotated={this.handleRotateUsers} />
+        onUsersRotated={this.handleRotateUsers}
+      />
     )
   }
+
   render() {
     const { userEdits, showRepositories } = this.state
     const overlayActive = userEdits || showRepositories
@@ -144,13 +146,16 @@ export default class Menu extends React.Component {
             user={userEdits}
             onChange={this.handleEditUser}
             onConfirm={this.handleUserFormSubmit}
-            onClose={this.handleCancelUserForm} />
+            onClose={this.handleCancelUserForm}
+          />
         </div>
         <div className={css.overlayContainer} style={{ top: showRepositories ? 65 : -60 * this.state.repos.length - 100 }}>
-          <Repositories repos={this.state.repos}
+          <Repositories
+            onDone={this.handleToggleRepositories}
             onRepoAdded={this.handleAddRepo}
-            onDone={this.toggleRepositories}
-            onRepoRemoved={this.handleRemoveRepo} />
+            onRepoRemoved={this.handleRemoveRepo}
+            repos={this.state.repos}
+          />
         </div>
       </div>
     )

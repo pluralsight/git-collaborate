@@ -7,7 +7,7 @@ describe('utils/string', () => {
     const kaiden = { name: 'Kaiden Rawlinson', active: true }
     const james = { name: 'James Walsh', active: true }
     const parker = { name: 'Parker Holladay', active: true }
-    it(`lists the active users' first names`, () => {
+    it('lists the active users\' first names', () => {
       const users = [kaiden, { ...james, active: false }, parker]
       expect(subject.formatActiveUserFirstNames(users)).to.equal('Kaiden and Parker')
     })

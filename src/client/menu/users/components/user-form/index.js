@@ -84,23 +84,27 @@ export default class UserForm extends React.Component {
             value={user.name}
             placeholder="Name"
             onChange={this.handleFieldChange}
-            ref={this.setNameInput} />
+            ref={this.setNameInput}
+          />
           <input
             id="email"
             className={css.field}
             value={user.email}
             placeholder="Email"
-            onChange={this.handleFieldChange} />
+            onChange={this.handleFieldChange}
+          />
           <div className={css.rsaFieldContainer}>
             <input
               id="rsaKeyPath"
               className={css.rsaField}
               value={user.rsaKeyPath}
               placeholder="Path to RSA key"
-              onChange={this.handleFieldChange} />
+              onChange={this.handleFieldChange}
+            />
             <Button
               onClick={this.handleAddRsaKey}
-              disabled={this.state.isSelectingRsaKey}>
+              disabled={this.state.isSelectingRsaKey}
+            >
               Browse
             </Button>
           </div>

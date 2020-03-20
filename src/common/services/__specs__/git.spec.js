@@ -43,7 +43,7 @@ describe('services/git', () => {
 
     it('sets empty co-author(s) when none are provided', () => {
       subject.setCoAuthors([])
-      expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
+      expect(exec.execute).to.have.been.calledWith('git config --global git-switch.co-authors ""')
     })
   })
 
@@ -85,7 +85,7 @@ describe('services/git', () => {
 
         expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${user.name}"`)
         expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${user.email}"`)
-        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors ""`)
+        expect(exec.execute).to.have.been.calledWith('git config --global git-switch.co-authors ""')
       })
     })
 

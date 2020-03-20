@@ -1,3 +1,3 @@
-import { sandbox } from 'sinon'
+import sinon from 'sinon'
 
-export default sandbox.create()
+export default sinon.createSandbox()

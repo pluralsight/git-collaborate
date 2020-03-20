@@ -1,4 +1,4 @@
-const fs = require('fs-extra')
+const fs = require('fs')
 const path = require('path')
 
 const PACKAGE_BASE_NAME = 'git-switch'
@@ -17,7 +17,7 @@ const packageNames = {
 
 function removePackageSrc(targetOS) {
   const sourceDir = getPackageSrcDir(targetOS)
-  fs.removeSync(sourceDir)
+  fs.unlinkSync(sourceDir)
 }
 
 function getPackageSrcDir(targetOS) {
