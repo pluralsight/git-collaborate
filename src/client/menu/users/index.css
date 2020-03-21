@@ -87,7 +87,7 @@
   overflow: hidden;
   box-shadow: 0 4px 16px 0 rgba(0,0,0,0.2)
 }
-.avatarImage {
+.avatar-image {
   position: absolute;
   top: 0;
   right: 0;
@@ -96,7 +96,7 @@
   transition: opacity 0.2s;
 }
 
-.userInfo {
+.user-info {
   flex-grow: 1;
   margin-left: 8px;
 }
@@ -109,7 +109,7 @@
   font-size: 12px;
 }
 
-.userMenuButton {
+.user-menu-button {
   padding: 2px;
   margin-right: 5px;
   background: none;
@@ -117,7 +117,7 @@
   cursor: pointer;
 }
 
-.emptyMessage {
+.empty-message {
   padding: 30px;
   text-align: center;
   color: #b3b3b3;

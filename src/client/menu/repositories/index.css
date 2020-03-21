@@ -1,4 +1,4 @@
-.reposList {
+.repos-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -13,35 +13,35 @@
   padding: 12px 8px;
   border-bottom: 1px solid #ededed;
 }
-.repoInvalid {
+.repo-invalid {
   composes: repo;
   background: #ecc8c5
 }
-.invalidMessage {
+.invalid-message {
   margin-left: 4px;
   font-weight: 700;
   color: #b4302b;
 }
-.repoInfo {
+.repo-info {
   flex-grow: 1;
   margin-left: 8px;
 }
-.repoName {
+.repo-name {
   color: #444d56;
   font-weight: 600;
 }
-.repoPath {
+.repo-path {
   color: #586069;
   font-size: 12px;
 }
 
-.emptyMessage {
+.empty-message {
   padding: 30px;
   text-align: center;
   color: #b3b3b3;
   font-size: 18px;
 }
-.emptyMessageSub {
+.empty-message-sub {
   font-size: 12px;
 }
 

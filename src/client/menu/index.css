@@ -22,16 +22,16 @@ html, body {
   border-bottom: 1px solid #d5d5d5;
 }
 
-.headerTitle {
+.header-title {
   margin-left: 8px;
   font-size: 22px;
 }
-.menuButtonContainer {
+.menu-button-container {
   display: flex;
   justify-content: flex-end;
   flex: 1;
 }
-.menuButton {
+.menu-button {
   width: 40px;
   height: 40px;
   padding: 8px;
@@ -54,7 +54,7 @@ html, body {
   border-top: 1px solid #d5d5d5;
 }
 
-.overlayBackground {
+.overlay-background {
   position: absolute;
   top: 0;
   right: 0;
@@ -62,13 +62,13 @@ html, body {
   left: 0;
   transition: background 0.3s, bottom 0s 0.3s;
 }
-.overlayBackgroundActive {
-  composes: overlayBackground;
+.overlay-background-active {
+  composes: overlay-background;
   bottom: 0;
   background: rgba(0,0,0,0.5);
   transition: background 0.3s;
 }
-.overlayContainer {
+.overlay-container {
   position: absolute;
   top: 65px;
   left: 0;

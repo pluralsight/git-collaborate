@@ -1,5 +1,5 @@
 const ElectronConnectWebpackPlugin = require('electron-connect-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
@@ -18,8 +18,10 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve('./src/build'),
-    publicPath: '/'
+    publicPath: './'
   },
+
+  mode: 'production',
 
   target: 'electron-renderer',
 
@@ -32,21 +34,31 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract({
-          use: [
-            'css-loader?modules&importLoaders=1&localIdentName=[local]---[hash:base64:5]',
-            {
-              loader: 'postcss-loader',
-              options: {
-                plugins: {
-                  'postcss-import': {},
-                  'postcss-cssnext': {},
-                  'postcss-nested': {}
-                }
-              }
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: (resourcePath, context) =>
+                `${path.relative(path.dirname(resourcePath), context)}/`
             }
-          ]
-        })
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              importLoaders: 1,
+              localsConvention: 'camelCaseOnly'
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: () => [
+                require('postcss-preset-env')()
+              ]
+            }
+          }
+        ]
       },
       {
         test: /\.svg$/,
@@ -56,7 +68,7 @@ module.exports = {
   },
 
   plugins: [
-    new ExtractTextPlugin('styles.css'),
+    new MiniCssExtractPlugin({ filename: 'styles.css' }),
     new HtmlWebpackPlugin({ template: './src/client/index.html' })
   ].concat(isDev ? devOnlyPlugins : []),
 
