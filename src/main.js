@@ -1,10 +1,9 @@
 import path from 'path'
 
 import { handleCli } from './cli'
-import install from './common/utils/install'
 import IpcRouter from './ipc-router'
-import { getMenubar } from './common/utils/menubar'
-import { showCurrentAuthors } from './common/services/notification'
+import { notificationService } from './common/services'
+import { install, getMenubar } from './common/utils'
 
 const isDev = process.env.NODE_ENV === 'dev'
 
@@ -14,7 +13,7 @@ const handleAppReady = menubar => () => {
   if (isDev) {
     menubar.showWindow()
   } else {
-    showCurrentAuthors()
+    notificationService.showCurrentAuthors()
   }
 }
 
@@ -30,7 +29,7 @@ const handleSecondInstanceArgs = args => {
   // update the ui and give notifications to the user, but do not make changes
   args = [...args, '--verbose', '--doWork', 'false']
 
-  setTimeout(() => handleCli(args), 100)
+  setTimeout(() => handleCli(args), 300)
 }
 
 const getCliArgs = args => {
@@ -47,11 +46,14 @@ const startUp = () => {
     browserWindow: {
       alwaysOnTop: isDev,
       height: 600,
-      width: isDev ? 800 : 400
+      width: isDev ? 800 : 400,
+      webPreferences: {
+        nodeIntegration: true
+      }
     },
     dir: __dirname,
     icon: path.join(__dirname, 'assets', 'icons', iconFile),
-    index: 'file://' + path.join(__dirname, '..', 'src', 'build', 'index.html'),
+    index: 'file://' + path.join(__dirname, 'build', 'index.html'),
     preloadWindow: true
   })
 

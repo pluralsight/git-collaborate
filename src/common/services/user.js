@@ -1,8 +1,7 @@
 import { v4 as uuid } from 'uuid'
 
-import * as config from '../utils/config'
-import * as gitService from './git'
-import * as sshService from './ssh'
+import { gitService, sshService } from './'
+import { config } from '../utils'
 
 export const get = () => {
   return config.read().users || []
@@ -17,7 +16,7 @@ const updateExternalServices = users => {
   sshService.rotateIdentityFile(users[0].rsaKeyPath)
 }
 
-export const getId = () => {
+export const generateId = () => {
   let id
   do {
     id = uuid().split('-')[0]
@@ -31,7 +30,7 @@ export const add = ({ name, email, rsaKeyPath }) => {
   const activeUsers = users.filter(u => u.active)
   const inactiveUsers = users.filter(u => !u.active)
 
-  const newUser = { id: getId(), name, email, rsaKeyPath, active: true }
+  const newUser = { id: generateId(), name, email, rsaKeyPath, active: true }
 
   const updatedUsers = [
     ...activeUsers,
@@ -63,7 +62,9 @@ export const update = user => {
 export const remove = id => {
   const users = get()
   const foundIndex = users.findIndex(u => u.id === id)
-  if (foundIndex === -1) return
+  if (foundIndex === -1) {
+    return
+  }
 
   users.splice(foundIndex, 1)
 
@@ -76,7 +77,9 @@ export const remove = id => {
 export const rotate = () => {
   const users = get()
   const activeUsers = users.filter(u => u.active)
-  if (!activeUsers.length || activeUsers.length === 1) return users
+  if (!activeUsers.length || activeUsers.length === 1) {
+    return users
+  }
 
   const inactiveUsers = users.filter(u => !u.active)
   const updatedUsers = [
@@ -94,7 +97,9 @@ export const rotate = () => {
 export const toggleActive = id => {
   const users = get()
   const user = users.find(u => u.id === id)
-  if (!user) return users
+  if (!user) {
+    return users
+  }
 
   const activeUsers = users.filter(u => u.active && u.id !== id)
   const inactiveUsers = users.filter(u => !u.active && u.id !== id)
@@ -120,7 +125,7 @@ export const shortenUserIds = () => {
   users = users.map(u =>
     u.id.length === 8
       ? u
-      : { ...u, id: getId() })
+      : { ...u, id: generateId() })
 
   persist(users)
 }

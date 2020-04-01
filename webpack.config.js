@@ -1,6 +1,6 @@
 const ElectronConnectWebpackPlugin = require('electron-connect-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const path = require('path')
 
 const isDev = process.env.NODE_ENV === 'dev'
@@ -13,17 +13,17 @@ const devOnlyPlugins = [
 ]
 
 module.exports = {
-  entry: ['babel-polyfill', './src/client/index.js'],
+  entry: ['@babel/register', 'core-js/stable', './src/client/index.js'],
+
+  mode: isDev ? 'development' : 'production',
+
+  target: 'electron-renderer',
 
   output: {
     filename: 'bundle.js',
     path: path.resolve('./src/build'),
     publicPath: './'
   },
-
-  mode: 'production',
-
-  target: 'electron-renderer',
 
   module: {
     rules: [
@@ -45,9 +45,11 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
               importLoaders: 1,
-              localsConvention: 'camelCaseOnly'
+              localsConvention: 'camelCaseOnly',
+              modules: {
+                localIdentName: '[name]-[local]---[hash:base64:5]'
+              }
             }
           },
           {

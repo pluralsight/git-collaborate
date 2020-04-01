@@ -1,6 +1,5 @@
-import * as logger from '../../../common/utils/logger'
-import { get as getRepos } from '../../../common/services/repo'
-import { getBoarderLine, getColumn, getField, getHeaderLines } from '../../utils'
+import { repoService } from '../../../common/services'
+import { getBoarderLine, getColumn, getField, getHeaderLines, logger } from '../../utils'
 
 export const command = 'list'
 export const describe = 'List repositories'
@@ -24,7 +23,7 @@ ${getField({ value: isValid.values[i] ? '✓' : '', minWidth: isValid.width, sta
 export const handler = args => {
   if (!args.doWork) return
 
-  const repos = getRepos()
+  const repos = repoService.get()
 
   const columns = [
     getColumn({ data: repos, header: 'Basename', key: 'name' }),

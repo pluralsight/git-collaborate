@@ -5,7 +5,7 @@ import { BinIcon } from '../../icons'
 
 import css from './index.css'
 
-export default function DeleteButton(props) {
+export function DeleteButton(props) {
   return (
     <div className={css.container} onClick={props.onClick}>
       <BinIcon />

@@ -2,8 +2,8 @@ import { expect } from 'chai'
 import fs from 'fs'
 import path from 'path'
 
+import { gitService as subject } from '../'
 import * as exec from '../../utils/exec'
-import * as subject from '../git'
 import sandbox from '../../../../test/sandbox'
 
 describe('services/git', () => {
@@ -195,6 +195,11 @@ describe('services/git', () => {
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
 
+      it('returns true', () => {
+        const success = subject.initRepo(repoPath)
+        expect(success).to.be.true
+      })
+
       describe('when post-commit already exists', () => {
         beforeEach(() => {
           postCommitExists = true
@@ -204,9 +209,10 @@ describe('services/git', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
-          subject.initRepo(repoPath)
+          const success = subject.initRepo(repoPath)
 
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
+          expect(success).to.be.true
         })
       })
 
@@ -231,7 +237,7 @@ describe('services/git', () => {
         })
 
         it('installs post-commit files in sub-modules', () => {
-          subject.initRepo(repoPath)
+          const success = subject.initRepo(repoPath)
 
           expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
           expect(exec.execute).to.have.been.calledWith('git submodule status')
@@ -244,21 +250,23 @@ describe('services/git', () => {
 
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+
+          expect(success).to.be.true
         })
       })
     })
 
     describe('when path does not exist', () => {
-      it('throws an error', () => {
+      it('return false', () => {
         pathExists = false
-        expect(() => subject.initRepo(repoPath)).to.throw
+        expect(subject.initRepo(repoPath)).to.be.false
       })
     })
 
     describe('when path is not a git repo', () => {
-      it('throws an error', () => {
+      it('return false', () => {
         repoExists = false
-        expect(() => subject.initRepo(repoPath)).to.throw
+        expect(subject.initRepo(repoPath)).to.be.false
       })
     })
   })

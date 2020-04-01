@@ -3,7 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import * as subject from '../config'
+import { config as subject } from '../'
 import sandbox from '../../../../test/sandbox'
 
 const FILE = path.join(os.homedir(), '.git-switch', 'config.json')

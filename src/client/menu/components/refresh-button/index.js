@@ -5,7 +5,7 @@ import { RotateIcon } from '../../icons'
 
 import css from './index.css'
 
-export default class RefreshButton extends React.Component {
+export class RefreshButton extends React.Component {
   static propTypes = {
     onClick: func.isRequired
   }

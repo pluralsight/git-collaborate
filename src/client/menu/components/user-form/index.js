@@ -2,7 +2,7 @@ import { remote } from 'electron'
 import { bool, func, shape, string } from 'prop-types'
 import React from 'react'
 
-import Button from '../../../components/button'
+import { Button } from '../'
 
 import css from './index.css'
 
@@ -13,7 +13,7 @@ const userType = shape({
   active: bool
 })
 
-export default class UserForm extends React.Component {
+export class UserForm extends React.Component {
   static propTypes = {
     user: userType,
     onConfirm: func.isRequired,
@@ -53,14 +53,13 @@ export default class UserForm extends React.Component {
   handleAddRsaKey = () => {
     this.setState({ isSelectingRsaKey: true })
     remote.dialog.showOpenDialog({
-      properties: ['openFile', 'showHiddenFiles', 'treatPackageAsDirectory']
-    }, this.handleRsaKeySelected)
-  }
-  handleRsaKeySelected = paths => {
-    this.setState({ isSelectingRsaKey: false })
-    this.props.onChange({
-      ...this.props.user,
-      rsaKeyPath: (paths && paths[0]) || this.props.user.rsaKeyPath
+      properties: ['openFile', 'showHiddenFiles', 'treatPackageAsDirectory', 'dontAddToRecent', '']
+    }).then(result => {
+      this.setState({ isSelectingRsaKey: false })
+      this.props.onChange({
+        ...this.props.user,
+        rsaKeyPath: (result.filePaths.length && result.filePaths[0]) || this.props.user.rsaKeyPath
+      })
     })
   }
 

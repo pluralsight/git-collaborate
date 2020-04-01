@@ -1,6 +1,5 @@
-import * as logger from '../../../common/utils/logger'
-import { update as updateUser, get as getUsers } from '../../../common/services/user'
-import { events, publish } from '../../utils'
+import { userService } from '../../../common/services'
+import { EVENTS, publish, logger } from '../../utils'
 
 export const command = 'edit [userId]'
 export const describe = 'Edit an existing user'
@@ -34,7 +33,7 @@ export const builder = yargs =>
 
 export const handler = args => {
   const { userId, name, email, key: rsaKeyPath, doWork, verbose } = args
-  const users = getUsers()
+  const users = userService.get()
 
   let updatedUsers
   if (doWork) {
@@ -44,7 +43,7 @@ export const handler = args => {
       return
     }
 
-    updatedUsers = updateUser({
+    updatedUsers = userService.update({
       ...user,
       name: name || user.name,
       email: email || user.email,
@@ -55,6 +54,6 @@ export const handler = args => {
   }
 
   if (verbose) {
-    publish(events.users, updatedUsers)
+    publish(EVENTS.USERS, updatedUsers)
   }
 }

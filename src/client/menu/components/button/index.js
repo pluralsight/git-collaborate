@@ -9,7 +9,7 @@ const TYPES = {
   confirm: 'confirm'
 }
 
-export default class Button extends React.Component {
+export class Button extends React.Component {
   static propTypes = {
     onClick: func.isRequired,
     children: node.isRequired,

@@ -1,11 +1,9 @@
 import { expect } from 'chai'
 import fs from 'fs'
 
-import * as gitService from '../../services/git'
-import subject, { GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../install'
-import * as repoService from '../../services/repo'
+import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../'
 import sandbox from '../../../../test/sandbox'
-import * as userService from '../../services/user'
+import { gitService, repoService, userService } from '../../services'
 
 describe('utils/install', () => {
   let gitSwitchDirExists
@@ -128,16 +126,16 @@ describe('utils/install', () => {
   describe('when the config file exists', () => {
     beforeEach(() => {
       existingRepos = [{ path: 'repo/one' }, { path: 'repo/two' }]
-      sandbox.stub(repoService, 'add')
+      sandbox.stub(gitService, 'initRepo')
       sandbox.stub(fs, 'writeFileSync')
     })
 
     it('re-initializes all the repos', () => {
       subject(platform, appExecutablePath)
 
-      expect(repoService.add).to.have.been.calledWith('repo/one')
-      expect(repoService.add).to.have.been.calledWith('repo/two')
-      expect(repoService.add).to.have.been.calledTwice
+      expect(gitService.initRepo).to.have.been.calledWith('repo/one')
+      expect(gitService.initRepo).to.have.been.calledWith('repo/two')
+      expect(gitService.initRepo).to.have.been.calledTwice
     })
 
     it('initializes authors/co-authors in .gitconfig', () => {
@@ -159,9 +157,9 @@ describe('utils/install', () => {
       it('re-initializes all the repos', () => {
         subject(platform, appExecutablePath)
 
-        expect(repoService.add).to.have.been.calledWith('repo/one')
-        expect(repoService.add).to.have.been.calledWith('repo/two')
-        expect(repoService.add).to.have.been.calledTwice
+        expect(gitService.initRepo).to.have.been.calledWith('repo/one')
+        expect(gitService.initRepo).to.have.been.calledWith('repo/two')
+        expect(gitService.initRepo).to.have.been.calledTwice
       })
 
       it('initializes authors/co-authors in .gitconfig', () => {

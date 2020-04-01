@@ -1,12 +1,13 @@
 import { expect } from 'chai'
 
-import * as subject from '../string'
+import * as subject from '../'
 
 describe('utils/string', () => {
   describe('#formatActiveUserFirstNames', () => {
     const kaiden = { name: 'Kaiden Rawlinson', active: true }
     const james = { name: 'James Walsh', active: true }
     const parker = { name: 'Parker Holladay', active: true }
+
     it('lists the active users\' first names', () => {
       const users = [kaiden, { ...james, active: false }, parker]
       expect(subject.formatActiveUserFirstNames(users)).to.equal('Kaiden and Parker')
@@ -24,15 +25,15 @@ describe('utils/string', () => {
   })
 
   describe('#getNotificationLabel', () => {
-    it('returns "author" if userCount is 1', () => {
+    it('returns "author" if activeUserCount is 1', () => {
       expect(subject.getNotificationLabel(1)).to.equal('author')
     })
 
-    it('returns "pair" if userCount is 2', () => {
+    it('returns "pair" if activeUserCount is 2', () => {
       expect(subject.getNotificationLabel(2)).to.equal('pair')
     })
 
-    it('returns "mob" if userCount is > 2', () => {
+    it('returns "mob" if activeUserCount is > 2', () => {
       expect(subject.getNotificationLabel(3)).to.equal('mob')
     })
 

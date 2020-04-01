@@ -1,5 +1,5 @@
-import { get as getRepos, remove as removeRepo } from '../../../common/services/repo'
-import { events, publish } from '../../utils'
+import { repoService } from '../../../common/services'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'remove [paths..]'
 export const describe = 'Remove repositories'
@@ -21,13 +21,13 @@ export const handler = args => {
   let updatedRepos
   if (doWork) {
     for (const path of paths) {
-      updatedRepos = removeRepo(path)
+      updatedRepos = repoService.remove(path)
     }
   } else {
-    updatedRepos = getRepos()
+    updatedRepos = repoService.get()
   }
 
   if (verbose) {
-    publish(events.repos, updatedRepos)
+    publish(EVENTS.REPOS, updatedRepos)
   }
 }

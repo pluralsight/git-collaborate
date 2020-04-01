@@ -1,9 +1,8 @@
 import { expect } from 'chai'
 
-import * as configUtil from '../../utils/config'
-import * as gitService from '../git'
-import * as subject from '../repo'
+import { gitService, repoService as subject } from '../'
 import sandbox from '../../../../test/sandbox'
+import { config as configUtil } from '../../utils'
 
 describe('services/repo', () => {
   let repos
@@ -15,6 +14,7 @@ describe('services/repo', () => {
       { name: 'two', path: '/repo/two', isValid: true }
     ]
     config = { repos }
+
     sandbox.stub(configUtil, 'read').callsFake(() => config)
   })
   afterEach(() => {
@@ -35,8 +35,13 @@ describe('services/repo', () => {
   })
 
   describe('#add', () => {
+    let didRepoSucceed
+
     beforeEach(() => {
+      didRepoSucceed = true
+
       sandbox.stub(configUtil, 'write')
+      sandbox.stub(gitService, 'initRepo').callsFake(() => didRepoSucceed)
     })
 
     it('adds repo to config sorted by name', () => {
@@ -45,7 +50,6 @@ describe('services/repo', () => {
         { name: 'bar', path: newRepo, isValid: true },
         ...repos
       ]
-      sandbox.stub(gitService, 'initRepo')
 
       const actual = subject.add(newRepo)
 
@@ -57,7 +61,6 @@ describe('services/repo', () => {
     describe('when a repo with the path already exists', () => {
       it('re-initializes the repo', () => {
         const existingRepo = '/repo/one'
-        sandbox.stub(gitService, 'initRepo')
         const expected = [
           { name: 'one', path: existingRepo, isValid: true },
           repos[1]
@@ -79,7 +82,6 @@ describe('services/repo', () => {
           { name: 'bar', path: modifiedRepo, isValid: true },
           ...repos
         ]
-        sandbox.stub(gitService, 'initRepo')
 
         const actual = subject.add(newRepo)
 
@@ -96,7 +98,6 @@ describe('services/repo', () => {
           { name: 'bar', path: newRepo, isValid: true },
           ...repos
         ]
-        sandbox.stub(gitService, 'initRepo')
 
         const actual = subject.add(newRepo)
 
@@ -107,8 +108,11 @@ describe('services/repo', () => {
     })
 
     describe('when git service fails to init repo hooks', () => {
+      beforeEach(() => {
+        didRepoSucceed = false
+      })
+
       it('adds the repo with isValid set to false', () => {
-        sandbox.stub(gitService, 'initRepo').callsFake(() => { throw new Error('badness') })
         const expected = [
           { name: 'bar-2', path: '/foo/bar-2', isValid: false },
           ...repos

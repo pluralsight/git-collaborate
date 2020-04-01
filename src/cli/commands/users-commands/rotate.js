@@ -1,6 +1,5 @@
-import { getNotificationLabel } from '../../../common/utils/string'
-import { get as getUsers, rotate } from '../../../common/services/user'
-import { events, publish, showNotification } from '../../utils'
+import { userService, notificationService } from '../../../common/services'
+import { EVENTS, getNotificationLabel, publish } from '../../utils'
 
 export const command = 'rotate'
 export const describe = 'Rotate active users'
@@ -15,16 +14,17 @@ export const handler = args => {
   let updatedUsers
 
   if (doWork) {
-    updatedUsers = rotate()
+    updatedUsers = userService.rotate()
   } else {
-    updatedUsers = getUsers()
+    updatedUsers = userService.get()
   }
 
   const activeUserCount = updatedUsers.filter(u => u.active).length
 
   if (verbose && activeUserCount > 1) {
+    publish(EVENTS.USERS, updatedUsers)
+
     const label = getNotificationLabel(activeUserCount, true)
-    showNotification({ title: `${label} rotated to:` })
-    publish(events.users, updatedUsers)
+    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
   }
 }

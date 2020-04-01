@@ -1,7 +1,7 @@
 import orderBy from 'lodash.orderby'
 
-import * as config from '../utils/config'
-import { initRepo, removeRepo } from './git'
+import { gitService } from './'
+import { config } from '../utils'
 
 export const get = () => {
   return config.read().repos || []
@@ -26,15 +26,11 @@ export const add = path => {
   const name = getNameFromPath(path)
 
   const existingRepo = repos.find(r => r.path === path)
-  if (existingRepo)
+  if (existingRepo) {
     repos = repos.filter(r => r !== existingRepo)
-
-  let isValid = true
-  try {
-    initRepo(path)
-  } catch (err) {
-    isValid = false
   }
+
+  const isValid = gitService.initRepo(path)
 
   return persist([
     ...repos,
@@ -48,9 +44,14 @@ export const remove = path => {
   path = normalizePath(path)
   const foundIndex = repos.findIndex(r => r.path === path)
 
-  if (foundIndex === -1) return repos
+  if (foundIndex === -1) {
+    return repos
+  }
 
-  if (repos[foundIndex].isValid) removeRepo(path)
+  if (repos[foundIndex].isValid) {
+    gitService.removeRepo(path)
+  }
+
   repos.splice(foundIndex, 1)
 
   return persist(repos)

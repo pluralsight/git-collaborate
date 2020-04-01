@@ -1,5 +1,5 @@
-import { add as addRepo, get as getRepos } from '../../../common/services/repo'
-import { events, publish } from '../../utils'
+import { repoService } from '../../../common/services'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'add [paths..]'
 export const describe = 'Add repositories'
@@ -21,13 +21,13 @@ export const handler = args => {
   let updatedRepos = []
   if (doWork) {
     for (const path of paths) {
-      updatedRepos = addRepo(path)
+      updatedRepos = repoService.add(path)
     }
   } else {
-    updatedRepos = getRepos()
+    updatedRepos = repoService.get()
   }
 
   if (verbose) {
-    publish(events.repos, updatedRepos)
+    publish(EVENTS.REPOS, updatedRepos)
   }
 }

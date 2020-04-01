@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import * as subject from '../logger'
+import { logger as subject } from '../'
 import sandbox from '../../../../test/sandbox'
 
 describe('utils/logger', () => {

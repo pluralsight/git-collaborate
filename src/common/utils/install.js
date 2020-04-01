@@ -2,17 +2,15 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import * as gitService from '../services/git'
-import * as repoService from '../services/repo'
-import * as userService from '../services/user'
-import * as logger from './logger'
+import { logger } from '.'
+import { gitService, repoService, userService } from '../services'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-author')
 
-export default function(platform, appExecutablePath) {
+export function install(platform, appExecutablePath) {
   installConfigFile()
   userService.shortenUserIds()
 
@@ -91,7 +89,7 @@ fi
 
   const repos = repoService.get()
   for (const repo of repos) {
-    repoService.add(repo.path)
+    gitService.initRepo(repo.path)
   }
 }
 

@@ -1,10 +1,8 @@
 import { expect } from 'chai'
 
-import * as configUtil from '../../utils/config'
-import * as gitService from '../git'
+import { gitService, sshService, userService as subject } from '../'
 import sandbox from '../../../../test/sandbox'
-import * as sshService from '../ssh'
-import * as subject from '../user'
+import { config as configUtil } from '../../utils'
 
 describe('services/user', () => {
   let users
@@ -12,13 +10,13 @@ describe('services/user', () => {
 
   beforeEach(() => {
     users = [{
-      id: subject.getId(),
+      id: subject.generateId(),
       name: 'First User',
       email: 'first@email.com',
       rsaKeyPath: '/not/a/real/path',
       active: false
     }, {
-      id: subject.getId(),
+      id: subject.generateId(),
       name: 'Second User',
       email: 'second@email.com',
       rsaKeyPath: '/not/a/real/path',
@@ -49,15 +47,15 @@ describe('services/user', () => {
     })
   })
 
-  describe('#getId', () => {
+  describe('#generateId', () => {
     it('returns an eight char id', () => {
-      const id = subject.getId()
+      const id = subject.generateId()
       expect(id.length).to.equal(8)
     })
 
     it('returns a minimum of one alpha character', () => {
       for (let i = 0; i < 100; i++) {
-        const id = subject.getId()
+        const id = subject.generateId()
         expect(id).to.match(/[a-f]+/)
       }
     })
@@ -303,7 +301,7 @@ describe('services/user', () => {
         { ...users[0], active: true },
         users[1],
         {
-          id: subject.getId(),
+          id: subject.generateId(),
           name: 'Third User',
           email: 'third@email.com',
           rsaKeyPath: '/foo/bar',
@@ -336,7 +334,7 @@ describe('services/user', () => {
 
     describe('when user does not exist', () => {
       it('returns current users', () => {
-        const actual = subject.toggleActive(subject.getId())
+        const actual = subject.toggleActive(subject.generateId())
 
         expect(actual).to.deep.equal(users)
         expect(configUtil.write).to.not.have.been.called

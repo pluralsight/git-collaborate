@@ -1,5 +1,5 @@
 --reporter list
---require babel-register
---require babel-polyfill
+--require @babel/register
+--require core-js/stable
 ./test/setup.js
 ./src/**/*.spec.js

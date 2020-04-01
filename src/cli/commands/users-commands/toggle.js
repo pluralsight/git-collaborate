@@ -1,5 +1,5 @@
-import { get as getUsers, toggleActive } from '../../../common/services/user'
-import { events, publish, showNotification } from '../../utils'
+import { userService, notificationService } from '../../../common/services'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'toggle [userIds..]'
 export const describe = 'Toggle users\' active status'
@@ -21,14 +21,14 @@ export const handler = args => {
   let updatedUsers
   if (doWork) {
     for (const id of userIds) {
-      updatedUsers = toggleActive(id)
+      updatedUsers = userService.toggleActive(id)
     }
   } else {
-    updatedUsers = getUsers()
+    updatedUsers = userService.get()
   }
 
   if (verbose) {
-    showNotification()
-    publish(events.users, updatedUsers)
+    publish(EVENTS.USERS, updatedUsers)
+    notificationService.showCurrentAuthors()
   }
 }

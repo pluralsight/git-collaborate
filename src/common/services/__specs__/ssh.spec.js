@@ -1,8 +1,8 @@
 import { expect } from 'chai'
 import fs from 'fs'
 
+import { sshService as subject } from '../'
 import sandbox from '../../../../test/sandbox'
-import * as subject from '../ssh'
 
 describe('services/ssh', () => {
   afterEach(() => {

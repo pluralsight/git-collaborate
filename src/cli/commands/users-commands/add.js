@@ -1,5 +1,5 @@
-import { add as addUser, get as getUsers } from '../../../common/services/user'
-import { events, publish, showNotification } from '../../utils'
+import { userService, notificationService } from '../../../common/services'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'add'
 export const describe = 'Add a new user'
@@ -34,13 +34,13 @@ export const handler = args => {
 
   let updatedUsers
   if (doWork) {
-    updatedUsers = addUser({ name, email, rsaKeyPath })
+    updatedUsers = userService.add({ name, email, rsaKeyPath })
   } else {
-    updatedUsers = getUsers()
+    updatedUsers = userService.get()
   }
 
   if (verbose) {
-    showNotification()
-    publish(events.users, updatedUsers)
+    publish(EVENTS.USERS, updatedUsers)
+    notificationService.showCurrentAuthors()
   }
 }

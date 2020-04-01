@@ -1,4 +1,4 @@
-import { getLongestString } from '../../common/utils/string'
+import { getLongestString } from '../../common/utils'
 
 export const getColumn = ({ data, header, key }) => {
   const values = data.map(d => d[key])

@@ -1,8 +1,7 @@
 import { ipcMain } from 'electron'
 
 import CHANNELS from './common/ipc-channels'
-import * as userService from './common/services/user'
-import * as repoService from './common/services/repo'
+import { repoService, userService } from './common/services'
 
 export default class IpcRouter {
   app = null
@@ -26,16 +25,16 @@ export default class IpcRouter {
 
   handleQuitApplication = () => this.app.quit()
 
-  handleGetUsers = evt => evt.returnValue = userService.get()
-  handleRotateActiveUsers = evt => evt.returnValue = userService.rotate()
-  handleToggleUserActive = (evt, userId) => evt.returnValue = userService.toggleActive(userId)
-  handleAddUser = (evt, user) => evt.returnValue = userService.add(user)
-  handleUpdateUser = (evt, user) => evt.returnValue = userService.update(user)
-  handleRemoveUser = (evt, userId) => evt.returnValue = userService.remove(userId)
+  handleGetUsers = (evt) => { evt.returnValue = userService.get() }
+  handleRotateActiveUsers = (evt) => { evt.returnValue = userService.rotate() }
+  handleToggleUserActive = (evt, userId) => { evt.returnValue = userService.toggleActive(userId) }
+  handleAddUser = (evt, user) => { evt.returnValue = userService.add(user) }
+  handleUpdateUser = (evt, user) => { evt.returnValue = userService.update(user) }
+  handleRemoveUser = (evt, userId) => { evt.returnValue = userService.remove(userId) }
 
-  handleGetAllRepos = evt => evt.returnValue = repoService.get()
-  handleAddRepo = (evt, path) => evt.returnValue = repoService.add(path)
-  handleRemoveRepo = (evt, path) => evt.returnValue = repoService.remove(path)
+  handleGetRepos = (evt) => { evt.returnValue = repoService.get() }
+  handleAddRepo = (evt, path) => { evt.returnValue = repoService.add(path) }
+  handleRemoveRepo = (evt, path) => { evt.returnValue = repoService.remove(path) }
 
   listeners = {
     [CHANNELS.QUIT_APPLICATION]: this.handleQuitApplication,
@@ -47,7 +46,7 @@ export default class IpcRouter {
     [CHANNELS.UPDATE_USER]: this.handleUpdateUser,
     [CHANNELS.REMOVE_USER]: this.handleRemoveUser,
 
-    [CHANNELS.GET_ALL_REPOS]: this.handleGetAllRepos,
+    [CHANNELS.GET_ALL_REPOS]: this.handleGetRepos,
     [CHANNELS.ADD_REPO]: this.handleAddRepo,
     [CHANNELS.REMOVE_REPO]: this.handleRemoveRepo
   }

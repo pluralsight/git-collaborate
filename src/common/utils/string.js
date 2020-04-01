@@ -8,8 +8,8 @@ export const formatActiveUserFirstNames = users => {
     : `${activeUserFirstNames.slice(0, -1).join(', ')} and ${activeUserFirstNames.slice(-1)}`
 }
 
-export const getNotificationLabel = (userCount, shouldCapitalize = false) => {
-  const label = userCount < 2 ? 'author' : (userCount === 2 ? 'pair' : 'mob')
+export const getNotificationLabel = (activeUserCount, shouldCapitalize = false) => {
+  const label = activeUserCount < 2 ? 'author' : (activeUserCount === 2 ? 'pair' : 'mob')
 
   return shouldCapitalize ? capitalize(label) : label
 }

@@ -2,13 +2,11 @@ import { remote } from 'electron'
 import { array, func } from 'prop-types'
 import React from 'react'
 
-import Button from '../components/button'
-import DeleteButton from '../components/delete-button'
-import RefreshButton from '../components/refresh-button'
+import { Button, DeleteButton, RefreshButton } from '../'
 
 import css from './index.css'
 
-export default class Repositories extends React.Component {
+export class Repositories extends React.Component {
   static propTypes = {
     onRepoAdded: func.isRequired,
     onRepoRemoved: func.isRequired,
@@ -27,13 +25,12 @@ export default class Repositories extends React.Component {
     this.setState({ isSelectingRepos: true })
     remote.dialog.showOpenDialog({
       properties: ['openDirectory', 'multiSelections']
-    }, this.handleNewRepoSelected)
-  }
-  handleNewRepoSelected = paths => {
-    this.setState({ isSelectingRepos: false })
-    for (const path of paths || []) {
-      this.props.onRepoAdded(path)
-    }
+    }).then(result => {
+      this.setState({ isSelectingRepos: false })
+      for (const path of result.filePaths || []) {
+        this.props.onRepoAdded(path)
+      }
+    })
   }
   handleRefreshRepo = repo => () => {
     this.props.onRepoAdded(repo.path)

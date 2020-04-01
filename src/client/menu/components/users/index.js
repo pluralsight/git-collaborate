@@ -1,17 +1,15 @@
 import { remote } from 'electron'
 import md5 from 'md5'
+import { array, func } from 'prop-types'
 import React from 'react'
 
-import { array, func } from 'prop-types'
-
-import Button from '../components/button'
-import { ClearIcon, MoreIcon, RotateIcon } from '../icons'
+import { Button } from '../'
+import { ClearIcon, MoreIcon, RotateIcon } from '../../icons'
 
 import css from './index.css'
 
-export default class Users extends React.Component {
+export class Users extends React.Component {
   static propTypes = {
-    onAddUser: func.isRequired,
     onEditUser: func.isRequired,
     onUserActiveToggled: func.isRequired,
     onUserRemoved: func.isRequired,
@@ -25,12 +23,6 @@ export default class Users extends React.Component {
   handleToggleActiveUser = user => evt => {
     if (!evt.target.closest('button'))
       this.props.onUserActiveToggled(user.id)
-  }
-  handleAddUser = newUser => {
-    this.props.onAddUser(newUser)
-  }
-  handleUpdateUser = user => {
-    this.toggleUserActions(user.id)
   }
   handleRemoveUser = userId => {
     this.props.onUserRemoved(userId)

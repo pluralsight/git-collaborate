@@ -1,5 +1,5 @@
-import { get as getUsers, remove as removeUser } from '../../../common/services/user'
-import { events, publish } from '../../utils'
+import { userService } from '../../../common/services'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'remove [userIds..]'
 export const describe = 'Remove users'
@@ -21,13 +21,13 @@ export const handler = args => {
   let updatedUsers
   if (doWork) {
     for (const id of userIds) {
-      updatedUsers = removeUser(id)
+      updatedUsers = userService.remove(id)
     }
   } else {
-    updatedUsers = getUsers()
+    updatedUsers = userService.get()
   }
 
   if (verbose) {
-    publish(events.users, updatedUsers)
+    publish(EVENTS.USERS, updatedUsers)
   }
 }

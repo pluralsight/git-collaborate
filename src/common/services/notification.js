@@ -1,6 +1,7 @@
 import { Notification } from 'electron'
-import { formatActiveUserFirstNames, getNotificationLabel } from '../utils/string'
-import * as userService from './user'
+
+import { userService } from './'
+import { formatActiveUserFirstNames, getNotificationLabel } from '../utils'
 
 function showNotification(config) {
   const notification = new Notification(config)

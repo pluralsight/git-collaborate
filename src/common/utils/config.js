@@ -7,13 +7,19 @@ const defaultConfig = {
   users: []
 }
 
-function configFileExists() {
+function doesConfigFileExist() {
   return fs.existsSync(CONFIG_FILE)
 }
 
+function getConfigFromFile() {
+  const configJson = fs.readFileSync(CONFIG_FILE, 'utf-8')
+
+  return JSON.parse(configJson)
+}
+
 export function read() {
-  return configFileExists()
-    ? JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
+  return doesConfigFileExist()
+    ? getConfigFromFile()
     : defaultConfig
 }
 

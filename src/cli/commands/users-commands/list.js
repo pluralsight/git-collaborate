@@ -1,6 +1,5 @@
-import * as logger from '../../../common/utils/logger'
-import { get as getUsers } from '../../../common/services/user'
-import { getBoarderLine, getColumn, getField, getHeaderLines } from '../../utils'
+import { userService } from '../../../common/services'
+import { getBoarderLine, getColumn, getField, getHeaderLines, logger } from '../../utils'
 
 export const command = 'list'
 export const describe = 'List users'
@@ -36,7 +35,7 @@ export const handler = args => {
 
   if (!doWork) return
 
-  let users = getUsers()
+  let users = userService.get()
   if (isActive) {
     users = users.filter(u => u.active)
   }
