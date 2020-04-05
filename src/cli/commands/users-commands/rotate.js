@@ -1,5 +1,5 @@
 import { userService, notificationService } from '../../../common/services'
-import { EVENTS, getNotificationLabel, publish } from '../../utils'
+import { EVENTS, publish } from '../../utils'
 
 export const command = 'rotate'
 export const describe = 'Rotate active users'
@@ -24,7 +24,6 @@ export const handler = args => {
   if (verbose && activeUserCount > 1) {
     publish(EVENTS.USERS, updatedUsers)
 
-    const label = getNotificationLabel(activeUserCount, true)
-    notificationService.showCurrentAuthors({ title: `${label} rotated to:` })
+    notificationService.showCurrentAuthors(true)
   }
 }
