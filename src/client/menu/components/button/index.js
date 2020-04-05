@@ -5,32 +5,31 @@ import { bool, func, node, oneOf } from 'prop-types'
 import css from './index.css'
 
 const TYPES = {
-  default: 'default',
-  confirm: 'confirm'
+  confirm: 'confirm',
+  default: 'default'
 }
 
-export class Button extends React.Component {
-  static propTypes = {
-    onClick: func.isRequired,
-    children: node.isRequired,
-    disabled: bool,
-    type: oneOf(Object.keys(TYPES))
-  }
-  static defaultProps = {
-    type: 'default'
-  }
+export function Button(props) {
+  return (
+    <button
+      className={props.type === TYPES.confirm ? css.confirm : css.default}
+      disabled={props.disabled}
+      onClick={props.onClick}
+    >
+      {props.children}
+    </button>
+  )
+}
 
-  render() {
-    return (
-      <button
-        className={this.props.type === TYPES.confirm ? css.confirm : css.default}
-        disabled={this.props.disabled}
-        onClick={this.props.onClick}
-      >
-        {this.props.children}
-      </button>
-    )
-  }
+Button.propTypes = {
+  children: node.isRequired,
+  disabled: bool,
+  onClick: func.isRequired,
+  type: oneOf(Object.keys(TYPES))
+}
+
+Button.defaultProps = {
+  type: 'default'
 }
 
 Button.types = TYPES

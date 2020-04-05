@@ -1,123 +1,154 @@
 import { remote } from 'electron'
 import md5 from 'md5'
-import { array, func } from 'prop-types'
+import { array, func, number } from 'prop-types'
 import React from 'react'
 
 import { Button } from '../'
+import * as api from '../../../api'
 import { ClearIcon, MoreIcon, RotateIcon } from '../../icons'
+import { userType } from './types'
 
 import css from './index.css'
 
-export class Users extends React.Component {
-  static propTypes = {
-    onEditUser: func.isRequired,
-    onUserActiveToggled: func.isRequired,
-    onUserRemoved: func.isRequired,
-    onUsersRotated: func.isRequired,
-    users: array.isRequired
+function User(props) {
+  const { index, onEditUser, setUsers, user } = props
+
+  const handleToggleActiveUser = (user) => (evt) => {
+    if (!evt.target.closest('button')) {
+      setUsers(api.toggleUserActive(user.id))
+    }
   }
 
-  handleRotateUsers = () => {
-    this.props.onUsersRotated()
+  const handleRemoveUser = (userId) => {
+    setUsers(api.removeUser(userId))
   }
-  handleToggleActiveUser = user => evt => {
-    if (!evt.target.closest('button'))
-      this.props.onUserActiveToggled(user.id)
-  }
-  handleRemoveUser = userId => {
-    this.props.onUserRemoved(userId)
-  }
-  handleShowUserActionsMenu = user => () => {
+
+  const handleShowUserActionsMenu = (user) => () => {
     remote.Menu.buildFromTemplate([
-      { label: 'Edit', click: () => this.props.onEditUser(user) },
-      { label: 'Delete', click: () => this.handleRemoveUser(user.id) }
+      { label: 'Edit', click: () => onEditUser(user) },
+      { label: 'Delete', click: () => handleRemoveUser(user.id) }
     ]).popup()
   }
 
-  renderUser = (user, index) => {
-    const photoUrl = `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mm&s=28`
-    const role = user.active
-      ? index === 0 ? 'Author' : 'Co-Author'
-      : ''
+  const photoUrl = `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mm&s=28`
+  const role = !user.active
+    ? ''
+    : index === 0
+      ? 'Author'
+      : 'Co-Author'
 
-    return (
-      <li className={`${css.user} ${user.active ? css.active : css.inactive}`} key={user.id} onClick={this.handleToggleActiveUser(user)}>
-        <div className={css.avatar}>
-          <div className={css.avatarImage} style={{ backgroundImage: `url("${photoUrl}")` }} />
-          <div className={css.deactivateIcon}><ClearIcon className={`${css.deactivateIconIcon} ${css.buttonIcon}`} /></div>
-          <div className={css.activateIcon}><ClearIcon className={`${css.activateIconIcon} ${css.buttonIcon}`} /></div>
-        </div>
-        <div className={css.userInfo}>
-          <div className={css.name}>{user.name}</div>
-          {role && <div className={css.role}>{role}</div>}
-        </div>
-        <button onClick={this.handleShowUserActionsMenu(user)} className={css.userMenuButton}>
-          <MoreIcon />
-        </button>
-      </li>
-    )
-  }
-
-  renderEmptyMessage = () => {
-    if (this.props.users.length) return
-
-    return (
-      <div className={css.emptyMessage}>
-        No users yet
+  return (
+    <li
+      className={`${css.user}${user.active ? ` ${css.active}` : ` ${css.inactive}`}`}
+      onClick={handleToggleActiveUser(user)}
+    >
+      <div className={css.avatar}>
+        <div className={css.avatarImage} style={{ backgroundImage: `url("${photoUrl}")` }} />
+        <div className={css.deactivateIcon}><ClearIcon className={`${css.deactivateIconIcon} ${css.buttonIcon}`} /></div>
+        <div className={css.activateIcon}><ClearIcon className={`${css.activateIconIcon} ${css.buttonIcon}`} /></div>
       </div>
-    )
-  }
-  renderActiveUsers = () => {
-    const activeUsers = this.props.users.filter(u => u.active)
-    if (!activeUsers.length) return
+      <div className={css.userInfo}>
+        <div className={css.name}>{user.name}</div>
+        {role && <div className={css.role}>{role}</div>}
+      </div>
+      <button onClick={handleShowUserActionsMenu(user)} className={css.userMenuButton}>
+        <MoreIcon />
+      </button>
+    </li>
+  )
+}
 
-    return (
-      <div>
+User.propTypes = {
+  index: number,
+  onEditUser: func.isRequired,
+  setUsers: func.isRequired,
+  user: userType
+}
+
+function EmptyState() {
+  return (
+    <div className={css.emptyMessage}>
+      No users yet
+    </div>
+  )
+}
+
+function ActiveUsers(props) {
+  const { onEditUser, setUsers, users } = props
+
+  const handleRotateUsers = () => setUsers(api.rotateActiveUsers())
+
+  return users.length
+    ? (
+      <>
         <div className={css.usersListHeader}>
           <span>Active</span>
           <div className={css.buttons}>
-            <Button onClick={this.handleRotateUsers} disabled={activeUsers.length === 1}>
+            <Button onClick={handleRotateUsers} disabled={users.length === 1}>
               <RotateIcon className={css.buttonIcon} />
             </Button>
           </div>
         </div>
         <ul className={css.usersList}>
-          {activeUsers.map(this.renderUser)}
+          {users.map((user, i) => (
+            <User
+              index={i}
+              key={users.id}
+              onEditUser={onEditUser}
+              setUsers={setUsers}
+              user={user}
+            />
+          ))}
         </ul>
-      </div>
+      </>
     )
-  }
-  renderInactiveUsers = () => {
-    const inactiveUsers = this.props.users.filter(u => !u.active)
-    if (!inactiveUsers.length) return
+    : null
+}
 
-    return (
-      <div>
+function InactiveUsers(props) {
+  const { onEditUser, setUsers, users } = props
+
+  return users.length
+    ? (
+      <>
         <div className={css.usersListHeader}>Inactive</div>
         <ul className={css.usersList}>
-          {inactiveUsers.map(this.renderUser)}
+          {users.map((user, i) => (
+            <User
+              index={i}
+              key={users.id}
+              onEditUser={onEditUser}
+              setUsers={setUsers}
+              user={user}
+            />
+          ))}
         </ul>
-      </div>
+      </>
     )
-  }
-  renderUserLists = () => {
-    if (this.props.users.length) {
-      return (
-        <div>
-          {this.renderActiveUsers()}
-          {this.renderInactiveUsers()}
-        </div>
-      )
-    }
-  }
-  render() {
-    return (
-      <div>
-        <div className={css.container}>
-          {this.renderEmptyMessage()}
-          {this.renderUserLists()}
-        </div>
-      </div>
-    )
-  }
+    : null
+}
+
+export function Users(props) {
+  const { users, ...rest } = props
+
+  const activeUsers = users.filter(u => u.active)
+  const inactiveUsers = users.filter(u => !u.active)
+
+  return (
+    <div className={css.container}>
+      <ActiveUsers {...rest} users={activeUsers} />
+      <InactiveUsers {...rest} users={inactiveUsers} />
+      {
+        !users.length
+          ? <EmptyState />
+          : null
+      }
+    </div>
+  )
+}
+
+Users.propTypes = {
+  onEditUser: func.isRequired,
+  setUsers: func.isRequired,
+  users: array.isRequired
 }

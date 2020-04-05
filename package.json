@@ -11,7 +11,6 @@
     "lint:cli": "eslint ./src/cli",
     "lint:main": "eslint ./src/common",
     "lint:renderer": "eslint ./src/client",
-    "make:all": "npm run make:macos && npm run make:deb && npm run make:rpm && npm run make:windows",
     "make:deb": "electron-forge make --arch=x64 --platform=linux --targets=@electron-forge/maker-deb",
     "make:rpm": "electron-forge make --arch=x64 --platform=linux --targets=@electron-forge/maker-rpm",
     "make:macos": "electron-forge make --arch=x64 --platform=darwin",

@@ -1,0 +1,12 @@
+.footer {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 19px;
+  padding: 8px;
+  background: #f0f0f0;
+  border-top: 1px solid #d5d5d5;
+}

@@ -1,118 +1,106 @@
 import { remote } from 'electron'
-import { bool, func, shape, string } from 'prop-types'
-import React from 'react'
+import { func } from 'prop-types'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../'
+import { userType } from '../users/types'
 
 import css from './index.css'
 
-const userType = shape({
-  name: string.isRequired,
-  email: string.isRequired,
-  rsaKeyPath: string,
-  active: bool
-})
+export function UserForm(props) {
+  const { onEditUser, onSubmit, user } = props
 
-export class UserForm extends React.Component {
-  static propTypes = {
-    user: userType,
-    onConfirm: func.isRequired,
-    onChange: func.isRequired,
-    onClose: func.isRequired
-  }
+  const [isSelectingRsaKey, setIsSelectingRsaKey] = useState(false)
+  const nameInputRef = useRef()
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      isSelectingRsaKey: false
+  useEffect(() => {
+    if (user && !user.name && !user.email && !user.rsaKeyPath) {
+      nameInputRef.current.focus()
     }
+  }, [user])
+
+  const handleCancel = () => onEditUser(null)
+
+  const handleFieldChange = (event) => {
+    const { id, value } = event.target
+    onEditUser({ ...user, [id]: value })
   }
 
-  componentDidUpdate(lastProps) {
-    if (this.props.user && lastProps.user !== this.props.user && !this.props.user.name) {
-      this.nameInput.focus()
+  const handleAddRsaKey = () => {
+    setIsSelectingRsaKey(true)
+    const dialogOptions = {
+      properties: [
+        'openFile',
+        'showHiddenFiles',
+        'treatPackageAsDirectory',
+        'dontAddToRecent'
+      ]
     }
-  }
 
-  setNameInput = el => {
-    this.nameInput = el
-  }
+    remote.dialog.showOpenDialog(dialogOptions)
+      .then((result) => {
+        setIsSelectingRsaKey(false)
 
-  isValid = () => {
-    const { user } = this.props
-    return user && user.name && user.email && !this.state.isSelectingRsaKey
-  }
+        onEditUser({
+          ...user,
+          rsaKeyPath: (result.filePaths.length && result.filePaths[0]) || user.rsaKeyPath
+        })
 
-  handleFieldChange = e => {
-    const { id, value } = e.target
-    this.props.onChange({
-      ...this.props.user,
-      [id]: value
-    })
-  }
-  handleAddRsaKey = () => {
-    this.setState({ isSelectingRsaKey: true })
-    remote.dialog.showOpenDialog({
-      properties: ['openFile', 'showHiddenFiles', 'treatPackageAsDirectory', 'dontAddToRecent', '']
-    }).then(result => {
-      this.setState({ isSelectingRsaKey: false })
-      this.props.onChange({
-        ...this.props.user,
-        rsaKeyPath: (result.filePaths.length && result.filePaths[0]) || this.props.user.rsaKeyPath
+        remote.getCurrentWindow().show()
       })
-    })
   }
 
-  render() {
-    const { onClose, onConfirm } = this.props
-    const user = {
-      name: '',
-      email: '',
-      rsaKeyPath: '',
-      active: false,
-      ...this.props.user
-    }
-    const confirmLabel = user.id ? 'Update user' : 'Add user'
+  if (!user) {
+    return null
+  }
 
-    return (
-      <div className={css.form}>
-        <div className={css.fieldContainer}>
+  const confirmLabel = user.id ? 'Update user' : 'Add user'
+  const isValid = user.name && user.email && !isSelectingRsaKey
+
+  return (
+    <div className={css.form}>
+      <div className={css.fieldContainer}>
+        <input
+          id="name"
+          className={css.field}
+          value={user.name}
+          placeholder="Name"
+          onChange={handleFieldChange}
+          ref={nameInputRef}
+        />
+        <input
+          id="email"
+          className={css.field}
+          value={user.email}
+          placeholder="Email"
+          onChange={handleFieldChange}
+        />
+        <div className={css.rsaFieldContainer}>
           <input
-            id="name"
-            className={css.field}
-            value={user.name}
-            placeholder="Name"
-            onChange={this.handleFieldChange}
-            ref={this.setNameInput}
+            id="rsaKeyPath"
+            className={css.rsaField}
+            value={user.rsaKeyPath}
+            placeholder="Path to RSA key"
+            onChange={handleFieldChange}
           />
-          <input
-            id="email"
-            className={css.field}
-            value={user.email}
-            placeholder="Email"
-            onChange={this.handleFieldChange}
-          />
-          <div className={css.rsaFieldContainer}>
-            <input
-              id="rsaKeyPath"
-              className={css.rsaField}
-              value={user.rsaKeyPath}
-              placeholder="Path to RSA key"
-              onChange={this.handleFieldChange}
-            />
-            <Button
-              onClick={this.handleAddRsaKey}
-              disabled={this.state.isSelectingRsaKey}
-            >
-              Browse
-            </Button>
-          </div>
-        </div>
-        <div className={css.buttonSection}>
-          <Button type={Button.types.confirm} onClick={onConfirm} disabled={!this.isValid()}>{confirmLabel}</Button>
-          <Button onClick={onClose}>Close</Button>
+          <Button
+            onClick={handleAddRsaKey}
+            disabled={isSelectingRsaKey}
+          >
+            Browse
+          </Button>
         </div>
       </div>
-    )
-  }
+      <div className={css.buttonSection}>
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button type={Button.types.confirm} onClick={onSubmit} disabled={!isValid}>{confirmLabel}</Button>
+      </div>
+    </div>
+  )
+}
+
+UserForm.propTypes = {
+  onEditUser: func.isRequired,
+  onSubmit: func.isRequired,
+  user: userType
 }

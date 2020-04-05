@@ -1,80 +1,107 @@
 import { remote } from 'electron'
-import { array, func } from 'prop-types'
-import React from 'react'
+import { array, bool, func, shape, string } from 'prop-types'
+import React, { useState } from 'react'
 
 import { Button, DeleteButton, RefreshButton } from '../'
+import * as api from '../../../api'
 
 import css from './index.css'
 
-export class Repositories extends React.Component {
-  static propTypes = {
-    onRepoAdded: func.isRequired,
-    onRepoRemoved: func.isRequired,
-    onDone: func.isRequired,
-    repos: array.isRequired
-  }
+function Repository(props) {
+  const { onRepoRefreshed, onRepoRemoved, repo } = props
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      isSelectingRepos: false
-    }
-  }
+  const handleRefreshRepo = (path) => () => onRepoRefreshed(path)
 
-  handleAddRepo = () => {
-    this.setState({ isSelectingRepos: true })
-    remote.dialog.showOpenDialog({
-      properties: ['openDirectory', 'multiSelections']
-    }).then(result => {
-      this.setState({ isSelectingRepos: false })
-      for (const path of result.filePaths || []) {
-        this.props.onRepoAdded(path)
-      }
-    })
-  }
-  handleRefreshRepo = repo => () => {
-    this.props.onRepoAdded(repo.path)
-  }
-  handleRemoveRepo = repo => () => {
-    this.props.onRepoRemoved(repo.path)
-  }
+  const handleRemoveRepo = (path) => () => onRepoRemoved(path)
 
-  renderEmptyMessage = () => {
-    if (!this.props.repos.length) {
-      return (
-        <div className={css.emptyMessage}>
-          No repositories yet
-          <div className={css.emptyMessageSub}>
-            Add repositories you want to use with git-switch
-          </div>
-        </div>
-      )
-    }
-  }
-  renderRepo = repo => (
-    <li className={repo.isValid ? css.repo : css.repoInvalid} key={repo.path}>
+  return (
+    <li className={repo.isValid ? css.repo : css.repoInvalid}>
       <div className={css.repoInfo}>
         <div className={css.repoName}>
           {repo.name}{repo.isValid ? null : <span className={css.invalidMessage}>(not a git repo)</span>}
         </div>
         <div className={css.repoPath}>{repo.path}</div>
       </div>
-      <RefreshButton onClick={this.handleRefreshRepo(repo)} />
-      <DeleteButton onClick={this.handleRemoveRepo(repo)} />
+      <RefreshButton onClick={handleRefreshRepo(repo.path)} />
+      <DeleteButton onClick={handleRemoveRepo(repo.path)} />
     </li>
   )
-  render() {
-    return (
-      <div>
-        {this.renderEmptyMessage()}
+}
+
+Repository.propTypes = {
+  onRepoRefreshed: func.isRequired,
+  onRepoRemoved: func.isRequired,
+  repo: shape({
+    isValid: bool.isRequired,
+    name: string.isRequired,
+    path: string.isRequired
+  })
+}
+
+function EmptyState() {
+  return (
+    <div className={css.emptyMessage}>
+      No repositories yet
+      <div className={css.emptyMessageSub}>
+        Add repositories you want to use with git-switch
+      </div>
+    </div>
+  )
+}
+
+export function Repositories(props) {
+  const { onDone, repos, setRepos } = props
+
+  const [isSelectingRepos, setIsSelectingRepos] = useState(false)
+
+  const handleAddRepo = (path) => setRepos(api.addRepo(path))
+
+  const handleRemoveRepo = (path) => setRepos(api.removeRepo(path))
+
+  const handleAddReposClicked = () => {
+    setIsSelectingRepos(true)
+    const dialogOptions = {
+      properties: [
+        'openDirectory',
+        'multiSelections',
+        'dontAddToRecent'
+      ]
+    }
+
+    remote.dialog.showOpenDialog(dialogOptions)
+      .then(result => {
+        setIsSelectingRepos(false)
+
+        result.filePaths.map(handleAddRepo)
+
+        remote.getCurrentWindow().show()
+      })
+  }
+
+  return repos.length
+    ? (
+      <>
         <ul className={css.reposList}>
-          {this.props.repos.map(this.renderRepo)}
+          {repos.map((repo) => (
+            <Repository
+              key={repo.path}
+              onRepoRefreshed={handleAddRepo}
+              onRepoRemoved={handleRemoveRepo}
+              repo={repo}
+            />
+          ))}
         </ul>
         <div className={css.buttons}>
-          <Button onClick={this.handleAddRepo} disabled={this.state.isSelectingRepos}>Add repos</Button>
-          <Button onClick={this.props.onDone}>Done</Button>
+          <Button onClick={handleAddReposClicked} disabled={isSelectingRepos}>Add repos</Button>
+          <Button onClick={onDone}>Done</Button>
         </div>
-      </div>
+      </>
     )
-  }
+    : <EmptyState />
+}
+
+Repositories.propTypes = {
+  onDone: func.isRequired,
+  repos: array.isRequired,
+  setRepos: func.isRequired
 }

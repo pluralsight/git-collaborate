@@ -2,18 +2,15 @@ import { remote } from 'electron'
 import React, { useEffect, useState } from 'react'
 
 import * as api from '../api'
-import { Button, Repositories, UserForm, Users } from './components'
-import { GitIcon, MenuIcon } from './icons'
+import { Footer, Header, Overlay, Users } from './components'
 
 import css from './index.css'
 
-export const Menu = () => {
-  const [state, setState] = useState({
-    repos: [],
-    showRepositories: false,
-    userEdits: null,
-    users: []
-  })
+export function Menu() {
+  const [users, setUsers] = useState([])
+  const [repos, setRepos] = useState([])
+  const [shouldShowRepos, setShouldShowRepos] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
 
   useEffect(() => {
     api.onUsersUpdated(handleUsersUpdated)
@@ -22,12 +19,8 @@ export const Menu = () => {
     const users = api.getAllUsers()
     const repos = api.getAllRepos()
 
-    setState(prevState => ({
-      ...prevState,
-      users,
-      repos,
-      showRepositories: !repos.length || state.showRepositories
-    }))
+    setUsers(users)
+    setRepos(repos)
 
     return () => {
       api.removeUsersUpdatedListener(handleUsersUpdated)
@@ -35,116 +28,51 @@ export const Menu = () => {
     }
   }, [])
 
-  const handleUsersUpdated = (_event, users) =>
-    setState(prevState => ({
-      ...prevState,
-      users
-    }))
+  const handleUsersUpdated = (_event, users) => setUsers(users)
 
-  const handleUserChanges = (func, ...args) => {
-    const updatedUsers = func(...args)
+  const handleReposUpdated = (_event, repos) => setRepos(repos)
 
-    setState(prevState => ({
-      ...prevState,
-      userEdits: null,
-      users: updatedUsers
-    }))
+  const handleAddUser = () => {
+    setShouldShowRepos(false)
+    setSelectedUser({ active: true, email: '', name: '', rsaKeyPath: '' })
   }
 
-  const handleRemoveUser = (userId) => handleUserChanges(api.removeUser, userId)
-  const handleRotateUsers = () => handleUserChanges(api.rotateActiveUsers)
-  const handleToggleActiveUser = (userId) => handleUserChanges(api.toggleUserActive, userId)
+  const handleEditUser = (user) => setSelectedUser(user)
 
-  const handleSubmitAddUser = () => handleUserChanges(api.addUser, state.userEdits)
-  const handleSubmitEditUser = () => handleUserChanges(api.updateUser, state.userEdits)
-  const handleUserFormSubmit = () => !state.userEdits.id
-    ? handleSubmitAddUser()
-    : handleSubmitEditUser()
+  const handleEditRepos = () => {
+    setSelectedUser(null)
+    setShouldShowRepos(true)
+  }
 
-  const handleAddUser = () =>
-    setState(prevState => ({
-      ...prevState,
-      userEdits: { name: '', email: '', rsaKeyPath: '', active: true }
-    }))
-  const handleEditUser = (user) =>
-    setState(prevState => ({
-      ...prevState,
-      userEdits: user
-    }))
-  const handleCancelUserForm = () =>
-    setState(prevState => ({
-      ...prevState,
-      userEdits: null
-    }))
-
-  const handleReposUpdated = (_event, repos) =>
-    setState(prevState => ({
-      ...prevState,
-      repos
-    }))
-
-  const handleRepoChanges = (func, ...args) =>
-    setState(prevState => ({
-      ...prevState,
-      repos: func(...args)
-    }))
-
-  const handleAddRepo = (path) => handleRepoChanges(api.addRepo, path)
-  const handleRemoveRepo = (path) => handleRepoChanges(api.removeRepo, path)
+  const handleCloseRepos = () => setShouldShowRepos(false)
 
   const handleMenuButtonClick = () => {
     remote.Menu.buildFromTemplate([
-      { label: 'Edit repositories', click: handleToggleRepositories },
+      { label: 'Edit repositories', click: handleEditRepos },
+      { label: 'Add user', click: handleAddUser },
       { type: 'separator' },
       { label: 'Quit', click: api.quit }
     ]).popup()
   }
 
-  const handleToggleRepositories = () => {
-    setState(prevState => ({
-      ...prevState,
-      showRepositories: !state.showRepositories
-    }))
-  }
-
-  const { userEdits, showRepositories } = state
-  const overlayActive = userEdits || showRepositories
-
   return (
     <div className={css.container}>
-      <div className={css.header}>
-        <GitIcon /><span className={css.headerTitle}>switch</span>
-        <div className={css.menuButtonContainer}>
-          <button className={css.menuButton} onClick={handleMenuButtonClick}><MenuIcon /></button>
-        </div>
-      </div>
+      <Header onMenuClick={handleMenuButtonClick} />
       <Users
         onEditUser={handleEditUser}
-        onUserActiveToggled={handleToggleActiveUser}
-        onUserRemoved={handleRemoveUser}
-        onUsersRotated={handleRotateUsers}
-        users={state.users}
+        setUsers={setUsers}
+        users={users}
       />
-      <div className={css.footer}>
-        <Button onClick={handleAddUser}>Add user</Button>
-      </div>
-      <div className={overlayActive ? css.overlayBackgroundActive : css.overlayBackground} />
-      <div className={css.overlayContainer} style={{ top: userEdits ? 65 : -150 }}>
-        <UserForm
-          onChange={handleEditUser}
-          onClose={handleCancelUserForm}
-          onConfirm={handleUserFormSubmit}
-          user={userEdits}
-        />
-      </div>
-      <div className={css.overlayContainer} style={{ top: showRepositories ? 65 : -60 * state.repos.length - 100 }}>
-        <Repositories
-          onDone={handleToggleRepositories}
-          onRepoAdded={handleAddRepo}
-          onRepoRemoved={handleRemoveRepo}
-          repos={state.repos}
-        />
-      </div>
+      <Footer onAddUserClick={handleAddUser} />
+      <Overlay
+        onCloseRepos={handleCloseRepos}
+        onEditUser={handleEditUser}
+        repos={repos}
+        setRepos={setRepos}
+        setUsers={setUsers}
+        shouldShowRepos={shouldShowRepos}
+        user={selectedUser}
+      />
     </div>
   )
 }
