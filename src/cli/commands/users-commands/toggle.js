@@ -8,7 +8,7 @@ export const builder = yargs =>
   yargs
     .usage('Usage:\n  git-switch users toggle [userIds..]')
     .positional('userIds', {
-      describe: 'The ids of the users to toggle',
+      describe: 'The ids/names of the users to toggle (name is case-insensitive)',
       string: true,
       array: true,
       demandOption: true

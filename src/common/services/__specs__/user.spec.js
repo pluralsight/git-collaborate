@@ -159,22 +159,29 @@ describe('services/user', () => {
     it('removes the user from the config', () => {
       const newConfig = { ...config, users: [users[1]] }
       const expected = [users[1]]
-      const actual = subject.remove(users[0].id)
+      const actual = subject.remove([users[0].id])
 
       expect(actual).to.deep.equal(expected)
       expect(configUtil.write).to.have.been.calledWith(newConfig)
     })
 
     it('updates git authors and rsa keys', () => {
-      const updatedUsers = subject.remove(users[0].id)
+      const updatedUsers = subject.remove([users[0].id])
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
       expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
     })
 
+    it('allows removing by name', () => {
+      const expected = [users[1]]
+      const actual = subject.remove(['first'])
+
+      expect(actual).to.deep.equal(expected)
+    })
+
     describe('when user does not exist', () => {
       it('does nothing', () => {
-        subject.remove('not-a-user')
+        subject.remove(['not-a-user'])
 
         expect(configUtil.write).to.not.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.not.have.been.called
@@ -338,6 +345,51 @@ describe('services/user', () => {
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
       expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[0].rsaKeyPath)
+    })
+
+    it('allows toggling by name', () => {
+      const actual = subject.toggleActive(['third', 'fourth'])
+
+      expect(actual).to.deep.equal(expected.users)
+      expect(configUtil.write).to.have.been.calledWith(expected)
+    })
+
+    describe('when deactivating users', () => {
+      beforeEach(() => {
+        users = [
+          { ...users[0], active: true },
+          { ...users[1], active: true },
+          {
+            id: subject.generateId(),
+            name: 'Third User',
+            email: 'third@email.com',
+            rsaKeyPath: '/foo/bar',
+            active: false
+          },
+          {
+            id: subject.generateId(),
+            name: 'Fourth User',
+            email: 'fourth@email.com',
+            rsaKeyPath: '/foo/bar',
+            active: false
+          }
+        ]
+        expected = {
+          users: [
+            users[1],
+            { ...users[0], active: false },
+            users[2],
+            users[3]
+          ]
+        }
+        config = { users }
+      })
+
+      it('moves the user(s) to the top of inactive list', () => {
+        const actual = subject.toggleActive([users[0].id])
+
+        expect(actual).to.deep.equal(expected.users)
+      })
     })
 
     describe('when user does not exist', () => {

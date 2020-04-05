@@ -8,7 +8,7 @@ export const builder = yargs =>
   yargs
     .usage('Usage:\n  git-switch users remove [userIds]')
     .positional('userIds', {
-      describe: 'The ids of the users to remove',
+      describe: 'The ids/names of the users to remove (name is case-insensitive)',
       string: true,
       array: true,
       demandOption: true
@@ -20,9 +20,7 @@ export const handler = args => {
 
   let updatedUsers
   if (doWork) {
-    for (const id of userIds) {
-      updatedUsers = userService.remove(id)
-    }
+    updatedUsers = userService.remove(userIds)
   } else {
     updatedUsers = userService.get()
   }
