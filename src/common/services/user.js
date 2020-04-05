@@ -94,20 +94,19 @@ export const rotate = () => {
   return updatedUsers
 }
 
-export const toggleActive = id => {
+export const toggleActive = (ids) => {
   const users = get()
-  const user = users.find(u => u.id === id)
-  if (!user) {
+  const selectedUsers = users.filter(u => ids.includes(u.id))
+  if (!selectedUsers.length) {
     return users
   }
 
-  const activeUsers = users.filter(u => u.active && u.id !== id)
-  const inactiveUsers = users.filter(u => !u.active && u.id !== id)
+  const activeUsers = users.filter(u => u.active && !ids.includes(u.id))
+  const inactiveUsers = users.filter(u => !u.active && !ids.includes(u.id))
 
-  user.active = !user.active
   const updatedUsers = [
     ...activeUsers,
-    user,
+    ...selectedUsers.map(u => ({ ...u, active: !u.active })),
     ...inactiveUsers
   ]
 

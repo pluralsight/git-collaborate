@@ -27,7 +27,7 @@ export default class IpcRouter {
 
   handleGetUsers = (evt) => { evt.returnValue = userService.get() }
   handleRotateActiveUsers = (evt) => { evt.returnValue = userService.rotate() }
-  handleToggleUserActive = (evt, userId) => { evt.returnValue = userService.toggleActive(userId) }
+  handleToggleUserActive = (evt, userId) => { evt.returnValue = userService.toggleActive([userId]) }
   handleAddUser = (evt, user) => { evt.returnValue = userService.add(user) }
   handleUpdateUser = (evt, user) => { evt.returnValue = userService.update(user) }
   handleRemoveUser = (evt, userId) => { evt.returnValue = userService.remove(userId) }

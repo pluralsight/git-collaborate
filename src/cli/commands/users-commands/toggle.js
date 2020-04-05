@@ -20,9 +20,7 @@ export const handler = args => {
 
   let updatedUsers
   if (doWork) {
-    for (const id of userIds) {
-      updatedUsers = userService.toggleActive(id)
-    }
+    updatedUsers = userService.toggleActive(userIds)
   } else {
     updatedUsers = userService.get()
   }
