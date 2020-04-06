@@ -32,7 +32,7 @@ export const builder = yargs =>
     .version(false)
 
 export const handler = args => {
-  const { userId, name, email, key: rsaKeyPath, doWork, verbose } = args
+  const { userId, name, email, key, doWork, verbose } = args
   const users = userService.get()
 
   let updatedUsers
@@ -43,11 +43,13 @@ export const handler = args => {
       return
     }
 
+    const rsaKeyPath = key == null ? user.rsaKeyPath : key
+
     updatedUsers = userService.update({
       ...user,
       name: name || user.name,
       email: email || user.email,
-      rsaKeyPath: rsaKeyPath || user.rsaKeyPath
+      rsaKeyPath
     })
   } else {
     updatedUsers = users
