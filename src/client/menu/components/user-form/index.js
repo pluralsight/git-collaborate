@@ -37,7 +37,8 @@ export function UserForm(props) {
       ]
     }
 
-    remote.dialog.showOpenDialog(dialogOptions)
+    const currentWindow = remote.getCurrentWindow()
+    remote.dialog.showOpenDialog(currentWindow, dialogOptions)
       .then((result) => {
         setIsSelectingRsaKey(false)
 
@@ -46,7 +47,7 @@ export function UserForm(props) {
           rsaKeyPath: (result.filePaths.length && result.filePaths[0]) || user.rsaKeyPath
         })
 
-        remote.getCurrentWindow().show()
+        currentWindow.show()
       })
   }
 

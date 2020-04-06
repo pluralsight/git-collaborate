@@ -68,13 +68,14 @@ export function Repositories(props) {
       ]
     }
 
-    remote.dialog.showOpenDialog(dialogOptions)
+    const currentWindow = remote.getCurrentWindow()
+    remote.dialog.showOpenDialog(currentWindow, dialogOptions)
       .then(result => {
         setIsSelectingRepos(false)
 
         result.filePaths.map(handleAddRepo)
 
-        remote.getCurrentWindow().show()
+        currentWindow.show()
       })
   }
 

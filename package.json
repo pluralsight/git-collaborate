@@ -97,6 +97,9 @@
     "webpack-cli": "3.3.11",
     "webpack-dev-server": "3.10.3"
   },
+  "resolutions": {
+    "kind-of": "^6.0.3"
+  },
   "config": {
     "forge": {
       "packagerConfig": {
