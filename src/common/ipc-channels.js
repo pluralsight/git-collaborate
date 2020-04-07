@@ -1,22 +1,22 @@
 const USER_CHANNELS = {
-  GET_ALL_USERS: 'GET_ALL_USERS',
-  USERS_UPDATED: 'USERS_UPDATED',
-  ROTATE_ACTIVE_USERS: 'ROTATE_ACTIVE_USERS',
-  TOGGLE_USER_ACTIVE: 'TOGGLE_USER_ACTIVE',
-  ADD_USER: 'ADD_USER',
-  UPDATE_USER: 'UPDATE_USER',
-  REMOVE_USER: 'REMOVE_USER'
+  GET_ALL_USERS: 'get-all-users',
+  USERS_UPDATED: 'users-updated',
+  ROTATE_ACTIVE_USERS: 'rotate-active-users',
+  TOGGLE_USER_ACTIVE: 'toggle-user-active',
+  ADD_USER: 'add-user',
+  UPDATE_USER: 'update-user',
+  REMOVE_USER: 'remove-user'
 }
 
 const APPLICATION_CHANNELS = {
-  QUIT_APPLICATION: 'QUIT_APPLICATION'
+  QUIT_APPLICATION: 'quit-application'
 }
 
 const GIT_CHANNELS = {
-  GET_ALL_REPOS: 'GET_ALL_REPOS',
-  REPOS_UPDATED: 'REPOS_UPDATED',
-  ADD_REPO: 'ADD_REPO',
-  REMOVE_REPO: 'REMOVE_REPO'
+  GET_ALL_REPOS: 'get-all-repos',
+  REPOS_UPDATED: 'repos-updated',
+  ADD_REPO: 'add-repo',
+  REMOVE_REPO: 'remove-repo'
 }
 
 export default {

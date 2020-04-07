@@ -1,14 +1,14 @@
 import path from 'path'
 
 import { handleCli } from './cli'
-import IpcRouter from './ipc-router'
+import { registerIpcHandlers } from './ipc-router'
 import { notificationService } from './common/services'
 import { install, getMenubar } from './common/utils'
 
 const isDev = process.env.NODE_ENV === 'dev'
 
 const handleAppReady = menubar => () => {
-  new IpcRouter(menubar.app)
+  registerIpcHandlers(menubar.app)
 
   if (isDev) {
     menubar.showWindow()
@@ -53,8 +53,9 @@ const startUp = () => {
     },
     dir: __dirname,
     icon: path.join(__dirname, 'assets', 'icons', iconFile),
-    index: 'file://' + path.join(__dirname, 'build', 'index.html'),
-    preloadWindow: true
+    index: `file://${path.join(__dirname, 'build', 'index.html')}`,
+    preloadWindow: true,
+    tooltip: 'git-switch'
   })
 
   const isPrimaryInstance = menubar.app.requestSingleInstanceLock()

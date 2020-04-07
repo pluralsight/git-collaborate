@@ -49,9 +49,7 @@
   },
   "devDependencies": {
     "@babel/cli": "7.8.4",
-    "@babel/plugin-proposal-class-properties": "7.8.3",
     "@babel/plugin-proposal-export-default-from": "7.8.3",
-    "@babel/polyfill": "7.8.7",
     "@babel/preset-env": "7.9.0",
     "@babel/preset-react": "7.9.4",
     "@electron-forge/cli": "6.0.0-beta.50",
@@ -104,13 +102,23 @@
     "forge": {
       "packagerConfig": {
         "appBundleId": "com.pluralsight.git-switch",
-        "prune": true,
-        "overwrite": true,
         "icon": "./src/assets/icons/icon",
         "ignore": [
-          "\\.idea",
-          "\\.vs-code"
+          "/.idea",
+          "/.vs-code",
+          "/scripts",
+          "/test",
+          ".eslintrc",
+          ".gitignore",
+          ".mocharc.js",
+          ".npmrc",
+          ".nvmrc",
+          "webpack.config.js",
+          "yarn.lock",
+          "/src/client",
+          "/__specs__"
         ],
+        "overwrite": true,
         "quiet": true
       },
       "makers": [

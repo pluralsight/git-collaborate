@@ -3,51 +3,21 @@ import { ipcMain } from 'electron'
 import CHANNELS from './common/ipc-channels'
 import { repoService, userService } from './common/services'
 
-export default class IpcRouter {
-  app = null
+export function registerIpcHandlers(app) {
+  const handlers = {
+    [CHANNELS.QUIT_APPLICATION]: () => app.quit(),
 
-  constructor(app) {
-    this.app = app
-    this.registerAllListeners()
+    [CHANNELS.GET_ALL_USERS]: (evt) => { evt.returnValue = userService.get() },
+    [CHANNELS.ROTATE_ACTIVE_USERS]: (evt) => { evt.returnValue = userService.rotate() },
+    [CHANNELS.TOGGLE_USER_ACTIVE]: (evt, userId) => { evt.returnValue = userService.toggleActive([userId]) },
+    [CHANNELS.ADD_USER]: (evt, user) => { evt.returnValue = userService.add(user) },
+    [CHANNELS.UPDATE_USER]: (evt, user) => { evt.returnValue = userService.update(user) },
+    [CHANNELS.REMOVE_USER]: (evt, userId) => { evt.returnValue = userService.remove([userId]) },
+
+    [CHANNELS.GET_ALL_REPOS]: (evt) => { evt.returnValue = repoService.get() },
+    [CHANNELS.ADD_REPO]: (evt, path) => { evt.returnValue = repoService.add(path) },
+    [CHANNELS.REMOVE_REPO]: (evt, path) => { evt.returnValue = repoService.remove(path) }
   }
 
-  registerAllListeners() {
-    for (const [event, handler] of Object.entries(this.listeners)) {
-      this.on(event, handler)
-    }
-  }
-
-  on(event, handler) {
-    if (!event) throw new Error('Invalid IPC event.')
-
-    ipcMain.on(event, handler)
-  }
-
-  handleQuitApplication = () => this.app.quit()
-
-  handleGetUsers = (evt) => { evt.returnValue = userService.get() }
-  handleRotateActiveUsers = (evt) => { evt.returnValue = userService.rotate() }
-  handleToggleUserActive = (evt, userId) => { evt.returnValue = userService.toggleActive([userId]) }
-  handleAddUser = (evt, user) => { evt.returnValue = userService.add(user) }
-  handleUpdateUser = (evt, user) => { evt.returnValue = userService.update(user) }
-  handleRemoveUser = (evt, userId) => { evt.returnValue = userService.remove([userId]) }
-
-  handleGetRepos = (evt) => { evt.returnValue = repoService.get() }
-  handleAddRepo = (evt, path) => { evt.returnValue = repoService.add(path) }
-  handleRemoveRepo = (evt, path) => { evt.returnValue = repoService.remove(path) }
-
-  listeners = {
-    [CHANNELS.QUIT_APPLICATION]: this.handleQuitApplication,
-
-    [CHANNELS.GET_ALL_USERS]: this.handleGetUsers,
-    [CHANNELS.ROTATE_ACTIVE_USERS]: this.handleRotateActiveUsers,
-    [CHANNELS.TOGGLE_USER_ACTIVE]: this.handleToggleUserActive,
-    [CHANNELS.ADD_USER]: this.handleAddUser,
-    [CHANNELS.UPDATE_USER]: this.handleUpdateUser,
-    [CHANNELS.REMOVE_USER]: this.handleRemoveUser,
-
-    [CHANNELS.GET_ALL_REPOS]: this.handleGetRepos,
-    [CHANNELS.ADD_REPO]: this.handleAddRepo,
-    [CHANNELS.REMOVE_REPO]: this.handleRemoveRepo
-  }
+  Object.entries(handlers).map(([channel, func]) => ipcMain.on(channel, func))
 }
