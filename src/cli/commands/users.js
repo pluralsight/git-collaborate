@@ -1,10 +1,17 @@
+import { add, edit, list, remove, rotate, toggle } from './users-commands'
+
 export const command = 'users'
 export const describe = 'Manage users'
 
 export const builder = yargs =>
   yargs
     .usage('Usage:\n  git-switch users <command> [options]')
-    .commandDir('users-commands')
+    .command(add)
+    .command(edit)
+    .command(list)
+    .command(remove)
+    .command(rotate)
+    .command(toggle)
     .demandCommand(1, 'You must specify a command and options')
     .version(false)
 

@@ -5,7 +5,7 @@ import { registerIpcHandlers } from './ipc-router'
 import { notificationService } from './common/services'
 import { install, getMenubar } from './common/utils'
 
-const isDev = process.env.NODE_ENV === 'dev'
+const isDev = process.env.NODE_ENV === 'development'
 
 const handleAppReady = menubar => () => {
   registerIpcHandlers(menubar.app)
@@ -52,8 +52,8 @@ const startUp = () => {
       }
     },
     dir: __dirname,
-    icon: path.join(__dirname, 'assets', 'icons', iconFile),
-    index: `file://${path.join(__dirname, 'build', 'index.html')}`,
+    icon: path.join(__dirname, 'assets', iconFile),
+    index: `file://${path.join(__dirname, 'index.html')}`,
     preloadWindow: true,
     tooltip: 'git-switch'
   })

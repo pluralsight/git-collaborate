@@ -1,5 +1,7 @@
 import yargs from 'yargs'
 
+import { repos, show, users } from './commands'
+
 export const handleCli = args => yargs(args)
   .usage('Usage:\n  git-switch <command> [options]')
   .options({
@@ -18,7 +20,9 @@ export const handleCli = args => yargs(args)
       hidden: true
     }
   })
-  .commandDir('commands', { exclude: /utils\// })
+  .command(repos)
+  .command(show)
+  .command(users)
   .help()
   .alias('h', 'help')
   .argv

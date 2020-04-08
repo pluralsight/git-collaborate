@@ -93,7 +93,7 @@ function ActiveUsers(props) {
           {users.map((user, i) => (
             <User
               index={i}
-              key={users.id}
+              key={user.id}
               onEditUser={onEditUser}
               setUsers={setUsers}
               user={user}
@@ -116,7 +116,7 @@ function InactiveUsers(props) {
           {users.map((user, i) => (
             <User
               index={i}
-              key={users.id}
+              key={user.id}
               onEditUser={onEditUser}
               setUsers={setUsers}
               user={user}

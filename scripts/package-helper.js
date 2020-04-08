@@ -1,5 +1,5 @@
-const fs = require('fs')
 const path = require('path')
+const rimraf = require('rimraf')
 
 const PACKAGE_BASE_NAME = 'git-switch'
 const MAC_OS_PLATFORM = 'Darwin'
@@ -17,7 +17,7 @@ const packageNames = {
 
 function removePackageSrc(targetOS) {
   const sourceDir = getPackageSrcDir(targetOS)
-  fs.unlinkSync(sourceDir)
+  rimraf.sync(sourceDir)
 }
 
 function getPackageSrcDir(targetOS) {
