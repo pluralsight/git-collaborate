@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
+
 const execSync = require('child_process').execSync
 
 const RELEASE_URL = 'https://github.com/pluralsight/git-switch-electron/releases'
-const HUB_DOCS_URL = 'https://github.com/github/hub'
 const RELEASE_DIR = './out'
 
 function executeCmd(command, errMessage) {
@@ -28,8 +29,8 @@ function verifyHubInstallation() {
   console.log('Verifying hub install...')
 
   const failureMessage = 'Sorry. We were unable to verify that hub is installed.'
-    .concat(`\nPlease make sure you have hub installed before running this script. For more information visit:`)
-    .concat(`\n${HUB_DOCS_URL}`)
+    .concat('\nPlease make sure you have hub installed before running this script. For more information visit:')
+    .concat('\nhttps://github.com/github/hub')
 
   executeCmd('hub version', failureMessage)
 }

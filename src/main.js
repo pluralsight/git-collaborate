@@ -52,7 +52,7 @@ const startUp = () => {
       }
     },
     dir: __dirname,
-    icon: path.join(__dirname, 'assets', iconFile),
+    icon: path.join(__dirname, 'assets', 'menu', iconFile),
     index: `file://${path.join(__dirname, 'index.html')}`,
     preloadWindow: true,
     tooltip: 'git-switch'

@@ -25,7 +25,7 @@ git-switch users add --name "<User Name>" --email "<user@email.com>"
 git-switch repos list
 ```
 
-_**Note**: You will need to ensure `git-switch` is in your `PATH`_
+_**Note**: You will need to ensure `git-switch` is in your `PATH`_. On MacOS it might looke like this `sudo ln -s /Applications/git-switch.app/Contents/MacOS/git-switch /usr/local/bin/git-switch`
 
 The available command structure is:
 

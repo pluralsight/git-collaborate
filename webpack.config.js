@@ -80,7 +80,7 @@ module.exports = [
       publicPath: './'
     },
     plugins: [
-      new CopyPlugin([{ from: './src/assets/menu', to: 'assets' }]),
+      new CopyPlugin([{ from: './src/assets', to: 'assets' }]),
       new MiniCssExtractPlugin({ filename: 'styles.css' }),
       new HtmlWebpackPlugin({ template: './src/client/index.html' })
     ],

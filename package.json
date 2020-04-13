@@ -103,19 +103,11 @@
         "appBundleId": "com.pluralsight.git-switch",
         "icon": "./src/assets/icon",
         "ignore": [
-          "/.idea",
-          "/.vs-code",
-          "/scripts",
-          "/src",
-          "/test",
-          ".eslintrc",
-          ".gitignore",
-          ".mocharc.js",
-          ".npmrc",
-          ".nvmrc",
-          "babel.config.js",
-          "webpack.config.js",
-          "yarn.lock"
+          "^/\\..+",
+          "^/(scripts|src|test)",
+          "(babel|webpack).config.js",
+          "yarn.lock",
+          "\\.sketch$"
         ],
         "overwrite": true,
         "quiet": true

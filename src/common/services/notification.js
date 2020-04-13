@@ -1,4 +1,5 @@
 import { Notification } from 'electron'
+import path from 'path'
 
 import { userService } from './'
 import { formatActiveUserFirstNames, getNotificationLabel } from '../utils'
@@ -14,10 +15,8 @@ export function showCurrentAuthors(didRotate = false) {
 
   const label = getNotificationLabel(activeUserCount, didRotate)
   const title = didRotate ? `${label} rotated to:` : `Current ${label}:`
+  const body = formatActiveUserFirstNames(users)
+  const icon = path.join(__dirname, 'assets', 'icon.png')
 
-  showNotification({
-    title,
-    sound: 'Purr',
-    body: formatActiveUserFirstNames(users)
-  })
+  showNotification({ body, icon, sound: 'Purr', title })
 }
