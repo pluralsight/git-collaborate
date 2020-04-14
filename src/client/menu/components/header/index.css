@@ -1,18 +1,23 @@
 .header {
   display: flex;
   position: relative;
-  z-index: 100;
   align-items: center;
+  z-index: 100;
   padding: 12px 8px;
   background: #24292E;
   color: #FFF;
   border-bottom: 1px solid #d5d5d5;
 }
 
-.header-title {
-  margin-left: 8px;
+.title {
+  display: flex;
+  align-items: center;
   font-size: 22px;
 }
+.icon {
+  margin-right: 4px;
+}
+
 .menu-button-container {
   display: flex;
   justify-content: flex-end;

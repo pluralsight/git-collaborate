@@ -11,6 +11,7 @@ export function Menu() {
   const [repos, setRepos] = useState([])
   const [shouldShowRepos, setShouldShowRepos] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [shouldShowAbout, setShouldShowAbout] = useState(false)
 
   useEffect(() => {
     api.onUsersUpdated(handleUsersUpdated)
@@ -46,11 +47,16 @@ export function Menu() {
 
   const handleCloseRepos = () => setShouldShowRepos(false)
 
+  const handleShowAbout = () => setShouldShowAbout(true)
+
+  const handleCloseAbout = () => setShouldShowAbout(false)
+
   const handleMenuButtonClick = () => {
     remote.Menu.buildFromTemplate([
       { label: 'Edit repositories', click: handleEditRepos },
       { label: 'Add user', click: handleAddUser },
       { type: 'separator' },
+      { label: 'About', click: handleShowAbout },
       { label: 'Quit', click: api.quit }
     ]).popup()
   }
@@ -65,11 +71,13 @@ export function Menu() {
       />
       <Footer onAddUserClick={handleAddUser} />
       <Overlay
+        onCloseAbout={handleCloseAbout}
         onCloseRepos={handleCloseRepos}
         onEditUser={handleEditUser}
         repos={repos}
         setRepos={setRepos}
         setUsers={setUsers}
+        shouldShowAbout={shouldShowAbout}
         shouldShowRepos={shouldShowRepos}
         user={selectedUser}
       />

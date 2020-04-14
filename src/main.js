@@ -24,7 +24,7 @@ const handleAfterCreateWindow = (menubar) => () => {
 }
 
 const handleSecondInstanceArgs = (args) => {
-  if (args.includes('--help')) return
+  if (args.includes('--help') || args.includes('--version')) return
 
   // update the ui and give notifications to the user, but do not make changes
   args = [...args, '--verbose', '--doWork', 'false']

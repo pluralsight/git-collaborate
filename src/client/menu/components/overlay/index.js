@@ -1,7 +1,7 @@
-import React from 'react'
 import { array, bool, func } from 'prop-types'
+import React from 'react'
 
-import { Repositories, UserForm } from '../'
+import { About, Repositories, UserForm } from '../'
 import * as api from '../../../api'
 import { userType } from '../users/types'
 
@@ -9,11 +9,13 @@ import css from './index.css'
 
 export function Overlay(props) {
   const {
+    onCloseAbout,
     onCloseRepos,
     onEditUser,
     repos,
     setRepos,
     setUsers,
+    shouldShowAbout,
     shouldShowRepos,
     user
   } = props
@@ -36,7 +38,7 @@ export function Overlay(props) {
     ? handleAddUser()
     : handleEditUser()
 
-  const isActive = !!user || shouldShowRepos
+  const isActive = !!user || shouldShowRepos || shouldShowAbout
 
   return (
     <>
@@ -47,6 +49,9 @@ export function Overlay(props) {
           onSubmit={handleSubmitUserForm}
           user={user}
         />
+      </div>
+      <div className={css.overlayContainer} style={{ top: shouldShowAbout ? 65 : -150 }}>
+        <About onClose={onCloseAbout} />
       </div>
       <div className={css.overlayContainer} style={{ top: shouldShowRepos ? 65 : -60 * repos.length - 100 }}>
         <Repositories
@@ -60,11 +65,13 @@ export function Overlay(props) {
 }
 
 Overlay.propTypes = {
+  onCloseAbout: func.isRequired,
   onCloseRepos: func.isRequired,
   onEditUser: func.isRequired,
   repos: array.isRequired,
   setRepos: func.isRequired,
   setUsers: func.isRequired,
+  shouldShowAbout: bool.isRequired,
   shouldShowRepos: bool.isRequired,
   user: userType
 }

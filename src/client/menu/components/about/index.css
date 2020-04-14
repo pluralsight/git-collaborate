@@ -1,0 +1,22 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+}
+
+.app-icon {
+  fill: #000000;
+  margin-right: 4px;
+}
+
+.version {
+  margin-bottom: 24px;
+}

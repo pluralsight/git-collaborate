@@ -1,3 +1,4 @@
+export * from './about'
 export * from './button'
 export * from './delete-button'
 export * from './footer'
