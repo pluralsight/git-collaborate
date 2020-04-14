@@ -4,12 +4,12 @@ import { getBoarderLine, getColumn, getField, getHeaderLines, logger } from '../
 export const command = 'list'
 export const describe = 'List repositories'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch repos list')
     .version(false)
 
-const getRepoLines = columns => {
+const getRepoLines = (columns) => {
   const [name, path, isValid] = columns
   const rows = name.values.length
 
@@ -20,7 +20,7 @@ ${getField({ value: path.values[i], minWidth: path.width })} | \
 ${getField({ value: isValid.values[i] ? '✓' : '', minWidth: isValid.width, startWidth: 5 })} |`)
 }
 
-export const handler = args => {
+export const handler = (args) => {
   if (!args.doWork) return
 
   const repos = repoService.get()
@@ -36,5 +36,5 @@ export const handler = args => {
     getBoarderLine(columns)
   ]
 
-  lines.forEach(l => logger.info(l))
+  lines.forEach((l) => logger.info(l))
 }

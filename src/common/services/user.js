@@ -11,7 +11,7 @@ const persist = (users) => {
   config.write({ users })
 }
 
-const updateExternalServices = users => {
+const updateExternalServices = (users) => {
   gitService.updateAuthorAndCoAuthors(users)
   sshService.rotateIdentityFile(users[0].rsaKeyPath)
 }
@@ -27,8 +27,8 @@ export const generateId = () => {
 
 export const add = ({ name, email, rsaKeyPath }) => {
   const users = get()
-  const activeUsers = users.filter(u => u.active)
-  const inactiveUsers = users.filter(u => !u.active)
+  const activeUsers = users.filter((u) => u.active)
+  const inactiveUsers = users.filter((u) => !u.active)
 
   const newUser = { id: generateId(), name, email, rsaKeyPath, active: true }
 
@@ -47,7 +47,7 @@ export const add = ({ name, email, rsaKeyPath }) => {
 export const update = (user) => {
   const users = get()
 
-  const foundIndex = users.findIndex(u => u.id === user.id)
+  const foundIndex = users.findIndex((u) => u.id === user.id)
   if (foundIndex !== -1) {
     users[foundIndex] = user
   } else {
@@ -101,12 +101,12 @@ export const remove = (terms) => {
 export const rotate = () => {
   const users = get()
 
-  const activeUsers = users.filter(u => u.active)
+  const activeUsers = users.filter((u) => u.active)
   if (!activeUsers.length || activeUsers.length === 1) {
     return users
   }
 
-  const inactiveUsers = users.filter(u => !u.active)
+  const inactiveUsers = users.filter((u) => !u.active)
   const updatedUsers = [
     ...activeUsers.slice(1),
     activeUsers[0],
@@ -127,12 +127,12 @@ export const toggleActive = (terms) => {
     return users
   }
 
-  const activeUsers = users.filter(u => u.active && !selectedUsers.includes(u))
-  const inactiveUsers = users.filter(u => !u.active && !selectedUsers.includes(u))
+  const activeUsers = users.filter((u) => u.active && !selectedUsers.includes(u))
+  const inactiveUsers = users.filter((u) => !u.active && !selectedUsers.includes(u))
 
   const updatedUsers = [
     ...activeUsers,
-    ...selectedUsers.map(u => ({ ...u, active: !u.active })),
+    ...selectedUsers.map((u) => ({ ...u, active: !u.active })),
     ...inactiveUsers
   ]
 
@@ -148,7 +148,7 @@ export const toggleActive = (terms) => {
 export const shortenUserIds = () => {
   const users = get()
 
-  const updatedUsers = users.map(u =>
+  const updatedUsers = users.map((u) =>
     u.id.length === 8
       ? u
       : { ...u, id: generateId() })

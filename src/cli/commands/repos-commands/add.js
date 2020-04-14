@@ -4,7 +4,7 @@ import { EVENTS, publish } from '../../utils'
 export const command = 'add [paths..]'
 export const describe = 'Add repositories'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch repos add [paths]')
     .positional('paths', {
@@ -15,7 +15,7 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { paths, doWork, verbose } = args
 
   let updatedRepos = []

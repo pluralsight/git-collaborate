@@ -4,7 +4,7 @@ import { EVENTS, publish } from '../../utils'
 export const command = 'remove [paths..]'
 export const describe = 'Remove repositories'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch repos remove [paths]')
     .positional('paths', {
@@ -15,7 +15,7 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { paths, doWork, verbose } = args
 
   let updatedRepos

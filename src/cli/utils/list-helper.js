@@ -1,7 +1,7 @@
 import { getLongestString } from '../../common/utils'
 
 export const getColumn = ({ data, header, key }) => {
-  const values = data.map(d => d[key])
+  const values = data.map((d) => d[key])
 
   return {
     header,
@@ -10,7 +10,7 @@ export const getColumn = ({ data, header, key }) => {
   }
 }
 
-export const getField = overrides => {
+export const getField = (overrides) => {
   const { minWidth, paddingChar, startWidth, value } = {
     minWidth: 0,
     paddingChar: ' ',
@@ -22,12 +22,12 @@ export const getField = overrides => {
   return value.padStart(startWidth, paddingChar).padEnd(minWidth, paddingChar)
 }
 
-export const getBoarderLine = columns =>
+export const getBoarderLine = (columns) =>
   columns.reduce((line, c, i) =>
     `${line}${getField({ minWidth: c.width, paddingChar: '-' })}${i < columns.length - 1 ? '---' : '-'}`
   , ' -')
 
-export const getHeaderLines = columns => {
+export const getHeaderLines = (columns) => {
   const headerLine = columns.reduce((line, c, i) =>
     `${line}${getField({ value: c.header, minWidth: c.width })}${i < columns.length - 1 ? ' | ' : ' |'}`
   , '| ')

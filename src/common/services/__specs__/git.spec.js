@@ -33,7 +33,7 @@ describe('services/git', () => {
         { name: 'co-author-2', email: 'co-author-2@email.com' }
       ]
       const expectedCoAuthorValue = coAuthors
-        .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+        .map((ca) => `Co-Authored-By: ${ca.name} <${ca.email}>`)
         .join(';')
 
       subject.setCoAuthors(coAuthors)
@@ -105,9 +105,9 @@ describe('services/git', () => {
 
     describe('when there are three or more active users', () => {
       it('uses the first as author and all others as co-authors', () => {
-        const coAuthors = users.filter(u => u.active).slice(1)
+        const coAuthors = users.filter((u) => u.active).slice(1)
         const expectedCoAuthorsConfig = coAuthors
-          .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+          .map((ca) => `Co-Authored-By: ${ca.name} <${ca.email}>`)
           .join(';')
 
         subject.updateAuthorAndCoAuthors(users)

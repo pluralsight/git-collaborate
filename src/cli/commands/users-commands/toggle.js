@@ -4,7 +4,7 @@ import { EVENTS, publish } from '../../utils'
 export const command = 'toggle [userIds..]'
 export const describe = 'Toggle users\' active status'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch users toggle [userIds..]')
     .positional('userIds', {
@@ -15,7 +15,7 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { userIds, doWork, verbose } = args
 
   let updatedUsers

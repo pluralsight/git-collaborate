@@ -3,7 +3,7 @@ import { add, list, remove } from './repos-commands'
 export const command = 'repos'
 export const describe = 'Manage repositories'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch repos <command> [options]')
     .command(add)

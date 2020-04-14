@@ -15,6 +15,10 @@
   },
   "parser": "babel-eslint",
   "rules": {
+    "arrow-parens": [
+      "error",
+      "always"
+    ],
     "curly": "off",
     "generator-star-spacing": "off",
     "jsx-quotes": [

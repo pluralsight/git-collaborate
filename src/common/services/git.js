@@ -12,16 +12,16 @@ export const setAuthor = (name, email) => {
   execute(`git config --global user.email "${email}"`)
 }
 
-export const setCoAuthors = coAuthors => {
+export const setCoAuthors = (coAuthors) => {
   const value = coAuthors
-    .map(ca => `Co-Authored-By: ${ca.name} <${ca.email}>`)
+    .map((ca) => `Co-Authored-By: ${ca.name} <${ca.email}>`)
     .join(';')
 
   execute(`git config --global git-switch.co-authors "${value}"`)
 }
 
-export const updateAuthorAndCoAuthors = users => {
-  const activeUsers = users.filter(u => u.active)
+export const updateAuthorAndCoAuthors = (users) => {
+  const activeUsers = users.filter((u) => u.active)
   if (!activeUsers.length)
     return
 
@@ -31,11 +31,11 @@ export const updateAuthorAndCoAuthors = users => {
   setCoAuthors(activeUsers)
 }
 
-export const setGitLogAlias = scriptPath => {
+export const setGitLogAlias = (scriptPath) => {
   execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
 }
 
-const copyGitSwitchPostCommit = gitHooksPath => {
+const copyGitSwitchPostCommit = (gitHooksPath) => {
   const source = path.join(GIT_SWITCH_PATH, 'post-commit')
   const destination = path.join(gitHooksPath, 'post-commit.git-switch')
 
@@ -43,7 +43,7 @@ const copyGitSwitchPostCommit = gitHooksPath => {
   fs.writeFileSync(destination, postCommitContents, { encoding: 'utf-8', mode: 0o755 })
 }
 
-const mergePostCommitScripts = postCommitFile => {
+const mergePostCommitScripts = (postCommitFile) => {
   let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
   if (!postCommitScript.includes(POST_COMMIT_BASE)) {
     const temp = postCommitScript.substring(postCommitScript.indexOf('\n'))
@@ -53,7 +53,7 @@ const mergePostCommitScripts = postCommitFile => {
   return postCommitScript
 }
 
-const writePostCommit = gitHooksPath => {
+const writePostCommit = (gitHooksPath) => {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   const postCommitScript = fs.existsSync(postCommitFile)
     ? mergePostCommitScripts(postCommitFile)
@@ -62,7 +62,7 @@ const writePostCommit = gitHooksPath => {
   fs.writeFileSync(postCommitFile, postCommitScript, { encoding: 'utf-8', mode: 0o755 })
 }
 
-const addPostCommitFiles = destination => {
+const addPostCommitFiles = (destination) => {
   copyGitSwitchPostCommit(destination)
   writePostCommit(destination)
 }
@@ -71,23 +71,23 @@ const getSubmodulesForRepo = (repoPath) => {
   const submodulesStatus = execute('git submodule status', { cwd: repoPath })
   const statuses = (submodulesStatus && submodulesStatus.trim().split('\n')) || []
 
-  return statuses.map(s => s.trim().split(' ')[1])
+  return statuses.map((s) => s.trim().split(' ')[1])
 }
 
-const addPostCommitFilesToSubModules = repoPath => {
+const addPostCommitFilesToSubModules = (repoPath) => {
   const submodulesPath = path.join(repoPath, '.git', 'modules')
 
   if (fs.existsSync(submodulesPath)) {
     const submodules = getSubmodulesForRepo(repoPath)
 
-    submodules.forEach(modulePath => {
+    submodules.forEach((modulePath) => {
       const hooksPath = path.join(submodulesPath, ...modulePath.split('/'), 'hooks')
       addPostCommitFiles(hooksPath)
     })
   }
 }
 
-export const initRepo = repoPath => {
+export const initRepo = (repoPath) => {
   if (!fs.existsSync(repoPath)) {
     logger.error('The specified path does not exist')
     return false
@@ -105,14 +105,14 @@ export const initRepo = repoPath => {
   return true
 }
 
-const removeGitSwitchPostCommitScript = gitHooksPath => {
+const removeGitSwitchPostCommitScript = (gitHooksPath) => {
   const postCommitGitSwitchFile = path.join(gitHooksPath, 'post-commit.git-switch')
   if (fs.existsSync(postCommitGitSwitchFile)) {
     fs.unlinkSync(postCommitGitSwitchFile)
   }
 }
 
-const removePostCommitScript = gitHooksPath => {
+const removePostCommitScript = (gitHooksPath) => {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   if (fs.existsSync(postCommitFile)) {
     let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
@@ -125,12 +125,12 @@ const removePostCommitScript = gitHooksPath => {
   }
 }
 
-const removePostCommitFiles = target => {
+const removePostCommitFiles = (target) => {
   removeGitSwitchPostCommitScript(target)
   removePostCommitScript(target)
 }
 
-const removePostCommitFilesFromSubModules = target => {
+const removePostCommitFilesFromSubModules = (target) => {
   if (fs.existsSync(target)) {
     for (const submoduleDir of fs.readdirSync(target)) {
       removePostCommitFiles(path.join(target, submoduleDir, 'hooks'))
@@ -138,7 +138,7 @@ const removePostCommitFilesFromSubModules = target => {
   }
 }
 
-export const removeRepo = repoPath => {
+export const removeRepo = (repoPath) => {
   removePostCommitFiles(path.join(repoPath, '.git', 'hooks'))
   removePostCommitFilesFromSubModules(path.join(repoPath, '.git', 'modules'))
 }

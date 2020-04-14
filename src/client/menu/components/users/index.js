@@ -131,8 +131,8 @@ function InactiveUsers(props) {
 export function Users(props) {
   const { users, ...rest } = props
 
-  const activeUsers = users.filter(u => u.active)
-  const inactiveUsers = users.filter(u => !u.active)
+  const activeUsers = users.filter((u) => u.active)
+  const inactiveUsers = users.filter((u) => !u.active)
 
   return (
     <div className={css.container}>

@@ -1,7 +1,7 @@
 import capitalize from 'lodash.capitalize'
 
-export const formatActiveUserFirstNames = users => {
-  const activeUserFirstNames = users.filter(u => u.active).map(u => u.name.split(' ')[0])
+export const formatActiveUserFirstNames = (users) => {
+  const activeUserFirstNames = users.filter((u) => u.active).map((u) => u.name.split(' ')[0])
 
   return activeUserFirstNames.length < 3
     ? activeUserFirstNames.join(' and ')
@@ -14,7 +14,7 @@ export const getNotificationLabel = (activeUserCount, shouldCapitalize = false) 
   return shouldCapitalize ? capitalize(label) : label
 }
 
-export const getLongestString = strings => {
+export const getLongestString = (strings) => {
   return strings.reduce((longest, string) => {
     if (string.length > longest) {
       longest = string.length

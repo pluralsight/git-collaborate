@@ -11,7 +11,7 @@ function showNotification(config) {
 
 export function showCurrentAuthors(didRotate = false) {
   const users = userService.get()
-  const activeUserCount = users.filter(u => u.active).length
+  const activeUserCount = users.filter((u) => u.active).length
 
   const label = getNotificationLabel(activeUserCount, didRotate)
   const title = didRotate ? `${label} rotated to:` : `Current ${label}:`

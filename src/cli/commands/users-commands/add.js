@@ -4,7 +4,7 @@ import { EVENTS, publish } from '../../utils'
 export const command = 'add'
 export const describe = 'Add a new user'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch users add [options]')
     .options({
@@ -29,7 +29,7 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { name, email, key: rsaKeyPath, doWork, verbose } = args
 
   let updatedUsers

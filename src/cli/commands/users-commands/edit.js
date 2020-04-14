@@ -4,7 +4,7 @@ import { EVENTS, publish, logger } from '../../utils'
 export const command = 'edit [userId]'
 export const describe = 'Edit an existing user'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch users edit <userId> [options]')
     .positional('userId', {
@@ -31,13 +31,13 @@ export const builder = yargs =>
     })
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { userId, name, email, key, doWork, verbose } = args
   const users = userService.get()
 
   let updatedUsers
   if (doWork) {
-    const user = users.find(u => u.id === userId)
+    const user = users.find((u) => u.id === userId)
     if (!user) {
       logger.error('User not found')
       return

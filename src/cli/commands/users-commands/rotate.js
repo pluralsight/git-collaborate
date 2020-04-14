@@ -4,12 +4,12 @@ import { EVENTS, publish } from '../../utils'
 export const command = 'rotate'
 export const describe = 'Rotate active users'
 
-export const builder = yargs =>
+export const builder = (yargs) =>
   yargs
     .usage('Usage:\n  git-switch users rotate')
     .version(false)
 
-export const handler = args => {
+export const handler = (args) => {
   const { doWork, verbose } = args
   let updatedUsers
 
@@ -19,7 +19,7 @@ export const handler = args => {
     updatedUsers = userService.get()
   }
 
-  const activeUserCount = updatedUsers.filter(u => u.active).length
+  const activeUserCount = updatedUsers.filter((u) => u.active).length
 
   if (verbose && activeUserCount > 1) {
     publish(EVENTS.USERS, updatedUsers)

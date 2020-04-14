@@ -224,7 +224,7 @@ describe('services/user', () => {
 
       beforeEach(() => {
         users = users
-          .map(u => ({ ...u, active: true }))
+          .map((u) => ({ ...u, active: true }))
           .concat({
             name: 'Third User',
             email: 'third@email.com',
@@ -261,7 +261,7 @@ describe('services/user', () => {
 
       beforeEach(() => {
         users = users
-          .map(u => ({ ...u, active: true }))
+          .map((u) => ({ ...u, active: true }))
           .concat([{
             name: 'Third User',
             email: 'third@email.com',
