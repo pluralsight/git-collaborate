@@ -61,22 +61,24 @@ export function Repositories(props) {
   const handleAddReposClicked = () => {
     setIsSelectingRepos(true)
     const dialogOptions = {
+      buttonLabel: 'Done',
       properties: [
         'openDirectory',
         'multiSelections',
         'dontAddToRecent'
-      ]
+      ],
+      title: 'Select git repo(s)'
     }
 
     const currentWindow = remote.getCurrentWindow()
-    remote.dialog.showOpenDialog(currentWindow, dialogOptions)
-      .then(result => {
-        setIsSelectingRepos(false)
+    const results = remote.dialog.showOpenDialogSync(currentWindow, dialogOptions)
 
-        result.filePaths.map(handleAddRepo)
+    setIsSelectingRepos(false)
+    currentWindow.show()
 
-        currentWindow.show()
-      })
+    if (results && results.length) {
+      results.map(handleAddRepo)
+    }
   }
 
   return repos.length

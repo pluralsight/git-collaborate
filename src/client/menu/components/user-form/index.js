@@ -29,26 +29,26 @@ export function UserForm(props) {
   const handleAddRsaKey = () => {
     setIsSelectingRsaKey(true)
     const dialogOptions = {
+      buttonLabel: 'Select',
       properties: [
         'openFile',
         'showHiddenFiles',
         'treatPackageAsDirectory',
         'dontAddToRecent'
-      ]
+      ],
+      title: 'Select user RSA key'
     }
 
     const currentWindow = remote.getCurrentWindow()
-    remote.dialog.showOpenDialog(currentWindow, dialogOptions)
-      .then((result) => {
-        setIsSelectingRsaKey(false)
+    const results = remote.dialog.showOpenDialogSync(currentWindow, dialogOptions)
 
-        onEditUser({
-          ...user,
-          rsaKeyPath: (result.filePaths.length && result.filePaths[0]) || user.rsaKeyPath
-        })
+    setIsSelectingRsaKey(false)
+    currentWindow.show()
 
-        currentWindow.show()
-      })
+    onEditUser({
+      ...user,
+      rsaKeyPath: (results && results.length && results[0]) || user.rsaKeyPath
+    })
   }
 
   if (!user) {

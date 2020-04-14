@@ -2,9 +2,11 @@ import { ipcMain } from 'electron'
 
 import CHANNELS from './common/ipc-channels'
 import { repoService, userService } from './common/services'
+import { logger } from './common/utils'
 
 export function registerIpcHandlers(app) {
   const handlers = {
+    [CHANNELS.DEBUG]: (_, ...args) => logger.info('Client says:', ...args),
     [CHANNELS.QUIT_APPLICATION]: () => app.quit(),
 
     [CHANNELS.GET_ALL_USERS]: (evt) => { evt.returnValue = userService.get() },
