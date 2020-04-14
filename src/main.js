@@ -7,7 +7,7 @@ import { install, getMenubar } from './common/utils'
 
 const isDev = process.env.NODE_ENV === 'development'
 
-const handleAppReady = menubar => () => {
+const handleAppReady = (menubar) => () => {
   registerIpcHandlers(menubar.app)
 
   if (isDev) {
@@ -17,13 +17,13 @@ const handleAppReady = menubar => () => {
   }
 }
 
-const handleAfterCreateWindow = menubar => () => {
+const handleAfterCreateWindow = (menubar) => () => {
   if (isDev) {
     menubar.window.openDevTools()
   }
 }
 
-const handleSecondInstanceArgs = args => {
+const handleSecondInstanceArgs = (args) => {
   if (args.includes('--help')) return
 
   // update the ui and give notifications to the user, but do not make changes
@@ -32,11 +32,11 @@ const handleSecondInstanceArgs = args => {
   setTimeout(() => handleCli(args), 300)
 }
 
-const getCliArgs = args => {
+const getCliArgs = (args) => {
   // contains `node_modules` dir (i.e. running with npm), is the `git-switch` command, or equals '.'
   const regex = /([/\\]?(node_modules|git-switch))|(^\.$)/
 
-  return args.filter(arg => !regex.test(arg))
+  return args.filter((arg) => !regex.test(arg))
 }
 
 const startUp = () => {

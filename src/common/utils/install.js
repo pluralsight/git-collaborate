@@ -35,7 +35,7 @@ function installConfigFile() {
 function getAutoRotateCommand(platform, appExecutablePath) {
   if (path.basename(appExecutablePath).match(/electron/i)) {
     return `cd ${appExecutablePath.split('/node_modules')[0]}
-  npm run start -- -- users active rotate
+  npm run start -- -- users rotate
   cd $(dirname $0)/../../`
   }
 
@@ -46,7 +46,7 @@ function getAutoRotateCommand(platform, appExecutablePath) {
     postpend = ''
   }
 
-  return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} users active rotate${postpend}`
+  return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} users rotate${postpend}`
 }
 
 function installPostCommitHook(autoRotate) {
