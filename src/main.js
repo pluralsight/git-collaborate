@@ -40,7 +40,7 @@ const getCliArgs = (args) => {
 }
 
 const startUp = () => {
-  const iconFile = process.platform === 'darwin' ? 'tray-icon-osx.png' : 'tray-icon.png'
+  const iconFile = process.platform === 'darwin' ? 'tray-icon-Template.png' : 'tray-icon.png'
 
   const menubar = getMenubar({
     browserWindow: {
