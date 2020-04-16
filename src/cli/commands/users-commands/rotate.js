@@ -1,7 +1,7 @@
 import { userService, notificationService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'rotate'
+export const command = ['rotate', 'ro']
 export const describe = 'Rotate active users'
 
 export const builder = (yargs) =>

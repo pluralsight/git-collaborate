@@ -1,6 +1,6 @@
 import { getMenubar } from '../utils'
 
-export const command = 'quit'
+export const command = ['quit', 'q']
 export const describe = 'Quit running git-switch client'
 
 export const builder = (yargs) =>

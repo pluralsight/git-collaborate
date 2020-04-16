@@ -1,6 +1,6 @@
 import { add, list, remove } from './repos-commands'
 
-export const command = 'repos'
+export const command = ['repos', 'r']
 export const describe = 'Manage repositories'
 
 export const builder = (yargs) =>

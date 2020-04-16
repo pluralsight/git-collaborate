@@ -25,31 +25,33 @@ git-switch users add --name "<User Name>" --email "<user@email.com>"
 git-switch repos list
 ```
 
-_**Note**: You will need to ensure `git-switch` is in your `PATH`_. On MacOS it might looke like this `sudo ln -s /Applications/git-switch.app/Contents/MacOS/git-switch /usr/local/bin/git-switch`
+_**Note**: You will need to ensure `git-switch` is in your `PATH`_. On MacOS it might look like this: `sudo ln -s /Applications/git-switch.app/Contents/MacOS/git-switch /usr/local/bin/git-switch`
 
 The available command structure is:
 
 ```
 git-switch
   users
-    add
-    edit
-    remove
-    list
-    rotate
-    toggle
+    add (new)
+    edit (up, update)
+    remove (rm)
+    list (ls)
+    rotate (ro)
+    toggle (to)
   repos
-    add
-    remove
-    list
+    add (new)
+    remove (rm)
+    list (ls)
   show
+  quit
 ```
 
-Running `--help` on any command/sub-command will provide usage information
+Running `-h` or `--help` on any command/sub-command will provide usage information
 
 ## Development
 To run git-switch from source, run the following command:
 ```
+npm run build
 npm run start
 ```
 
@@ -84,7 +86,7 @@ brew install wine
 
 There are two options for publishing a release:
 
-#### Manual Publish:
+#### Manual Publish
 Once new packages have been generated locally, you can drag the zipped `./out` packages onto the [Create Release Page](https://github.com/pluralsight/git-switch-electron/releases/new) in github.
 
 #### Publish via CLI

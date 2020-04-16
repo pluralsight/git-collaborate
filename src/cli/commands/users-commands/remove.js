@@ -1,7 +1,7 @@
 import { userService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'remove [userIds..]'
+export const command = ['remove [userIds..]', 'rm']
 export const describe = 'Remove users'
 
 export const builder = (yargs) =>

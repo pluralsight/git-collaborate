@@ -1,7 +1,7 @@
 import { repoService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'add [paths..]'
+export const command = ['add [paths..]', 'new']
 export const describe = 'Add repositories'
 
 export const builder = (yargs) =>

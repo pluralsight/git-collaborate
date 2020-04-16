@@ -1,6 +1,6 @@
 import { getMenubar } from '../utils'
 
-export const command = 'show'
+export const command = ['show', 's']
 export const describe = 'Show and focus running git-switch client'
 
 export const builder = (yargs) =>

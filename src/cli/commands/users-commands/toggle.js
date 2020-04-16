@@ -1,7 +1,7 @@
 import { userService, notificationService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'toggle [userIds..]'
+export const command = ['toggle [userIds..]', 'to']
 export const describe = 'Toggle users\' active status'
 
 export const builder = (yargs) =>

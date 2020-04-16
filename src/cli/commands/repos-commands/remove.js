@@ -1,7 +1,7 @@
 import { repoService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'remove [paths..]'
+export const command = ['remove [paths..]', 'rm']
 export const describe = 'Remove repositories'
 
 export const builder = (yargs) =>

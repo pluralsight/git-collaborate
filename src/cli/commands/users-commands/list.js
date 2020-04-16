@@ -1,7 +1,7 @@
 import { userService } from '../../../common/services'
 import { getBoarderLine, getColumn, getField, getHeaderLines, logger } from '../../utils'
 
-export const command = 'list'
+export const command = ['list', 'ls']
 export const describe = 'List users'
 
 export const builder = (yargs) =>

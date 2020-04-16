@@ -20,7 +20,6 @@
     "pack:macos": "electron-forge package --arch=x64 --platform=darwin",
     "pack:windows": "electron-forge package --arch=x64 --platform=win32",
     "packages:zip": "node ./scripts/package-zipper",
-    "precommit": "npm run lint && npm run test && npm run build",
     "release:clean": "rimraf ./out",
     "release:create": "npm run release:clean && npm run build && npm run pack && npm run packages:zip",
     "release:publish": "node ./scripts/release-publisher",
@@ -96,6 +95,11 @@
   },
   "resolutions": {
     "kind-of": "^6.0.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run test && npm run build"
+    }
   },
   "config": {
     "forge": {

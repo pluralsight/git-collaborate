@@ -7,7 +7,7 @@ import { gitService, repoService, userService } from '../../services'
 
 describe('utils/install', () => {
   let gitSwitchDirExists
-  let configFileExsists
+  let configFileExists
   let postCommitFileExists
   let gitLogCoAuthorFileExists
   let appExecutablePath
@@ -22,11 +22,11 @@ describe('utils/install', () => {
 
   beforeEach(() => {
     gitSwitchDirExists = true
-    configFileExsists = true
+    configFileExists = true
     postCommitFileExists = true
     gitLogCoAuthorFileExists = true
     appExecutablePath = '/foo/bar'
-    autoRotate = '/foo/bar users active rotate > /dev/null 2>&1 &'
+    autoRotate = '/foo/bar users rotate > /dev/null 2>&1 &'
     platform = 'linux'
     postCommitFileContents = getPostCommitFileContents(autoRotate)
     gitLogCoAuthorFileContents = getGitLogCoAuthorFileContents()
@@ -37,7 +37,7 @@ describe('utils/install', () => {
 
     sandbox.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
-      .withArgs(CONFIG_FILE).callsFake(() => configFileExsists)
+      .withArgs(CONFIG_FILE).callsFake(() => configFileExists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => gitLogCoAuthorFileExists)
     sandbox.stub(fs, 'readFileSync')
@@ -66,7 +66,7 @@ describe('utils/install', () => {
 
   describe('when config file does not exist', () => {
     it('creates .git-switch/config.json', () => {
-      configFileExsists = false
+      configFileExists = false
       sandbox.stub(fs, 'writeFileSync')
 
       subject(platform, appExecutablePath)
@@ -91,7 +91,7 @@ describe('utils/install', () => {
       beforeEach(() => {
         appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/electron'
         autoRotate = `cd /herp/derp
-  npm run start -- -- users active rotate
+  npm run start -- -- users rotate
   cd $(dirname $0)/../../`
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
@@ -112,7 +112,7 @@ describe('utils/install', () => {
       beforeEach(() => {
         platform = 'win32'
         appExecutablePath = 'C:\\foo\\bar'
-        autoRotate = 'start C:\\\\foo\\\\bar users active rotate'
+        autoRotate = 'start C:\\\\foo\\\\bar users rotate'
         postCommitFileContents = getPostCommitFileContents(autoRotate)
       })
 

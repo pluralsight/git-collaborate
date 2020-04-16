@@ -1,6 +1,6 @@
 import { add, edit, list, remove, rotate, toggle } from './users-commands'
 
-export const command = 'users'
+export const command = ['users', 'u']
 export const describe = 'Manage users'
 
 export const builder = (yargs) =>

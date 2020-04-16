@@ -1,7 +1,7 @@
 import { userService, notificationService } from '../../../common/services'
 import { EVENTS, publish } from '../../utils'
 
-export const command = 'add'
+export const command = ['add', 'new']
 export const describe = 'Add a new user'
 
 export const builder = (yargs) =>
