@@ -3,6 +3,7 @@ import fs from 'fs'
 
 import { sshService as subject } from '../'
 import sandbox from '../../../../test/sandbox'
+import { config } from '../../utils'
 
 describe('services/ssh', () => {
   afterEach(() => {
@@ -26,6 +27,7 @@ describe('services/ssh', () => {
       sandbox.stub(fs, 'existsSync').callsFake(() => sshConfigExists)
       sandbox.stub(fs, 'readFileSync').callsFake(() => existingSshConfigFileContents)
       sandbox.stub(fs, 'writeFileSync')
+      sandbox.stub(config, 'read').returns({})
     })
 
     describe('when identityFile is null or empty', () => {
@@ -133,6 +135,63 @@ Host github.com
 
         expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
         expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+      })
+    })
+  })
+
+  describe('when the host is configured', () => {
+    let expectedFileContents
+    let identityFile
+    let sshConfigExists
+    let existingSshConfigFileContents
+
+    beforeEach(() => {
+      sandbox.stub(config, 'read').returns({ host: 'gitlab.com' })
+      identityFile = '/path/to/rsa/key'
+      sshConfigExists = true
+      existingSshConfigFileContents = `Host github.com
+\tIdentityFile foo/bar
+`
+      sandbox.stub(fs, 'existsSync').callsFake(() => sshConfigExists)
+      sandbox.stub(fs, 'readFileSync').callsFake(() => existingSshConfigFileContents)
+      sandbox.stub(fs, 'writeFileSync')
+
+      expectedFileContents = `${existingSshConfigFileContents}
+Host gitlab.com
+\tIdentityFile ${identityFile}
+`
+    })
+
+    describe('when rotating the identity file', () => {
+      beforeEach(() => {
+        subject.rotateIdentityFile(identityFile)
+      })
+
+      it('should check that the file exists', () => {
+        expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
+      })
+
+      it('should read the existing file', () => {
+        expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
+      })
+
+      it('should use the configured host to set the identity file', () => {
+        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedFileContents, { encoding: 'utf-8', mode: 0o644 })
+      })
+    })
+
+    describe('when the existing file contains the configured host', () => {
+      beforeEach(() => {
+        existingSshConfigFileContents = `Host gitlab.com
+\tIdentityFile foo/bar
+`
+        expectedFileContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+
+        subject.rotateIdentityFile(identityFile)
+      })
+
+      it('should replace the configured host identity file', () => {
+        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedFileContents, { encoding: 'utf-8', mode: 0o644 })
       })
     })
   })
