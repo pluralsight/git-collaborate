@@ -9,6 +9,9 @@ Cross-platform electron app for managing git users while pair/mob programming
 * Enjoy!
 
 ## How it works
+
+### Co-Authors
+
 Git Switch adds a post commit hook to the git repositories you specify.
 
 You select the users to add to your pair/mob, and commit changes to your code.
@@ -16,6 +19,15 @@ You select the users to add to your pair/mob, and commit changes to your code.
 With each commit, the git-switch commit hook amends the commit to designate the author separate from the co-author(s).
 
 Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
+
+### Identities
+
+Git Switch will modify your ssh config (`~\.ssh\config`) to specify the current author's identity file.
+
+By default, it does this for the `github.com` host.
+
+If you use a different host for your repository, you can add a `host` property to the config object at `~\.git-switch\config.json`.
+This cannot currently be managed through the UI, but will persist if you make other changes through the UI.
 
 ## CLI Usage
 In addition to managing users and repositories in the electron client app, git-switch can also be used as a CLI i.e.
