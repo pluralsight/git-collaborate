@@ -6,48 +6,46 @@ import { config } from '../utils'
 
 export const SSH_CONFIG_PATH = path.join(os.homedir(), '.ssh', 'config')
 const DEFAULT_HOST = 'github.com'
-let host = DEFAULT_HOST
-let rsaRegex = new RegExp(/^(Host\sgithub\.com$[\w\s.]*\s*IdentityFile\s)(.*)/, 'm')
-let defaultRsaConfig = `Host github.com
-\tIdentityFile `
 
-const REGEX_PATTERN = '^(Host\\s[host]$[\\w\\s.]*\\s*IdentityFile\\s)(.*)'
-const RSA_CONFIG_PATTERN = `Host [host]
-\tIdentityFile `
+function getHost() {
+  return config.read().host || DEFAULT_HOST
+}
 
-export function rotateIdentityFile(identityFile) {
-  if (!identityFile) {
-    return
-  }
+function getRegex(host) {
+  const escapedHost = host.replace('.', '\\.')
 
-  updateRegexAndConfig()
+  return new RegExp(`^(?<hostConfig>Host\\s${escapedHost}$[\\w\\s.]*\\s*IdentityFile\\s)(?<identityFile>.*)`, 'm')
+}
 
-  if (!fs.existsSync(SSH_CONFIG_PATH)) {
-    writeToSshConfig(`${defaultRsaConfig}${identityFile}\n`)
-    return
-  }
-
-  const existingContents = fs.readFileSync(SSH_CONFIG_PATH, 'utf-8')
-  const match = rsaRegex.exec(existingContents)
-
-  if (!match) {
-    writeToSshConfig(`${existingContents ? `${existingContents}\n` : ''}${defaultRsaConfig}${identityFile}\n`)
-  } else if (match[2] !== identityFile) {
-    writeToSshConfig(existingContents.replace(rsaRegex, `$1${identityFile}`))
-  }
+function getRsaConfig(host, identityFile) {
+  return `Host ${host}
+\tIdentityFile ${identityFile}`
 }
 
 function writeToSshConfig(contents) {
   fs.writeFileSync(SSH_CONFIG_PATH, contents, { encoding: 'utf-8', mode: 0o644 })
 }
 
-function updateRegexAndConfig() {
-  const configuredHost = config.read().host || DEFAULT_HOST
-
-  if (configuredHost === host)
+export function rotateIdentityFile(identityFile) {
+  if (!identityFile) {
     return
+  }
 
-  host = configuredHost
-  rsaRegex = new RegExp(REGEX_PATTERN.replace('[host]', host.replace('.', '\\.')), 'm')
-  defaultRsaConfig = RSA_CONFIG_PATTERN.replace('[host]', host)
+  const host = getHost()
+  const rsaConfig = getRsaConfig(host, identityFile)
+
+  if (!fs.existsSync(SSH_CONFIG_PATH)) {
+    writeToSshConfig(`${rsaConfig}\n`)
+    return
+  }
+
+  const rsaRegex = getRegex(host)
+  const existingContents = fs.readFileSync(SSH_CONFIG_PATH, 'utf-8')
+  const match = rsaRegex.exec(existingContents)
+
+  if (!match) {
+    writeToSshConfig(`${existingContents ? `${existingContents}\n` : ''}${rsaConfig}\n`)
+  } else if (match.groups.identityFile !== identityFile) {
+    writeToSshConfig(existingContents.replace(rsaRegex, `$<hostConfig>${identityFile}`))
+  }
 }

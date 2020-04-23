@@ -14,7 +14,8 @@ describe('services/ssh', () => {
     let identityFile
     let sshConfigExists
     let existingSshConfigFileContents
-    let sshConfigFileContents
+    let expectedSshConfigContents
+    let gitSwitchConfig
 
     beforeEach(() => {
       identityFile = '/path/to/rsa/key'
@@ -22,12 +23,13 @@ describe('services/ssh', () => {
       existingSshConfigFileContents = `Host github.com
 \tIdentityFile foo/bar
 `
-      sshConfigFileContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+      expectedSshConfigContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+      gitSwitchConfig = {}
 
       sandbox.stub(fs, 'existsSync').callsFake(() => sshConfigExists)
       sandbox.stub(fs, 'readFileSync').callsFake(() => existingSshConfigFileContents)
       sandbox.stub(fs, 'writeFileSync')
-      sandbox.stub(config, 'read').returns({})
+      sandbox.stub(config, 'read').callsFake(() => gitSwitchConfig)
     })
 
     describe('when identityFile is null or empty', () => {
@@ -50,12 +52,12 @@ describe('services/ssh', () => {
 
         expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
         expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
-        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
       })
 
       describe('when github rsa config already matches', () => {
         beforeEach(() => {
-          existingSshConfigFileContents = sshConfigFileContents
+          existingSshConfigFileContents = expectedSshConfigContents
         })
 
         it('does not update ssh config file', () => {
@@ -74,15 +76,15 @@ describe('services/ssh', () => {
 \tUser git
 \tIdentityFile foo/bar
 `
-          sshConfigFileContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+          expectedSshConfigContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
         })
 
-        it('updates the ssh config file', () => {
+        it('updates the rsa identity file', () => {
           subject.rotateIdentityFile(identityFile)
 
           expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
           expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
-          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
         })
       })
     })
@@ -98,7 +100,7 @@ describe('services/ssh', () => {
 
           expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
           expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
-          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
         })
       })
 
@@ -109,7 +111,7 @@ describe('services/ssh', () => {
 \tUser admin
 \tIdentityFile path/to/id/file
 `
-          sshConfigFileContents = `${existingSshConfigFileContents}
+          expectedSshConfigContents = `${existingSshConfigFileContents}
 Host github.com
 \tIdentityFile ${identityFile}
 `
@@ -120,7 +122,7 @@ Host github.com
 
           expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
           expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
-          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
         })
       })
     })
@@ -134,64 +136,43 @@ Host github.com
         subject.rotateIdentityFile(identityFile)
 
         expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
-        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, sshConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
       })
     })
-  })
 
-  describe('when the host is configured', () => {
-    let expectedFileContents
-    let identityFile
-    let sshConfigExists
-    let existingSshConfigFileContents
+    describe('when host is included in config', () => {
+      beforeEach(() => {
+        gitSwitchConfig = { host: 'gitlab.com' }
 
-    beforeEach(() => {
-      sandbox.stub(config, 'read').returns({ host: 'gitlab.com' })
-      identityFile = '/path/to/rsa/key'
-      sshConfigExists = true
-      existingSshConfigFileContents = `Host github.com
-\tIdentityFile foo/bar
-`
-      sandbox.stub(fs, 'existsSync').callsFake(() => sshConfigExists)
-      sandbox.stub(fs, 'readFileSync').callsFake(() => existingSshConfigFileContents)
-      sandbox.stub(fs, 'writeFileSync')
-
-      expectedFileContents = `${existingSshConfigFileContents}
+        expectedSshConfigContents = `${existingSshConfigFileContents}
 Host gitlab.com
 \tIdentityFile ${identityFile}
 `
-    })
+      })
 
-    describe('when rotating the identity file', () => {
-      beforeEach(() => {
+      it('adds configured host rsa config to ssh config file', () => {
         subject.rotateIdentityFile(identityFile)
-      })
 
-      it('should check that the file exists', () => {
         expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
-      })
-
-      it('should read the existing file', () => {
         expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
+        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
       })
 
-      it('should use the configured host to set the identity file', () => {
-        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedFileContents, { encoding: 'utf-8', mode: 0o644 })
-      })
-    })
-
-    describe('when the existing file contains the configured host', () => {
-      beforeEach(() => {
-        existingSshConfigFileContents = `Host gitlab.com
+      describe('when ssh config contains the configured host', () => {
+        beforeEach(() => {
+          existingSshConfigFileContents = `Host gitlab.com
 \tIdentityFile foo/bar
 `
-        expectedFileContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+          expectedSshConfigContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
+        })
 
-        subject.rotateIdentityFile(identityFile)
-      })
+        it('updates the rsa identity file', () => {
+          subject.rotateIdentityFile(identityFile)
 
-      it('should replace the configured host identity file', () => {
-        expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedFileContents, { encoding: 'utf-8', mode: 0o644 })
+          expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
+          expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
+          expect(fs.writeFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, expectedSshConfigContents, { encoding: 'utf-8', mode: 0o644 })
+        })
       })
     })
   })
