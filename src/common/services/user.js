@@ -13,7 +13,7 @@ const persist = (users) => {
 
 const updateExternalServices = (users) => {
   gitService.updateAuthorAndCoAuthors(users)
-  sshService.rotateIdentityFile(users[0].rsaKeyPath)
+  sshService.rotateIdentityFile(users[0].rsaKeyPath, users[0].sshHost)
 }
 
 export const generateId = () => {

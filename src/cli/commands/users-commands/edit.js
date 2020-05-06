@@ -27,30 +27,41 @@ export const builder = (yargs) =>
         alias: 'k',
         describe: 'The path to the user\'s rsa key',
         string: true
+      },
+      host: {
+        alias: 'H',
+        describe: 'The host the rsa key is issued to',
+        string: true
       }
     })
     .version(false)
 
 export const handler = (args) => {
-  const { userId, name, email, key, doWork, verbose } = args
+  const { doWork, verbose } = args
   const users = userService.get()
 
   let updatedUsers
   if (doWork) {
+    const { userId, name, email, key, host } = args
+
     const user = users.find((u) => u.id === userId)
     if (!user) {
       logger.error('User not found')
       return
     }
 
-    const rsaKeyPath = key == null ? user.rsaKeyPath : key
-
-    updatedUsers = userService.update({
+    const updatedUser = {
       ...user,
       name: name || user.name,
       email: email || user.email,
-      rsaKeyPath
-    })
+      rsaKeyPath: key == null ? user.rsaKeyPath : key,
+      sshHost: host == null ? user.sshHost : host
+    }
+    if (updatedUser.sshHost && !updatedUser.rsaKeyPath) {
+      delete updatedUser.sshHost
+    }
+
+    updatedUsers = userService.update(updatedUser)
   } else {
     updatedUsers = users
   }

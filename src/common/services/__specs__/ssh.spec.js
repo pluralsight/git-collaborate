@@ -3,7 +3,6 @@ import fs from 'fs'
 
 import { sshService as subject } from '../'
 import sandbox from '../../../../test/sandbox'
-import { config } from '../../utils'
 
 describe('services/ssh', () => {
   afterEach(() => {
@@ -15,7 +14,6 @@ describe('services/ssh', () => {
     let sshConfigExists
     let existingSshConfigFileContents
     let expectedSshConfigContents
-    let gitSwitchConfig
 
     beforeEach(() => {
       identityFile = '/path/to/rsa/key'
@@ -24,12 +22,10 @@ describe('services/ssh', () => {
 \tIdentityFile foo/bar
 `
       expectedSshConfigContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
-      gitSwitchConfig = {}
 
       sandbox.stub(fs, 'existsSync').callsFake(() => sshConfigExists)
       sandbox.stub(fs, 'readFileSync').callsFake(() => existingSshConfigFileContents)
       sandbox.stub(fs, 'writeFileSync')
-      sandbox.stub(config, 'read').callsFake(() => gitSwitchConfig)
     })
 
     describe('when identityFile is null or empty', () => {
@@ -140,18 +136,19 @@ Host github.com
       })
     })
 
-    describe('when host is included in config', () => {
-      beforeEach(() => {
-        gitSwitchConfig = { host: 'gitlab.com' }
+    describe('when host is provided', () => {
+      let sshHost
 
+      beforeEach(() => {
+        sshHost = 'gitlab.com'
         expectedSshConfigContents = `${existingSshConfigFileContents}
-Host gitlab.com
+Host ${sshHost}
 \tIdentityFile ${identityFile}
 `
       })
 
       it('adds configured host rsa config to ssh config file', () => {
-        subject.rotateIdentityFile(identityFile)
+        subject.rotateIdentityFile(identityFile, sshHost)
 
         expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
         expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')
@@ -160,14 +157,14 @@ Host gitlab.com
 
       describe('when ssh config contains the configured host', () => {
         beforeEach(() => {
-          existingSshConfigFileContents = `Host gitlab.com
+          existingSshConfigFileContents = `Host ${sshHost}
 \tIdentityFile foo/bar
 `
           expectedSshConfigContents = existingSshConfigFileContents.replace('foo/bar', identityFile)
         })
 
         it('updates the rsa identity file', () => {
-          subject.rotateIdentityFile(identityFile)
+          subject.rotateIdentityFile(identityFile, sshHost)
 
           expect(fs.existsSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH)
           expect(fs.readFileSync).to.have.been.calledWith(subject.SSH_CONFIG_PATH, 'utf-8')

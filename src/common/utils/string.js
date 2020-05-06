@@ -16,7 +16,7 @@ export const getNotificationLabel = (activeUserCount, shouldCapitalize = false) 
 
 export const getLongestString = (strings) => {
   return strings.reduce((longest, string) => {
-    if (string.length > longest) {
+    if (string && string.length > longest) {
       longest = string.length
     }
 
