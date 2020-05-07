@@ -2,6 +2,7 @@
 
 Cross-platform electron app for managing git users while pair/mob programming
 
+
 ## Installation
 
 * You will find deployables for each of the 3 major platforms [here](https://github.com/pluralsight/git-switch-electron/releases).
@@ -10,7 +11,9 @@ Cross-platform electron app for managing git users while pair/mob programming
 * Add your git repos and pair/mob users.
 * Enjoy!
 
+
 ## How it works
+
 
 ### Co-Authors
 
@@ -22,14 +25,15 @@ With each commit, the git-switch commit hook amends the commit to designate the 
 
 Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
 
+
 ### Identities
 
-Git Switch will modify your ssh config (`~\.ssh\config`) to specify the current author's identity file.
+Git Switch will modify your ssh config (`~/.ssh/config`) to specify the current author's identity file (RSA key).
 
 By default, it does this for the `github.com` host.
 
-If you use a different host for your repository, you can add a `host` property to the config object at `~\.git-switch\config.json`.
-This cannot currently be managed through the UI, but will persist if you make other changes through the UI.
+If you use a different host for your repository, you can provide the `SSH Host` value, in the add/edit user form, that your identity file was issued for.
+
 
 ## CLI usage
 
@@ -63,6 +67,7 @@ git-switch
 
 Running `-h` or `--help` on any command/sub-command will provide usage information
 
+
 ## Development
 
 To run git-switch from source, run the following command:
@@ -75,6 +80,7 @@ To launch the electron app with the chrome dev tools open by default, simply run
 ```
 npm run start:dev
 ```
+
 
 ## Publishing a release
 
