@@ -38,25 +38,8 @@ Repository.propTypes = {
   })
 }
 
-function EmptyState() {
-  return (
-    <div className={css.emptyMessage}>
-      No repositories yet
-      <div className={css.emptyMessageSub}>
-        Add repositories you want to use with git-switch
-      </div>
-    </div>
-  )
-}
-
-export function Repositories(props) {
-  const { onDone, repos, setRepos } = props
-
+function RepositoriesActions({ onAddRepo, onDone }) {
   const [isSelectingRepos, setIsSelectingRepos] = useState(false)
-
-  const handleAddRepo = (path) => setRepos(api.addRepo(path))
-
-  const handleRemoveRepo = (path) => setRepos(api.removeRepo(path))
 
   const handleAddReposClicked = () => {
     setIsSelectingRepos(true)
@@ -77,12 +60,47 @@ export function Repositories(props) {
     currentWindow.show()
 
     if (results && results.length) {
-      results.map(handleAddRepo)
+      results.map(onAddRepo)
     }
   }
 
-  return repos.length
-    ? (
+  return (
+    <div className={css.buttons}>
+      <Button onClick={handleAddReposClicked} disabled={isSelectingRepos}>Add repos</Button>
+      <Button onClick={onDone}>Done</Button>
+    </div>
+  )
+}
+
+RepositoriesActions.propTypes = {
+  onAddRepo: func.isRequired,
+  onDone: func.isRequired
+}
+
+function EmptyState(props) {
+  return (
+    <>
+      <div className={css.emptyMessage}>
+        No repositories yet
+        <div className={css.emptyMessageSub}>
+          Add repositories you want to use with git-switch
+        </div>
+      </div>
+      <RepositoriesActions {...props} />
+    </>
+  )
+}
+
+export function Repositories(props) {
+  const { onDone, repos, setRepos } = props
+
+  const handleAddRepo = (path) => setRepos(api.addRepo(path))
+
+  const handleRemoveRepo = (path) => setRepos(api.removeRepo(path))
+
+  return !repos.length
+    ? <EmptyState onAddRepo={handleAddRepo} onDone={onDone} />
+    : (
       <>
         <ul className={css.reposList}>
           {repos.map((repo) => (
@@ -94,13 +112,9 @@ export function Repositories(props) {
             />
           ))}
         </ul>
-        <div className={css.buttons}>
-          <Button onClick={handleAddReposClicked} disabled={isSelectingRepos}>Add repos</Button>
-          <Button onClick={onDone}>Done</Button>
-        </div>
+        <RepositoriesActions onAddRepo={handleAddRepo} onDone={onDone} />
       </>
     )
-    : <EmptyState />
 }
 
 Repositories.propTypes = {

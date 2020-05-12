@@ -23,6 +23,10 @@ export function Menu() {
     setUsers(users)
     setRepos(repos)
 
+    if (!repos.length) {
+      setShouldShowRepos(true)
+    }
+
     return () => {
       api.removeUsersUpdatedListener(handleUsersUpdated)
       api.removeReposUpdatedListener(handleReposUpdated)
