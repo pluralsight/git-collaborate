@@ -5,6 +5,7 @@ export * from './exec'
 export * from './install'
 export * from './menubar'
 export * from './string'
+export * from './version'
 
 export {
   config,
