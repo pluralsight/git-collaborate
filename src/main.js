@@ -71,7 +71,9 @@ const startUp = () => {
   menubar.app.on('second-instance', (_, argv) => handleSecondInstanceArgs(getCliArgs(argv)))
 
   const appExecutablePath = menubar.app.getPath('exe')
-  install(process.platform, appExecutablePath)
+  const appVersion = menubar.app.getVersion()
+
+  install(process.platform, appExecutablePath, appVersion)
 }
 
 startUp()

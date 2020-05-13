@@ -2,16 +2,19 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { logger } from '.'
-import { gitService, repoService, userService } from '../services'
+import { getLatestVersion, logger } from '.'
+import { gitService, notificationService, repoService, userService } from '../services'
 
 export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
 export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
 export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-author')
 
-export function install(platform, appExecutablePath) {
+export function install(platform, appExecutablePath, appVersion) {
+  checkForNewerVersion(appVersion)
+
   installConfigFile()
+
   userService.shortenUserIds()
 
   const autoRotate = getAutoRotateCommand(platform, appExecutablePath)
@@ -29,6 +32,14 @@ function installConfigFile() {
   if (!fs.existsSync(CONFIG_FILE)) {
     logger.info('Installing config file...')
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
+  }
+}
+
+async function checkForNewerVersion(appVersion) {
+  const latestVersion = await getLatestVersion()
+
+  if (latestVersion && latestVersion !== appVersion) {
+    notificationService.showUpdateAvailable()
   }
 }
 

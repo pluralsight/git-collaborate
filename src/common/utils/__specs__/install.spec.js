@@ -2,10 +2,17 @@ import { expect } from 'chai'
 import fs from 'fs'
 
 import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../'
+import * as versionUtil from '../version'
 import sandbox from '../../../../test/sandbox'
-import { gitService, repoService, userService } from '../../services'
+import { gitService, notificationService, repoService, userService } from '../../services'
+
+const sleep = async (ms) => await new Promise(
+  (resolve) => setTimeout(() => resolve(), ms)
+)
 
 describe('utils/install', () => {
+  let appVersion
+  let latestVersion
   let gitSwitchDirExists
   let configFileExists
   let postCommitFileExists
@@ -21,6 +28,8 @@ describe('utils/install', () => {
   let users
 
   beforeEach(() => {
+    appVersion = '1.0.0'
+    latestVersion = appVersion
     gitSwitchDirExists = true
     configFileExists = true
     postCommitFileExists = true
@@ -35,6 +44,7 @@ describe('utils/install', () => {
     existingRepos = []
     users = []
 
+    sandbox.stub(versionUtil, 'getLatestVersion').callsFake(async () => await latestVersion)
     sandbox.stub(fs, 'existsSync')
       .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExists)
@@ -45,6 +55,7 @@ describe('utils/install', () => {
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
     sandbox.stub(repoService, 'get').callsFake(() => existingRepos)
     sandbox.stub(userService, 'get').callsFake(() => users)
+    sandbox.stub(notificationService, 'showUpdateAvailable')
     sandbox.stub(userService, 'shortenUserIds')
     sandbox.stub(gitService, 'updateAuthorAndCoAuthors')
     sandbox.stub(gitService, 'setGitLogAlias')
@@ -53,12 +64,33 @@ describe('utils/install', () => {
     sandbox.restore()
   })
 
+  describe('when app version is different from latest release', () => {
+    it('sends notification', async () => {
+      latestVersion = { data: { name: '1.1.1' } }
+
+      subject(platform, appExecutablePath, appVersion)
+      // Added a pause here because the version check is fire and forget
+      await sleep(10)
+
+      expect(notificationService.showUpdateAvailable).to.have.been.called
+    })
+  })
+
+  describe('when app version matches latest release', () => {
+    it('does nothing', async () => {
+      subject(platform, appExecutablePath, appVersion)
+      await sleep(10)
+
+      expect(notificationService.showUpdateAvailable).to.not.have.been.called
+    })
+  })
+
   describe('when config directory does not exist', () => {
     it('creates the .git-switch directory', () => {
       gitSwitchDirExists = false
       sandbox.stub(fs, 'mkdirSync')
 
-      subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath, appVersion)
 
       expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH, 0o755)
     })
@@ -69,7 +101,7 @@ describe('utils/install', () => {
       configFileExists = false
       sandbox.stub(fs, 'writeFileSync')
 
-      subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath, appVersion)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
     })
@@ -83,7 +115,7 @@ describe('utils/install', () => {
     })
 
     it('creates .git-switch/post-commit', () => {
-      subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath, appVersion)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
     })
 
@@ -97,13 +129,13 @@ describe('utils/install', () => {
       })
 
       it('the post-commit file auto rotates by changing dirs and running npm', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('ignores case on electron path basename', () => {
         appExecutablePath = '/herp/derp/node_modules/electron-prebuilt-compile/node_modules/dist/Electron'
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
@@ -117,7 +149,7 @@ describe('utils/install', () => {
       })
 
       it('escapes and backgrounds the autoRotate specific to the platform', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
     })
@@ -131,7 +163,7 @@ describe('utils/install', () => {
     })
 
     it('re-initializes all the repos', () => {
-      subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath, appVersion)
 
       expect(gitService.initRepo).to.have.been.calledWith('repo/one')
       expect(gitService.initRepo).to.have.been.calledWith('repo/two')
@@ -139,7 +171,7 @@ describe('utils/install', () => {
     })
 
     it('initializes authors/co-authors in .gitconfig', () => {
-      subject(platform, appExecutablePath)
+      subject(platform, appExecutablePath, appVersion)
       expect(userService.get).to.have.been.called
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
     })
@@ -150,12 +182,12 @@ describe('utils/install', () => {
       })
 
       it('updates .git-switch/post-commit', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('re-initializes all the repos', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
 
         expect(gitService.initRepo).to.have.been.calledWith('repo/one')
         expect(gitService.initRepo).to.have.been.calledWith('repo/two')
@@ -163,7 +195,7 @@ describe('utils/install', () => {
       })
 
       it('initializes authors/co-authors in .gitconfig', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(userService.get).to.have.been.called
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(users)
       })
@@ -175,12 +207,12 @@ describe('utils/install', () => {
       })
 
       it('creates .git-switch/git-log-co-authors', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('creates a git log alias', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
@@ -191,19 +223,19 @@ describe('utils/install', () => {
       })
 
       it('creates .git-switch/git-log-co-authors', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
       it('creates a git log alias', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
 
     describe('when git-log-co-author exists', () => {
       it('creates a git log alias', () => {
-        subject(platform, appExecutablePath)
+        subject(platform, appExecutablePath, appVersion)
         expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
       })
     })
