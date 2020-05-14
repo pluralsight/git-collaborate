@@ -2,11 +2,12 @@ import { ipcMain } from 'electron'
 
 import CHANNELS from './common/ipc-channels'
 import { repoService, userService } from './common/services'
-import { logger } from './common/utils'
+import { getLatestVersion, logger } from './common/utils'
 
 export function registerIpcHandlers(app) {
   const handlers = {
     [CHANNELS.DEBUG]: (_, ...args) => logger.info('Client says:', ...args),
+    [CHANNELS.GET_LATEST_VERSION]: async (evt) => { evt.returnValue = await getLatestVersion() },
     [CHANNELS.QUIT_APPLICATION]: () => app.quit(),
 
     [CHANNELS.GET_ALL_USERS]: (evt) => { evt.returnValue = userService.get() },

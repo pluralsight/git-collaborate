@@ -17,6 +17,7 @@
   margin-right: 4px;
 }
 
-.version {
+.version,
+.update-button {
   margin-bottom: 24px;
 }
