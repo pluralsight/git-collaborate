@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { bool, func, node, oneOf } from 'prop-types'
+import { bool, func, node, oneOf, string } from 'prop-types'
 
 import css from './index.css'
 
@@ -10,19 +10,22 @@ const TYPES = {
 }
 
 export function Button(props) {
+  const { children, className, disabled, onClick, type } = props
+
   return (
     <button
-      className={props.type === TYPES.confirm ? css.confirm : css.default}
-      disabled={props.disabled}
-      onClick={props.onClick}
+      className={`${className || ''}${type === TYPES.confirm ? ` ${css.confirm}` : ` ${css.default}`}`}
+      disabled={disabled}
+      onClick={onClick}
     >
-      {props.children}
+      {children}
     </button>
   )
 }
 
 Button.propTypes = {
   children: node.isRequired,
+  className: string,
   disabled: bool,
   onClick: func.isRequired,
   type: oneOf(Object.keys(TYPES))

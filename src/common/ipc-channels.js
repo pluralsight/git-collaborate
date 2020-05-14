@@ -10,6 +10,7 @@ const USER_CHANNELS = {
 
 const APPLICATION_CHANNELS = {
   DEBUG: 'debug',
+  GET_LATEST_VERSION: 'get-latest-version',
   QUIT_APPLICATION: 'quit-application'
 }
 
