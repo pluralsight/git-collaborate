@@ -1,12 +1,20 @@
-name: Create release artifacts
+name: Create release
 on:
   push:
+    branches:
+      - master
     tags:
       - '[0-9].[0-9]+.[0-9]+'
 jobs:
-  package-macos:
-    name: Package macos app
-    runs-on: macos-latest
+  package:
+    name: Package OS specific apps
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -15,62 +23,28 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: yarn pack:macos
+      - run: yarn package
       - uses: actions/upload-artifact@v1
         with:
-          name: macos
-          path: out/git-switch-darwin-x64
-  package-linux:
-    name: Package linux app
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn pack:linux
-      - uses: actions/upload-artifact@v1
-        with:
-          name: linux
-          path: out/git-switch-darwin-x64
-  package-windows:
-    name: Package windows app
-    runs-on: windows-latest
-    steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn pack:windows
-      - uses: actions/upload-artifact@v1
-        with:
-          name: windows
-          path: out/git-switch-darwin-x64
+          name: ${{matrix.os}}
+          path: out
   release:
     name: Create release with packages
     needs:
-      - package-macos
-      - package-linux
-      - package-windows
+      - package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: macos
+          name: macos-latest
           path: out
       - uses: actions/download-artifact@v1
         with:
-          name: linux
+          name: linux-latest
           path: out
       - uses: actions/download-artifact@v1
         with:
-          name: windows
+          name: windows-latest
           path: out
       - uses: actions/setup-node@v1
         with:
