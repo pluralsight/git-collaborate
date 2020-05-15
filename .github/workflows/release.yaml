@@ -35,6 +35,7 @@ jobs:
       - package
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v1
         with:
           name: macos-latest
@@ -50,16 +51,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - shell: bash
-        run: |
-          ls -al
-          ls -al ./out
       - name: Zip packages
         run: yarn packages:zip
-      - shell: bash
-        run: |
-          ls -al
-          ls -al ./out
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
