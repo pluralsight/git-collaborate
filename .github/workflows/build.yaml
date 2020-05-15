@@ -3,9 +3,13 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - '**/release.yaml'
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - '**/release.yaml'
 jobs:
   build:
     name: Build git-switch
