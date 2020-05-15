@@ -16,6 +16,7 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
@@ -40,7 +41,7 @@ jobs:
           path: out
       - uses: actions/download-artifact@v1
         with:
-          name: linux-latest
+          name: ubuntu-latest
           path: out
       - uses: actions/download-artifact@v1
         with:
@@ -49,8 +50,16 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - shell: bash
+        run: |
+          ls -al
+          ls -al ./out
       - name: Zip packages
         run: yarn packages:zip
+      - shell: bash
+        run: |
+          ls -al
+          ls -al ./out
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
