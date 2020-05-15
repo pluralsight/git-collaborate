@@ -1,0 +1,116 @@
+name: Create release artifacts
+on:
+  push:
+    tags:
+      - [0-9].[0-9]+.[0-9]+
+jobs:
+  package-macos:
+    name: Package macos app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn pack:macos
+      - uses: actions/upload-artifact@v1
+        with:
+          name: macos
+          path: out/git-switch-darwin-x64
+  package-linux:
+    name: Package linux app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn pack:linux
+      - uses: actions/upload-artifact@v1
+        with:
+          name: linux
+          path: out/git-switch-darwin-x64
+  package-windows:
+    name: Package windows app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn pack:windows
+      - uses: actions/upload-artifact@v1
+        with:
+          name: windows
+          path: out/git-switch-darwin-x64
+  release:
+    name: Create release with packages
+    needs:
+      - package-macos
+      - package-linux
+      - package-windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: macos
+          path: out
+      - uses: actions/download-artifact@v1
+        with:
+          name: linux
+          path: out
+      - uses: actions/download-artifact@v1
+        with:
+          name: windows
+          path: out
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Zip packages
+        run: yarn packages:zip
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/git-switch-macos.zip
+          asset_name: git-switch-macos.zip
+          asset_content_type: application/zip
+      - name: Upload linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/git-switch-linux.zip
+          asset_name: git-switch-linux.zip
+          asset_content_type: application/zip
+      - name: Upload windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/git-switch-windows.zip
+          asset_name: git-switch-windows.zip
+          asset_content_type: application/zip
