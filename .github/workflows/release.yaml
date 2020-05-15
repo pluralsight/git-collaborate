@@ -51,6 +51,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - run: yarn
       - name: Zip packages
         run: yarn packages:zip
       - name: Create release
