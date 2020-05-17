@@ -6,57 +6,17 @@ on:
     tags:
       - '[0-9].[0-9]+.[0-9]+'
 jobs:
-  package:
-    name: Package OS specific apps
-    strategy:
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - run: yarn package
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{matrix.os}}
-          path: out
-      - if: ${{ startsWith(matrix.os, 'ubuntu') }}
-        shell: bash
-        run: ls -al ./out/git-switch-linux-x64
   release:
     name: Create release with packages
-    needs:
-      - package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v1
-        with:
-          name: macos-latest
-          path: out
-      - uses: actions/download-artifact@v1
-        with:
-          name: ubuntu-latest
-          path: out
-      - shell: bash
-        run: ls -al ./out/git-switch-linux-x64
-      - uses: actions/download-artifact@v1
-        with:
-          name: windows-latest
-          path: out
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
       - run: yarn
+      - name: Create packages
+        run: yarn package:all
       - name: Zip packages
         run: yarn packages:zip
       - name: Create release
