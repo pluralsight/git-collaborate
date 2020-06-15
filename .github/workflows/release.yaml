@@ -27,7 +27,11 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: yarn
+      - name: Build app
+        shell: bash
+        run: |
+          yarn
+          yarn build
       - name: Create packages
         run: yarn package:all
       - name: Zip packages
