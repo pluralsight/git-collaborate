@@ -4,11 +4,17 @@ on:
     branches:
       - master
     paths-ignore:
+      - 'scripts/**'
+      - 'package.json'
+      - 'README.md'
       - '**/release.yaml'
   pull_request:
     branches:
       - master
     paths-ignore:
+      - 'scripts/**'
+      - 'package.json'
+      - 'README.md'
       - '**/release.yaml'
 jobs:
   build:
