@@ -5,7 +5,7 @@ export const describe = 'Manage repositories'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch repos <command> [options]')
+    .usage('Usage:\n  git-collab repos <command> [options]')
     .command(add)
     .command(list)
     .command(remove)

@@ -18,7 +18,7 @@ on:
       - '**/release.yaml'
 jobs:
   build:
-    name: Build git-switch
+    name: Build git-collab
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const rimraf = require('rimraf')
 
-const PACKAGE_BASE_NAME = 'git-switch'
+const PACKAGE_BASE_NAME = 'git-collab'
 
 const OS_NAMES = {
   MAC_OS: 'macos',

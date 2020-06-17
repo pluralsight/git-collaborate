@@ -6,7 +6,7 @@ export const describe = 'Add a new user'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users add [options]')
+    .usage('Usage:\n  git-collab users add [options]')
     .options({
       name: {
         alias: 'n',

@@ -83,7 +83,7 @@ function EmptyState(props) {
       <div className={css.emptyMessage}>
         No repositories yet
         <div className={css.emptyMessageSub}>
-          Add repositories you want to use with git-switch
+          Add repositories you want to use with git-collab
         </div>
       </div>
       <RepositoriesActions {...props} />

@@ -6,7 +6,7 @@ export const describe = 'List users'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users list')
+    .usage('Usage:\n  git-collab users list')
     .options({
       isActive: {
         alias: 'a',

@@ -246,7 +246,7 @@ describe('services/user', () => {
         config = { users }
       })
 
-      it('switches the pair leaving inactive users last', () => {
+      it('rotates the active users leaving inactive users last', () => {
         const actual = subject.rotate()
 
         expect(actual).to.deep.equal(expected.users)

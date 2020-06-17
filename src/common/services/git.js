@@ -4,8 +4,8 @@ import path from 'path'
 
 import { execute, logger } from '../utils'
 
-export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
-export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
+export const GIT_COLLAB_PATH = path.join(os.homedir(), '.git-collab')
+export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-collab'
 
 export const setAuthor = (name, email) => {
   execute(`git config --global user.name "${name}"`)
@@ -17,7 +17,7 @@ export const setCoAuthors = (coAuthors) => {
     .map((ca) => `Co-Authored-By: ${ca.name} <${ca.email}>`)
     .join(';')
 
-  execute(`git config --global git-switch.co-authors "${value}"`)
+  execute(`git config --global git-collab.co-authors "${value}"`)
 }
 
 export const updateAuthorAndCoAuthors = (users) => {
@@ -35,9 +35,9 @@ export const setGitLogAlias = (scriptPath) => {
   execute(`git config --global alias.lg "!${scriptPath.replace(/\\/g, '/')}"`)
 }
 
-const copyGitSwitchPostCommit = (gitHooksPath) => {
-  const source = path.join(GIT_SWITCH_PATH, 'post-commit')
-  const destination = path.join(gitHooksPath, 'post-commit.git-switch')
+const copyGitCollabPostCommit = (gitHooksPath) => {
+  const source = path.join(GIT_COLLAB_PATH, 'post-commit')
+  const destination = path.join(gitHooksPath, 'post-commit.git-collab')
 
   const postCommitContents = fs.readFileSync(source, 'utf-8')
   fs.writeFileSync(destination, postCommitContents, { encoding: 'utf-8', mode: 0o755 })
@@ -63,7 +63,7 @@ const writePostCommit = (gitHooksPath) => {
 }
 
 const addPostCommitFiles = (destination) => {
-  copyGitSwitchPostCommit(destination)
+  copyGitCollabPostCommit(destination)
   writePostCommit(destination)
 }
 
@@ -105,10 +105,10 @@ export const initRepo = (repoPath) => {
   return true
 }
 
-const removeGitSwitchPostCommitScript = (gitHooksPath) => {
-  const postCommitGitSwitchFile = path.join(gitHooksPath, 'post-commit.git-switch')
-  if (fs.existsSync(postCommitGitSwitchFile)) {
-    fs.unlinkSync(postCommitGitSwitchFile)
+const removeGitCollabPostCommitScript = (gitHooksPath) => {
+  const postCommitGitCollabFile = path.join(gitHooksPath, 'post-commit.git-collab')
+  if (fs.existsSync(postCommitGitCollabFile)) {
+    fs.unlinkSync(postCommitGitCollabFile)
   }
 }
 
@@ -126,7 +126,7 @@ const removePostCommitScript = (gitHooksPath) => {
 }
 
 const removePostCommitFiles = (target) => {
-  removeGitSwitchPostCommitScript(target)
+  removeGitCollabPostCommitScript(target)
   removePostCommitScript(target)
 }
 

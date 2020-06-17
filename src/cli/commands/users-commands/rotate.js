@@ -6,7 +6,7 @@ export const describe = 'Rotate active users'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users rotate')
+    .usage('Usage:\n  git-collab users rotate')
     .version(false)
 
 export const handler = (args) => {

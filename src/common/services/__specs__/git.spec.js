@@ -38,12 +38,12 @@ describe('services/git', () => {
 
       subject.setCoAuthors(coAuthors)
 
-      expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorValue}"`)
+      expect(exec.execute).to.have.been.calledWith(`git config --global git-collab.co-authors "${expectedCoAuthorValue}"`)
     })
 
     it('sets empty co-author(s) when none are provided', () => {
       subject.setCoAuthors([])
-      expect(exec.execute).to.have.been.calledWith('git config --global git-switch.co-authors ""')
+      expect(exec.execute).to.have.been.calledWith('git config --global git-collab.co-authors ""')
     })
   })
 
@@ -85,7 +85,7 @@ describe('services/git', () => {
 
         expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${user.name}"`)
         expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${user.email}"`)
-        expect(exec.execute).to.have.been.calledWith('git config --global git-switch.co-authors ""')
+        expect(exec.execute).to.have.been.calledWith('git config --global git-collab.co-authors ""')
       })
     })
 
@@ -99,7 +99,7 @@ describe('services/git', () => {
 
         expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${author.name}"`)
         expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${author.email}"`)
-        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorsConfig}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global git-collab.co-authors "${expectedCoAuthorsConfig}"`)
       })
     })
 
@@ -114,7 +114,7 @@ describe('services/git', () => {
 
         expect(exec.execute).to.have.been.calledWith(`git config --global user.name "${users[0].name}"`)
         expect(exec.execute).to.have.been.calledWith(`git config --global user.email "${users[0].email}"`)
-        expect(exec.execute).to.have.been.calledWith(`git config --global git-switch.co-authors "${expectedCoAuthorsConfig}"`)
+        expect(exec.execute).to.have.been.calledWith(`git config --global git-collab.co-authors "${expectedCoAuthorsConfig}"`)
       })
     })
 
@@ -147,7 +147,7 @@ describe('services/git', () => {
     let isSubmoduleDir
     let postCommitExists
     let postCommitPath
-    let postCommitGitSwitchPath
+    let postCommitGitCollabPath
     let gitHookPath
 
     beforeEach(() => {
@@ -158,8 +158,8 @@ describe('services/git', () => {
       isSubmoduleDir = true
       postCommitExists = false
       postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
-      postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
-      gitHookPath = path.join(subject.GIT_SWITCH_PATH, 'post-commit')
+      postCommitGitCollabPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-collab')
+      gitHookPath = path.join(subject.GIT_COLLAB_PATH, 'post-commit')
 
       sandbox.stub(fs, 'existsSync')
         .withArgs(repoPath).callsFake(() => pathExists)
@@ -175,7 +175,7 @@ describe('services/git', () => {
 
       beforeEach(() => {
         existingPostCommitScript = ''
-        gitHookContents = '# do some git-switching'
+        gitHookContents = '# do some git-collaborating'
 
         sandbox.stub(fs, 'readFileSync')
           .withArgs(postCommitPath).callsFake(() => existingPostCommitScript)
@@ -183,14 +183,14 @@ describe('services/git', () => {
         sandbox.stub(fs, 'writeFileSync')
       })
 
-      it('copies the post-commit.git-switch file', () => {
+      it('copies the post-commit.git-collab file', () => {
         subject.initRepo(repoPath)
 
         expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
-        expect(fs.writeFileSync).to.have.been.calledWith(postCommitGitSwitchPath, gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+        expect(fs.writeFileSync).to.have.been.calledWith(postCommitGitCollabPath, gitHookContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('writes post-commit file to call post-commit.git-switch', () => {
+      it('writes post-commit file to call post-commit.git-collab', () => {
         subject.initRepo(repoPath)
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
@@ -205,7 +205,7 @@ describe('services/git', () => {
           postCommitExists = true
         })
 
-        it('merges git-switch call into post-commit', () => {
+        it('merges git-collab call into post-commit', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
@@ -242,13 +242,13 @@ describe('services/git', () => {
           expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
           expect(exec.execute).to.have.been.calledWith('git submodule status')
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-switch'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
 
           expect(success).to.be.true
@@ -272,50 +272,50 @@ describe('services/git', () => {
   })
 
   describe('#removeRepo', () => {
-    const postCommitGitSwitch = '\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
+    const postCommitGitCollab = '\n\n/bin/bash "$(dirname $0)"/post-commit.git-collab'
     let postCommitScript
     let repoPath
     let submoduleExists
     let postCommitExists
-    let postCommitGitSwitchExists
-    let postCommitGitSwitchPath
+    let postCommitGitCollabExists
+    let postCommitGitCollabPath
 
     beforeEach(() => {
       repoPath = '/repo/path'
       submoduleExists = false
       postCommitExists = true
-      postCommitGitSwitchExists = true
-      postCommitScript = `#!/bin/bash${postCommitGitSwitch}\n\necho "Committed"`
-      postCommitGitSwitchPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch')
+      postCommitGitCollabExists = true
+      postCommitScript = `#!/bin/bash${postCommitGitCollab}\n\necho "Committed"`
+      postCommitGitCollabPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-collab')
 
       sandbox.stub(fs, 'existsSync')
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
-        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit.git-switch')).callsFake(() => submoduleExists)
+        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit.git-collab')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
-        .withArgs(postCommitGitSwitchPath).callsFake(() => postCommitGitSwitchExists)
+        .withArgs(postCommitGitCollabPath).callsFake(() => postCommitGitCollabExists)
       sandbox.stub(fs, 'unlinkSync')
       sandbox.stub(fs, 'readFileSync').callsFake(() => postCommitScript)
       sandbox.stub(fs, 'writeFileSync')
     })
 
-    it('deletes the post-commit.git-switch file', () => {
+    it('deletes the post-commit.git-collab file', () => {
       subject.removeRepo(repoPath)
-      expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitSwitchPath)
+      expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitCollabPath)
     })
 
-    it('removes the git switch call in post-commit', () => {
-      const expected = postCommitScript.replace(postCommitGitSwitch, '')
+    it('removes the git collab call in post-commit', () => {
+      const expected = postCommitScript.replace(postCommitGitCollab, '')
       subject.removeRepo(repoPath)
       expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, { encoding: 'utf-8', mode: 0o755 })
     })
 
     describe('when no other post-commit hooks exist', () => {
       it('deletes the post-commit hook', () => {
-        postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
+        postCommitScript = `#!/bin/bash${postCommitGitCollab}`
         subject.removeRepo(repoPath)
-        expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitSwitchPath)
+        expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitCollabPath)
         expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'))
       })
     })
@@ -325,7 +325,7 @@ describe('services/git', () => {
 
       beforeEach(() => {
         submoduleExists = true
-        postCommitScript = `#!/bin/bash${postCommitGitSwitch}`
+        postCommitScript = `#!/bin/bash${postCommitGitCollab}`
         sandbox.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
       })
 
@@ -334,7 +334,7 @@ describe('services/git', () => {
 
         subject.removeRepo(repoPath)
 
-        expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-switch'))
+        expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-collab'))
         expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'))
       })
     })

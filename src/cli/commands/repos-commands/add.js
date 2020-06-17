@@ -6,7 +6,7 @@ export const describe = 'Add repositories'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch repos add [paths]')
+    .usage('Usage:\n  git-collab repos add [paths]')
     .positional('paths', {
       describe: 'The paths of repositories to add',
       string: true,

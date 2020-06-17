@@ -6,7 +6,7 @@ export const describe = 'List repositories'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch repos list')
+    .usage('Usage:\n  git-collab repos list')
     .version(false)
 
 const getRepoLines = (columns) => {

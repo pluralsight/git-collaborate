@@ -1,6 +1,6 @@
 {
-  "name": "git-switch",
-  "version": "1.6.2",
+  "name": "git-collaborate",
+  "version": "2.0.0",
   "description": "Cross-platform electron app for managing git users while pair/mob programming",
   "main": "dist/main.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "package:windows": "yarn package --platform=win32",
     "packages:zip": "node ./scripts/package-zipper",
     "start": "electron-forge start",
-    "start:macos": "yarn build && yarn package:macos && open out/git-switch-darwin-x64/git-switch.app",
+    "start:macos": "yarn build && yarn package:macos && open out/git-collab-darwin-x64/git-collab.app",
     "start:dev": "cross-env NODE_ENV=development yarn build && yarn start",
     "test": "mocha",
     "test:ci": "mocha --reporter tap",
@@ -31,7 +31,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pluralsight/git-switch-electron"
+    "url": "https://github.com/pluralsight/git-collaborate"
   },
   "dependencies": {
     "electron-squirrel-startup": "1.0.0"
@@ -104,7 +104,7 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "appBundleId": "com.pluralsight.git-switch",
+        "appBundleId": "com.pluralsight.git-collab",
         "icon": "./src/assets/icon",
         "ignore": [
           "^/\\..+",
@@ -120,7 +120,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "git_switch_electron"
+            "name": "git_collab"
           }
         },
         {
@@ -140,7 +140,7 @@
       ],
       "github_repository": {
         "owner": "pluralsight",
-        "name": "git-switch-electron"
+        "name": "git-collaborate"
       }
     }
   }

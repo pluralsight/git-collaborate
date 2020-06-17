@@ -22,13 +22,13 @@ export function About(props) {
   }, [])
 
   const handleGetLatestClicked = () => {
-    shell.openExternal('https://github.com/pluralsight/git-switch-electron/releases')
+    shell.openExternal('https://github.com/pluralsight/git-collaborate/releases')
   }
 
   return (
     <div className={css.container}>
       <div className={css.appTitle}>
-        <GitIcon className={css.appIcon} />switch
+        <GitIcon className={css.appIcon} />collab
       </div>
       <div className={css.version}>
         v{appVersion}

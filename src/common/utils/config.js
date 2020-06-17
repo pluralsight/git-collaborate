@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const CONFIG_FILE = path.join(os.homedir(), '.git-switch', 'config.json')
+const CONFIG_FILE = path.join(os.homedir(), '.git-collab', 'config.json')
 const defaultConfig = {
   users: []
 }

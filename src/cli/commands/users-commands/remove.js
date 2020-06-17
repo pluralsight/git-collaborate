@@ -6,7 +6,7 @@ export const describe = 'Remove users'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users remove [userIds]')
+    .usage('Usage:\n  git-collab users remove [userIds]')
     .positional('userIds', {
       describe: 'The ids/names of the users to remove (name is case-insensitive)',
       string: true,
