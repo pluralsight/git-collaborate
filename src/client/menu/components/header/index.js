@@ -7,7 +7,7 @@ import css from './index.css'
 export function Header({ onMenuClick }) {
   return (
     <div className={css.header}>
-      <div className={css.title}><GitIcon className={css.icon} />switch</div>
+      <div className={css.title}><GitIcon className={css.icon} />collab</div>
       <div className={css.menuButtonContainer}>
         <button className={css.menuButton} onClick={onMenuClick}><MenuIcon /></button>
       </div>

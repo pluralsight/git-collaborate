@@ -6,7 +6,7 @@ export const describe = 'Toggle users\' active status'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users toggle [userIds..]')
+    .usage('Usage:\n  git-collab users toggle [userIds..]')
     .positional('userIds', {
       describe: 'The ids/names of the users to toggle (name is case-insensitive)',
       string: true,

@@ -6,7 +6,7 @@ export const describe = 'Edit an existing user'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users edit <userId> [options]')
+    .usage('Usage:\n  git-collab users edit <userId> [options]')
     .positional('userId', {
       describe: 'The id of the users to edit',
       string: true,

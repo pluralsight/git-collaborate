@@ -6,7 +6,7 @@ export const describe = 'Remove repositories'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch repos remove [paths]')
+    .usage('Usage:\n  git-collab repos remove [paths]')
     .positional('paths', {
       describe: 'The paths of the repos to remove',
       string: true,

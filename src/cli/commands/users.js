@@ -5,7 +5,7 @@ export const describe = 'Manage users'
 
 export const builder = (yargs) =>
   yargs
-    .usage('Usage:\n  git-switch users <command> [options]')
+    .usage('Usage:\n  git-collab users <command> [options]')
     .command(add)
     .command(edit)
     .command(list)

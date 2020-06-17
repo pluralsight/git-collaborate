@@ -3,7 +3,7 @@ import axios from 'axios'
 import { logger } from '.'
 
 export const getLatestVersion = async () => {
-  const latestReleaseUrl = 'https://api.github.com/repos/pluralsight/git-switch-electron/releases/latest'
+  const latestReleaseUrl = 'https://api.github.com/repos/pluralsight/git-collaborate/releases/latest'
 
   let version = null
 

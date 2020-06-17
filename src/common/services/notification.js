@@ -25,7 +25,7 @@ export function showCurrentAuthors(didRotate = false) {
 
 export function showUpdateAvailable() {
   showNotification({
-    body: 'There is a new version of git-switch available',
+    body: 'There is a new version of git-collab available',
     icon,
     sound,
     title: 'Update available'

@@ -5,10 +5,10 @@ import path from 'path'
 import { getLatestVersion, logger } from '.'
 import { gitService, notificationService, repoService, userService } from '../services'
 
-export const GIT_SWITCH_PATH = path.join(os.homedir(), '.git-switch')
-export const CONFIG_FILE = path.join(GIT_SWITCH_PATH, 'config.json')
-export const POST_COMMIT_FILE = path.join(GIT_SWITCH_PATH, 'post-commit')
-export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_SWITCH_PATH, 'git-log-co-author')
+export const GIT_COLLAB_PATH = path.join(os.homedir(), '.git-collab')
+export const CONFIG_FILE = path.join(GIT_COLLAB_PATH, 'config.json')
+export const POST_COMMIT_FILE = path.join(GIT_COLLAB_PATH, 'post-commit')
+export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_COLLAB_PATH, 'git-log-co-author')
 
 export function install(platform, appExecutablePath, appVersion) {
   checkForNewerVersion(appVersion)
@@ -25,8 +25,8 @@ export function install(platform, appExecutablePath, appVersion) {
 }
 
 function installConfigFile() {
-  if (!fs.existsSync(GIT_SWITCH_PATH)) {
-    fs.mkdirSync(GIT_SWITCH_PATH, 0o755)
+  if (!fs.existsSync(GIT_COLLAB_PATH)) {
+    fs.mkdirSync(GIT_COLLAB_PATH, 0o755)
   }
 
   if (!fs.existsSync(CONFIG_FILE)) {
@@ -65,15 +65,15 @@ function installPostCommitHook(autoRotate) {
 
 body=$(git log -1 HEAD --format="%b")
 author=$(git log -1 HEAD --format="%an <%ae>")
-co_authors_string=$(git config --global git-switch.co-authors)
+co_authors_string=$(git config --global git-collab.co-authors)
 co_authors=$(echo $co_authors_string | tr ";" "\n")
 
-echo -e "git-switch > Author:\\n  $author"
+echo -e "git-collab > Author:\\n  $author"
 
 if [[ "$body" != *$co_authors ]]; then
   subject=$(git log -1 HEAD --format="%s")
 
-  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
+  echo -e "git-collab > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
   echo ""
 
   if [[ "$body" == Co-Authored-By* ]]; then
@@ -86,7 +86,7 @@ if [[ "$body" != *$co_authors ]]; then
   git commit --amend --no-verify --message="$subject\n\n$body"
 
   echo ""
-  echo "git-switch > Rotating author and co-author(s)"
+  echo "git-collab > Rotating author and co-author(s)"
   ${autoRotate}
 fi
 `

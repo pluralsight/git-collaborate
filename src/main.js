@@ -33,8 +33,8 @@ const handleSecondInstanceArgs = (args) => {
 }
 
 const getCliArgs = (args) => {
-  // contains `node_modules` dir (i.e. running with npm), is the `git-switch` command, or equals '.'
-  const regex = /([/\\]?(node_modules|git-switch))|(^\.$)/
+  // contains `node_modules` dir (i.e. running with npm), is the `git-collab` command, or equals '.'
+  const regex = /([/\\]?(node_modules|git-collab))|(^\.$)/
 
   return args.filter((arg) => !regex.test(arg))
 }
@@ -56,7 +56,7 @@ const startUp = () => {
     icon: path.join(__dirname, 'assets', 'menu', iconFile),
     index: `file://${path.join(__dirname, 'index.html')}`,
     preloadWindow: true,
-    tooltip: 'git-switch'
+    tooltip: 'git-collab'
   })
 
   const isPrimaryInstance = menubar.app.requestSingleInstanceLock()

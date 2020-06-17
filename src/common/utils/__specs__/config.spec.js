@@ -6,7 +6,7 @@ import path from 'path'
 import { config as subject } from '../'
 import sandbox from '../../../../test/sandbox'
 
-const FILE = path.join(os.homedir(), '.git-switch', 'config.json')
+const FILE = path.join(os.homedir(), '.git-collab', 'config.json')
 
 describe('utils/config', () => {
   let config

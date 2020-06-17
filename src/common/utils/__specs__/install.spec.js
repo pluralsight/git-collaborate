@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import fs from 'fs'
 
-import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_SWITCH_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../'
+import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_COLLAB_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../'
 import * as versionUtil from '../version'
 import sandbox from '../../../../test/sandbox'
 import { gitService, notificationService, repoService, userService } from '../../services'
@@ -13,7 +13,7 @@ const sleep = async (ms) => await new Promise(
 describe('utils/install', () => {
   let appVersion
   let latestVersion
-  let gitSwitchDirExists
+  let gitCollabDirExists
   let configFileExists
   let postCommitFileExists
   let gitLogCoAuthorFileExists
@@ -30,7 +30,7 @@ describe('utils/install', () => {
   beforeEach(() => {
     appVersion = '1.0.0'
     latestVersion = appVersion
-    gitSwitchDirExists = true
+    gitCollabDirExists = true
     configFileExists = true
     postCommitFileExists = true
     gitLogCoAuthorFileExists = true
@@ -46,7 +46,7 @@ describe('utils/install', () => {
 
     sandbox.stub(versionUtil, 'getLatestVersion').callsFake(async () => await latestVersion)
     sandbox.stub(fs, 'existsSync')
-      .withArgs(GIT_SWITCH_PATH).callsFake(() => gitSwitchDirExists)
+      .withArgs(GIT_COLLAB_PATH).callsFake(() => gitCollabDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => gitLogCoAuthorFileExists)
@@ -86,18 +86,18 @@ describe('utils/install', () => {
   })
 
   describe('when config directory does not exist', () => {
-    it('creates the .git-switch directory', () => {
-      gitSwitchDirExists = false
+    it('creates the .git-collab directory', () => {
+      gitCollabDirExists = false
       sandbox.stub(fs, 'mkdirSync')
 
       subject(platform, appExecutablePath, appVersion)
 
-      expect(fs.mkdirSync).to.have.been.calledWith(GIT_SWITCH_PATH, 0o755)
+      expect(fs.mkdirSync).to.have.been.calledWith(GIT_COLLAB_PATH, 0o755)
     })
   })
 
   describe('when config file does not exist', () => {
-    it('creates .git-switch/config.json', () => {
+    it('creates .git-collab/config.json', () => {
       configFileExists = false
       sandbox.stub(fs, 'writeFileSync')
 
@@ -114,7 +114,7 @@ describe('utils/install', () => {
       sandbox.stub(fs, 'writeFileSync')
     })
 
-    it('creates .git-switch/post-commit', () => {
+    it('creates .git-collab/post-commit', () => {
       subject(platform, appExecutablePath, appVersion)
       expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
     })
@@ -181,7 +181,7 @@ describe('utils/install', () => {
         existingPostCommitFileContents = 'outdated-content-here'
       })
 
-      it('updates .git-switch/post-commit', () => {
+      it('updates .git-collab/post-commit', () => {
         subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(POST_COMMIT_FILE, postCommitFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
@@ -206,7 +206,7 @@ describe('utils/install', () => {
         gitLogCoAuthorFileExists = false
       })
 
-      it('creates .git-switch/git-log-co-authors', () => {
+      it('creates .git-collab/git-log-co-authors', () => {
         subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
@@ -222,7 +222,7 @@ describe('utils/install', () => {
         existingGitLogCoAuthorFileContents = 'outdated-content-here'
       })
 
-      it('creates .git-switch/git-log-co-authors', () => {
+      it('creates .git-collab/git-log-co-authors', () => {
         subject(platform, appExecutablePath, appVersion)
         expect(fs.writeFileSync).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
       })
@@ -247,15 +247,15 @@ function getPostCommitFileContents(autoRotate) {
 
 body=$(git log -1 HEAD --format="%b")
 author=$(git log -1 HEAD --format="%an <%ae>")
-co_authors_string=$(git config --global git-switch.co-authors)
+co_authors_string=$(git config --global git-collab.co-authors)
 co_authors=$(echo $co_authors_string | tr ";" "\n")
 
-echo -e "git-switch > Author:\\n  $author"
+echo -e "git-collab > Author:\\n  $author"
 
 if [[ "$body" != *$co_authors ]]; then
   subject=$(git log -1 HEAD --format="%s")
 
-  echo -e "git-switch > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
+  echo -e "git-collab > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
   echo ""
 
   if [[ "$body" == Co-Authored-By* ]]; then
@@ -268,7 +268,7 @@ if [[ "$body" != *$co_authors ]]; then
   git commit --amend --no-verify --message="$subject\n\n$body"
 
   echo ""
-  echo "git-switch > Rotating author and co-author(s)"
+  echo "git-collab > Rotating author and co-author(s)"
   ${autoRotate}
 fi
 `

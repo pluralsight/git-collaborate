@@ -3,7 +3,7 @@ import yargs from 'yargs'
 import { quit, repos, show, users } from './commands'
 
 export const handleCli = (args) => yargs(args)
-  .usage('Usage:\n  git-switch <command> [options]')
+  .usage('Usage:\n  git-collab <command> [options]')
   .options({
     verbose: {
       alias: 'v',
