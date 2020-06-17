@@ -25,16 +25,28 @@ export const builder = (yargs) =>
         describe: 'The path to the user\'s rsa key',
         string: true,
         default: ''
+      },
+      host: {
+        alias: 'H',
+        describe: 'The host the rsa key is issued to',
+        string: true
       }
     })
     .version(false)
 
 export const handler = (args) => {
-  const { name, email, key: rsaKeyPath, doWork, verbose } = args
+  const { doWork, verbose } = args
 
   let updatedUsers
   if (doWork) {
-    updatedUsers = userService.add({ name, email, rsaKeyPath })
+    const { name, email, key: rsaKeyPath, host } = args
+
+    const userToAdd = { name, email, rsaKeyPath }
+    if (host) {
+      userToAdd.sshHost = host
+    }
+
+    updatedUsers = userService.add(userToAdd)
   } else {
     updatedUsers = userService.get()
   }

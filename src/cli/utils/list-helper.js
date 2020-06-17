@@ -15,8 +15,8 @@ export const getField = (overrides) => {
     minWidth: 0,
     paddingChar: ' ',
     startWidth: 0,
-    value: '',
-    ...overrides
+    ...overrides,
+    value: overrides.value || ''
   }
 
   return value.padStart(startWidth, paddingChar).padEnd(minWidth, paddingChar)

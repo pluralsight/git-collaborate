@@ -2,14 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { config } from '../utils'
-
 export const SSH_CONFIG_PATH = path.join(os.homedir(), '.ssh', 'config')
 const DEFAULT_HOST = 'github.com'
-
-function getHost() {
-  return config.read().host || DEFAULT_HOST
-}
 
 function getRegex(host) {
   const escapedHost = host.replace('.', '\\.')
@@ -26,12 +20,12 @@ function writeToSshConfig(contents) {
   fs.writeFileSync(SSH_CONFIG_PATH, contents, { encoding: 'utf-8', mode: 0o644 })
 }
 
-export function rotateIdentityFile(identityFile) {
+export function rotateIdentityFile(identityFile, host) {
   if (!identityFile) {
     return
   }
 
-  const host = getHost()
+  host = host || DEFAULT_HOST
   const rsaConfig = getRsaConfig(host, identityFile)
 
   if (!fs.existsSync(SSH_CONFIG_PATH)) {

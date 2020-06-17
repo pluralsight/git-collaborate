@@ -20,6 +20,7 @@ describe('services/user', () => {
       name: 'Second User',
       email: 'second@email.com',
       rsaKeyPath: '/not/a/real/path',
+      sshHost: 'not.github.com',
       active: false
     }]
     config = { users }
@@ -68,7 +69,8 @@ describe('services/user', () => {
       userToAdd = {
         name: 'New User',
         email: 'new@email.com',
-        rsaKeyPath: '/a/path/to/nowhere'
+        rsaKeyPath: '/a/path/to/nowhere',
+        sshHost: 'not.github.com'
       }
 
       users = [
@@ -96,9 +98,10 @@ describe('services/user', () => {
 
     it('updates git authors and rsa keys', () => {
       const updatedUsers = subject.add(userToAdd)
+      const { rsaKeyPath, sshHost } = updatedUsers[0]
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
-      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(rsaKeyPath, sshHost)
     })
   })
 
@@ -128,9 +131,10 @@ describe('services/user', () => {
 
     it('updates git authors and rsa keys', () => {
       const updatedUsers = subject.update(userToUpdate)
+      const { rsaKeyPath, sshHost } = updatedUsers[0]
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
-      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(rsaKeyPath, sshHost)
     })
 
     describe('when updated user does not already exist', () => {
@@ -167,9 +171,10 @@ describe('services/user', () => {
 
     it('updates git authors and rsa keys', () => {
       const updatedUsers = subject.remove([users[0].id])
+      const { rsaKeyPath, sshHost } = updatedUsers[0]
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(updatedUsers)
-      expect(sshService.rotateIdentityFile).to.have.been.calledWith(updatedUsers[0].rsaKeyPath)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(rsaKeyPath, sshHost)
     })
 
     it('allows removing by name', () => {
@@ -252,7 +257,7 @@ describe('services/user', () => {
         subject.rotate()
 
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
-        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath)
+        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath, users[1].sshHost)
       })
     })
 
@@ -295,7 +300,7 @@ describe('services/user', () => {
         subject.rotate()
 
         expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
-        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath)
+        expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[1].rsaKeyPath, users[1].sshHost)
       })
     })
   })
@@ -344,7 +349,7 @@ describe('services/user', () => {
       subject.toggleActive([users[2].id, users[3].id])
 
       expect(gitService.updateAuthorAndCoAuthors).to.have.been.calledWith(expected.users)
-      expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[0].rsaKeyPath)
+      expect(sshService.rotateIdentityFile).to.have.been.calledWith(users[0].rsaKeyPath, users[0].sshHost)
     })
 
     it('allows toggling by name', () => {

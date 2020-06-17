@@ -47,5 +47,10 @@ describe('utils/string', () => {
       const strings = ['short', 'thisislong', 'thisisreallylong']
       expect(subject.getLongestString(strings)).to.equal(16)
     })
+
+    it('returns 0 for undefined', () => {
+      const strings = [undefined]
+      expect(subject.getLongestString(strings)).to.equal(0)
+    })
   })
 })

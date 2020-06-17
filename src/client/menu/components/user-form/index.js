@@ -91,6 +91,17 @@ export function UserForm(props) {
             Browse
           </Button>
         </div>
+        {
+          user.rsaKeyPath && (
+            <input
+              id="sshHost"
+              className={css.field}
+              value={user.sshHost}
+              placeholder="SSH Host (github.com)"
+              onChange={handleFieldChange}
+            />
+          )
+        }
       </div>
       <div className={css.buttonSection}>
         <Button onClick={handleCancel}>Cancel</Button>
