@@ -5,6 +5,7 @@ import path from 'path'
 import { execute, logger } from '../utils'
 
 export const GIT_COLLAB_PATH = path.join(os.homedir(), '.git-collab')
+export const GIT_SWITCH_POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-switch'
 export const POST_COMMIT_BASE = '#!/bin/bash\n\n/bin/bash "$(dirname $0)"/post-commit.git-collab'
 
 export const setAuthor = (name, email) => {
@@ -43,8 +44,13 @@ const copyGitCollabPostCommit = (gitHooksPath) => {
   fs.writeFileSync(destination, postCommitContents, { encoding: 'utf-8', mode: 0o755 })
 }
 
-const mergePostCommitScripts = (postCommitFile) => {
+const mergePostCommitScripts = (postCommitFile, gitHooksPath) => {
   let postCommitScript = fs.readFileSync(postCommitFile, 'utf-8')
+  if (postCommitScript.includes(GIT_SWITCH_POST_COMMIT_BASE)) {
+    postCommitScript = postCommitScript.replace('git-switch', 'git-collab')
+    fs.unlinkSync(path.join(gitHooksPath, 'post-commit.git-switch'))
+  }
+
   if (!postCommitScript.includes(POST_COMMIT_BASE)) {
     const temp = postCommitScript.substring(postCommitScript.indexOf('\n'))
     postCommitScript = POST_COMMIT_BASE.concat(temp)
@@ -56,7 +62,7 @@ const mergePostCommitScripts = (postCommitFile) => {
 const writePostCommit = (gitHooksPath) => {
   const postCommitFile = path.join(gitHooksPath, 'post-commit')
   const postCommitScript = fs.existsSync(postCommitFile)
-    ? mergePostCommitScripts(postCommitFile)
+    ? mergePostCommitScripts(postCommitFile, gitHooksPath)
     : POST_COMMIT_BASE
 
   fs.writeFileSync(postCommitFile, postCommitScript, { encoding: 'utf-8', mode: 0o755 })

@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import fs from 'fs'
 
-import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_COLLAB_PATH, CONFIG_FILE, POST_COMMIT_FILE } from '../'
+import { install as subject, GIT_LOG_CO_AUTHOR_FILE, GIT_COLLAB_PATH, CONFIG_FILE, GIT_SWITCH_CONFIG_FILE, POST_COMMIT_FILE, getGitLogCoAuthorScript, getPostCommitHookScript } from '../'
 import * as versionUtil from '../version'
 import sandbox from '../../../../test/sandbox'
 import { gitService, notificationService, repoService, userService } from '../../services'
@@ -15,6 +15,7 @@ describe('utils/install', () => {
   let latestVersion
   let gitCollabDirExists
   let configFileExists
+  let oldConfigFileExists
   let postCommitFileExists
   let gitLogCoAuthorFileExists
   let appExecutablePath
@@ -22,6 +23,7 @@ describe('utils/install', () => {
   let platform
   let postCommitFileContents
   let gitLogCoAuthorFileContents
+  let existingGitSwitchConfigFileContents
   let existingPostCommitFileContents
   let existingGitLogCoAuthorFileContents
   let existingRepos
@@ -32,13 +34,15 @@ describe('utils/install', () => {
     latestVersion = appVersion
     gitCollabDirExists = true
     configFileExists = true
+    oldConfigFileExists = false
     postCommitFileExists = true
     gitLogCoAuthorFileExists = true
     appExecutablePath = '/foo/bar'
     autoRotate = '/foo/bar users rotate > /dev/null 2>&1 &'
     platform = 'linux'
-    postCommitFileContents = getPostCommitFileContents(autoRotate)
-    gitLogCoAuthorFileContents = getGitLogCoAuthorFileContents()
+    existingGitSwitchConfigFileContents = JSON.stringify({ users: [{ id: 'abcd1234', name: 'Homer Simpson', email: 'chunkylover53@aol.com' }], repos: [] })
+    postCommitFileContents = getPostCommitHookScript(autoRotate)
+    gitLogCoAuthorFileContents = getGitLogCoAuthorScript()
     existingPostCommitFileContents = postCommitFileContents
     existingGitLogCoAuthorFileContents = gitLogCoAuthorFileContents
     existingRepos = []
@@ -48,11 +52,13 @@ describe('utils/install', () => {
     sandbox.stub(fs, 'existsSync')
       .withArgs(GIT_COLLAB_PATH).callsFake(() => gitCollabDirExists)
       .withArgs(CONFIG_FILE).callsFake(() => configFileExists)
+      .withArgs(GIT_SWITCH_CONFIG_FILE).callsFake(() => oldConfigFileExists)
       .withArgs(POST_COMMIT_FILE).callsFake(() => postCommitFileExists)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => gitLogCoAuthorFileExists)
     sandbox.stub(fs, 'readFileSync')
       .withArgs(POST_COMMIT_FILE).callsFake(() => existingPostCommitFileContents)
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
+      .withArgs(GIT_SWITCH_CONFIG_FILE).callsFake(() => existingGitSwitchConfigFileContents)
     sandbox.stub(repoService, 'get').callsFake(() => existingRepos)
     sandbox.stub(userService, 'get').callsFake(() => users)
     sandbox.stub(notificationService, 'showUpdateAvailable')
@@ -97,13 +103,26 @@ describe('utils/install', () => {
   })
 
   describe('when config file does not exist', () => {
-    it('creates .git-collab/config.json', () => {
+    beforeEach(() => {
       configFileExists = false
-      sandbox.stub(fs, 'writeFileSync')
 
+      sandbox.stub(fs, 'writeFileSync')
+    })
+
+    it('creates .git-collab/config.json', () => {
       subject(platform, appExecutablePath, appVersion)
 
       expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
+    })
+
+    describe('when git-switch config file exists', () => {
+      it('copies git-switch config to git-collab', () => {
+        oldConfigFileExists = true
+
+        subject(platform, appExecutablePath, appVersion)
+
+        expect(fs.writeFileSync).to.have.been.calledWith(CONFIG_FILE, existingGitSwitchConfigFileContents, { encoding: 'utf-8', mode: 0o644 })
+      })
     })
   })
 
@@ -125,7 +144,7 @@ describe('utils/install', () => {
         autoRotate = `cd /herp/derp
   npm run start -- -- users rotate
   cd $(dirname $0)/../../`
-        postCommitFileContents = getPostCommitFileContents(autoRotate)
+        postCommitFileContents = getPostCommitHookScript(autoRotate)
       })
 
       it('the post-commit file auto rotates by changing dirs and running npm', () => {
@@ -145,7 +164,7 @@ describe('utils/install', () => {
         platform = 'win32'
         appExecutablePath = 'C:\\foo\\bar'
         autoRotate = 'start C:\\\\foo\\\\bar users rotate'
-        postCommitFileContents = getPostCommitFileContents(autoRotate)
+        postCommitFileContents = getPostCommitHookScript(autoRotate)
       })
 
       it('escapes and backgrounds the autoRotate specific to the platform', () => {
@@ -241,118 +260,3 @@ describe('utils/install', () => {
     })
   })
 })
-
-function getPostCommitFileContents(autoRotate) {
-  return `#!/bin/sh
-
-body=$(git log -1 HEAD --format="%b")
-author=$(git log -1 HEAD --format="%an <%ae>")
-co_authors_string=$(git config --global git-collab.co-authors)
-co_authors=$(echo $co_authors_string | tr ";" "\n")
-
-echo -e "git-collab > Author:\\n  $author"
-
-if [[ "$body" != *$co_authors ]]; then
-  subject=$(git log -1 HEAD --format="%s")
-
-  echo -e "git-collab > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
-  echo ""
-
-  if [[ "$body" == Co-Authored-By* ]]; then
-    body=$co_authors
-  else
-    body=\${body//Co-Authored-By*/}
-    body="$body\n\n$co_authors"
-  fi
-
-  git commit --amend --no-verify --message="$subject\n\n$body"
-
-  echo ""
-  echo "git-collab > Rotating author and co-author(s)"
-  ${autoRotate}
-fi
-`
-}
-
-function getGitLogCoAuthorFileContents() {
-  return `#!/bin/bash
-
-# Pretty formatting for git logs with github's co-author support.
-
-commitHash=''
-nextHash=''
-author=''
-date=''
-description=''
-summary=''
-coAuthors=()
-
-us=$'\\037'
-OIFS=$IFS
-RED='\\033[01;31m'
-GREEN='\\033[01;32m'
-YELLOW='\\033[01;33m'
-BLUE='\\033[01;34m'
-MAGEN='\\033[01;35m'
-CYAN='\\033[01;36m'
-WHITE='\\033[01;37m'
-
-function main {
-  git log --date=short --pretty=format:"commitHash %h$us(%ad, %ar)$us%d$us%s$us<%an>$us%b" |
-  sed '/^[[:blank:]]*$/d' |
-  parseGitLog |
-  less -R
-}
-
-function parseGitLog {
-  IFS=$us
-  while read data
-  do
-    if [[ $data =~ (commitHash )(.*) ]]; then
-      a=($data)
-      nextHash=$( echo \${a[0]} | sed -e "s/commitHash \\(.*\\)/\\1/" );
-      if [[ $nextHash != $commitHash ]] && [[ $commitHash != '' ]]; then
-        printCommit
-      fi
-      commitHash=$nextHash
-      date=\${a[1]}
-      branch=\${a[2]}
-      summary=\${a[3]}
-      author=\${a[4]}
-      coAuthors=()
-      possibleCoAuthor=\${a[5]}
-    else
-      possibleCoAuthor=$data
-    fi
-    extractCoAuthor $possibleCoAuthor
-  done
-
-  printCommit
-  IFS=$OIFS
-}
-
-function extractCoAuthor {
-  if [[ $1 =~ (Co-Authored-By: )(.*)( <.*) ]]; then
-    authorFound=\${BASH_REMATCH[2]}
-    coAuthors+=($authorFound)
-  fi
-}
-
-function printCommit {
-  if [ \${#coAuthors[@]} -eq 0 ]; then
-    coAuthors=''
-  else
-    CIFS=$IFS
-    IFS=$OIFS
-    coAuthors=$(join_by ', ' "\${coAuthors[@]}")
-    IFS=$CIFS
-    coAuthors="($coAuthors)"
-  fi
-  echo -e "\${CYAN}$commitHash \${YELLOW}$date \${WHITE}-\${MAGEN}$branch \${WHITE}$summary \${BLUE}$author \${GREEN}$coAuthors"
-}
-
-function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "\${@/#/$d}"; }
-
-main
-`
-}
