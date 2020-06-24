@@ -7,6 +7,7 @@ import { gitService, notificationService, repoService, userService } from '../se
 
 export const GIT_COLLAB_PATH = path.join(os.homedir(), '.git-collab')
 export const CONFIG_FILE = path.join(GIT_COLLAB_PATH, 'config.json')
+export const GIT_SWITCH_CONFIG_FILE = path.join(os.homedir(), '.git-switch', 'config.json')
 export const POST_COMMIT_FILE = path.join(GIT_COLLAB_PATH, 'post-commit')
 export const GIT_LOG_CO_AUTHOR_FILE = path.join(GIT_COLLAB_PATH, 'git-log-co-author')
 
@@ -31,7 +32,12 @@ function installConfigFile() {
 
   if (!fs.existsSync(CONFIG_FILE)) {
     logger.info('Installing config file...')
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
+    if (fs.existsSync(GIT_SWITCH_CONFIG_FILE)) {
+      const oldConfig = fs.readFileSync(GIT_SWITCH_CONFIG_FILE, 'utf-8')
+      fs.writeFileSync(CONFIG_FILE, oldConfig, { encoding: 'utf-8', mode: 0o644 })
+    } else {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify({ users: [], repos: [] }), { encoding: 'utf-8', mode: 0o644 })
+    }
   }
 }
 
@@ -60,8 +66,8 @@ function getAutoRotateCommand(platform, appExecutablePath) {
   return `${prepend}${appExecutablePath.replace(new RegExp(/\\/, 'g'), '\\\\')} users rotate${postpend}`
 }
 
-function installPostCommitHook(autoRotate) {
-  const postCommitScript = `#!/bin/sh
+export function getPostCommitHookScript(autoRotate) {
+  return `#!/bin/sh
 
 body=$(git log -1 HEAD --format="%b")
 author=$(git log -1 HEAD --format="%an <%ae>")
@@ -90,6 +96,10 @@ if [[ "$body" != *$co_authors ]]; then
   ${autoRotate}
 fi
 `
+}
+
+function installPostCommitHook(autoRotate) {
+  const postCommitScript = getPostCommitHookScript(autoRotate)
 
   const isPostCommitCurrent = fs.existsSync(POST_COMMIT_FILE) &&
     fs.readFileSync(POST_COMMIT_FILE, 'utf-8') === postCommitScript
@@ -104,8 +114,8 @@ fi
   }
 }
 
-function installGitLogCoAuthorsScript() {
-  const gitLogCoAuthorScript = `#!/bin/bash
+export function getGitLogCoAuthorScript() {
+  return `#!/bin/bash
 
 # Pretty formatting for git logs with github's co-author support.
 
@@ -185,6 +195,10 @@ function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "\${@/#/$
 
 main
 `
+}
+
+function installGitLogCoAuthorsScript() {
+  const gitLogCoAuthorScript = getGitLogCoAuthorScript()
 
   const isGitLogCoAuthorCurrent = fs.existsSync(GIT_LOG_CO_AUTHOR_FILE) &&
     fs.readFileSync(GIT_LOG_CO_AUTHOR_FILE, 'utf-8') === gitLogCoAuthorScript

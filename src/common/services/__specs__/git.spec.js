@@ -214,6 +214,19 @@ describe('services/git', () => {
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
           expect(success).to.be.true
         })
+
+        describe('when post-commit contains call to git-switch', () => {
+          it('replaces git-switch hook with git-collab', () => {
+            existingPostCommitScript = subject.GIT_SWITCH_POST_COMMIT_BASE
+            sandbox.stub(fs, 'unlinkSync')
+
+            const success = subject.initRepo(repoPath)
+
+            expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch'))
+            expect(success).to.be.true
+          })
+        })
       })
 
       describe('when sub-modules exist', () => {

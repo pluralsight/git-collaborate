@@ -13,7 +13,9 @@ With the introduction of the [`switch`](https://git-scm.com/docs/git-switch) com
 
 ### Upgrading from git-switch 1.x to git-collab 2.x
 
-You can copy your `~/.git-switch/config.json` file to `~/.git-collab/config.json` to keep your configured users and repositories.
+Your existing `~/.git-switch/config.json` file will be copied to `~/.git-collab/config.json` to keep your configured users and repositories.
+
+Any repositories initialized with the `post-commit.git-switch` hook will be switched over to use the `post-commit.git-collab` hook.
 
 
 ## Installation
