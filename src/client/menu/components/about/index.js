@@ -19,7 +19,7 @@ export function About(props) {
     if (latestVersion && latestVersion !== appVersion) {
       setIsUpgradeAvailable(true)
     }
-  })
+  }, [])
 
   const handleGetLatestClicked = () => {
     shell.openExternal('https://github.com/pluralsight/git-switch-electron/releases')

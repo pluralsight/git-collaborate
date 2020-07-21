@@ -12,7 +12,7 @@ export const getLatestVersion = async () => {
     version = (response && response.data && response.data.name) || null
   } catch (err) {
     const { message } = (err.response && err.response.data) || err
-    logger.error('Could not fetch latest release', message)
+    logger.error('Could not fetch latest release:', message)
   }
 
   return version
