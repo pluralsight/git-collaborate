@@ -38,20 +38,34 @@ export function Menu() {
   const handleReposUpdated = (_event, repos) => setRepos(repos)
 
   const handleAddUser = () => {
+    setShouldShowAbout(false)
     setShouldShowRepos(false)
+
     setSelectedUser({ active: true, email: '', name: '', rsaKeyPath: '' })
   }
 
-  const handleEditUser = (user) => setSelectedUser(user)
+  const handleEditUser = (user) => {
+    setShouldShowAbout(false)
+    setShouldShowRepos(false)
+
+    setSelectedUser(user)
+  }
 
   const handleEditRepos = () => {
+    setShouldShowAbout(false)
     setSelectedUser(null)
+
     setShouldShowRepos(true)
   }
 
   const handleCloseRepos = () => setShouldShowRepos(false)
 
-  const handleShowAbout = () => setShouldShowAbout(true)
+  const handleShowAbout = () => {
+    setShouldShowRepos(false)
+    setSelectedUser(null)
+
+    setShouldShowAbout(true)
+  }
 
   const handleCloseAbout = () => setShouldShowAbout(false)
 
