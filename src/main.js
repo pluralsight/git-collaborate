@@ -48,6 +48,7 @@ const startUp = () => {
       height: 600,
       width: isDev ? 800 : 400,
       webPreferences: {
+        enableRemoteModule: true,
         nodeIntegration: true
       }
     },

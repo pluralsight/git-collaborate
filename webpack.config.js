@@ -52,8 +52,8 @@ module.exports = [
               loader: 'css-loader',
               options: {
                 importLoaders: 1,
-                localsConvention: 'camelCaseOnly',
                 modules: {
+                  exportLocalsConvention: 'camelCaseOnly',
                   localIdentName: '[name]-[local]---[hash:base64:5]'
                 }
               }
@@ -61,9 +61,11 @@ module.exports = [
             {
               loader: 'postcss-loader',
               options: {
-                plugins: () => [
-                  require('postcss-preset-env')()
-                ]
+                postcssOptions: {
+                  plugins: [
+                    'postcss-preset-env'
+                  ]
+                }
               }
             }
           ]
@@ -80,7 +82,14 @@ module.exports = [
       publicPath: './'
     },
     plugins: [
-      new CopyPlugin([{ from: './src/assets', to: 'assets' }]),
+      new CopyPlugin({
+        patterns: [
+          {
+            from: './src/assets',
+            to: 'assets'
+          }
+        ]
+      }),
       new MiniCssExtractPlugin({ filename: 'styles.css' }),
       new HtmlWebpackPlugin({ template: './src/client/index.html' })
     ],
