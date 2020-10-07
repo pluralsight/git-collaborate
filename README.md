@@ -26,6 +26,18 @@ With each commit, the git-switch commit hook amends the commit to designate the 
 Once each commit is complete, git-switch will automatically rotate users in your pair/mob, so the next user will be the author on the next commit.
 
 
+#### WSL users
+
+If you are using Windows Subsystem for Linux and you are not seeing co-authors applied with commits, you may need to symlink your global `.gitconfig` in your Linux instance to point to your global `.gitconfig` in Windows. i.e. You will want to run the following in your Linux shell:
+
+```
+rm ~/.gitconfig
+ln -s /mnt/c/Users/<user>/.gitconfig ~/.gitconfig
+```
+
+Likewise, if you are making a commit from your Linux shell, the command issued to rotate users may not be able to run from the Linux shell, because it is a Windows `.exe`, so you'll need to manually rotate users after commits.
+
+
 ### Identities
 
 Git Switch will modify your ssh config (`~/.ssh/config`) to specify the current author's identity file (RSA key).
