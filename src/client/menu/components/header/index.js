@@ -9,7 +9,9 @@ export function Header({ onMenuClick }) {
     <div className={css.header}>
       <div className={css.title}><GitIcon className={css.icon} />collab</div>
       <div className={css.menuButtonContainer}>
-        <button className={css.menuButton} onClick={onMenuClick}><MenuIcon /></button>
+        <button className={css.menuButton} onClick={onMenuClick}>
+          <MenuIcon className={css.menuIcon} />
+        </button>
       </div>
     </div>
   )
