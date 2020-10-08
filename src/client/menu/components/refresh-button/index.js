@@ -1,11 +1,11 @@
-import { func } from 'prop-types'
+import { bool, func } from 'prop-types'
 import React, { useState } from 'react'
 
 import { RotateIcon } from '../../icons'
 
 import css from './index.css'
 
-export function RefreshButton({ onClick }) {
+export function RefreshButton({ disabled, onClick }) {
   const [wasClicked, setWasClicked] = useState(false)
 
   const handleClick = () => {
@@ -18,12 +18,13 @@ export function RefreshButton({ onClick }) {
   }
 
   return (
-    <div className={css.container} title="Re-initialize git hooks" onClick={handleClick}>
-      <RotateIcon className={`${css.refreshIcon}${wasClicked ? ` ${css.refreshIconSpin}` : ''}`} />
-    </div>
+    <button className={css.container} disabled={disabled} onClick={handleClick}>
+      <RotateIcon className={`${css.icon}${disabled ? ` ${css.disabled}` : ''}${wasClicked ? ` ${css.iconSpin}` : ''}`} />
+    </button>
   )
 }
 
 RefreshButton.propTypes = {
+  disabled: bool,
   onClick: func.isRequired
 }

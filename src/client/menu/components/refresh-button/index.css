@@ -1,20 +1,28 @@
 .container {
-  margin-left: 8px;
-  margin-right: 4px;
+  background: none;
+  border: 0;
   cursor: pointer;
 }
+.container:disabled {
+  cursor: unset;
+}
 
-.refresh-icon {
+.icon {
   height: 18px;
   width: 18px;
   fill: #28A745;
+  padding: 6px 0;
 }
 
-.refresh-icon-spin {
-  animation: refresh 1s ease-in reverse 1;
+.icon.disabled {
+  fill: #586069;
 }
 
-@keyframes refresh {
+.icon-spin {
+  animation: spin 1s ease-in reverse 1;
+}
+
+@keyframes spin {
   from { transform: rotate(0deg) }
   to { transform: rotate(360deg) }
 }

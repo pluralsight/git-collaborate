@@ -7,9 +7,9 @@ import css from './index.css'
 
 export function DeleteButton({ onClick }) {
   return (
-    <div className={css.container} onClick={onClick}>
-      <BinIcon />
-    </div>
+    <button className={css.container} onClick={onClick}>
+      <BinIcon className={css.icon} />
+    </button>
   )
 }
 

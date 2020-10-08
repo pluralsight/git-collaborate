@@ -3,9 +3,9 @@ import md5 from 'md5'
 import { array, func, number } from 'prop-types'
 import React from 'react'
 
-import { Button } from '../'
+import { RefreshButton } from '../'
 import * as api from '../../../api'
-import { ClearIcon, MoreIcon, RotateIcon } from '../../icons'
+import { ClearIcon, MenuIcon } from '../../icons'
 import { userType } from './types'
 
 import css from './index.css'
@@ -44,15 +44,19 @@ function User(props) {
     >
       <div className={css.avatar}>
         <div className={css.avatarImage} style={{ backgroundImage: `url("${photoUrl}")` }} />
-        <div className={css.deactivateIcon}><ClearIcon className={`${css.deactivateIconIcon} ${css.buttonIcon}`} /></div>
-        <div className={css.activateIcon}><ClearIcon className={`${css.activateIconIcon} ${css.buttonIcon}`} /></div>
+        <div className={css.deactivateButton}>
+          <ClearIcon className={`${css.deactivateIcon} ${css.buttonIcon}`} />
+        </div>
+        <div className={css.activateButton}>
+          <ClearIcon className={`${css.activateIcon} ${css.buttonIcon}`} />
+        </div>
       </div>
       <div className={css.userInfo}>
         <div className={css.name}>{user.name}</div>
         {role && <div className={css.role}>{role}</div>}
       </div>
       <button onClick={handleShowUserActionsMenu(user)} className={css.userMenuButton}>
-        <MoreIcon />
+        <MenuIcon class={`${css.userMenuIcon} ${css.buttonIcon}`} />
       </button>
     </li>
   )
@@ -84,9 +88,7 @@ function ActiveUsers(props) {
         <div className={css.usersListHeader}>
           <span>Active</span>
           <div className={css.buttons}>
-            <Button onClick={handleRotateUsers} disabled={users.length === 1}>
-              <RotateIcon className={css.buttonIcon} />
-            </Button>
+            <RefreshButton onClick={handleRotateUsers} disabled={users.length === 1} />
           </div>
         </div>
         <ul className={css.usersList}>

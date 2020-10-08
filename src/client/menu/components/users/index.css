@@ -2,7 +2,7 @@
   margin-bottom: 35px;
 }
 
-.usersListHeader {
+.users-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -11,7 +11,7 @@
   font-weight: bold;
   margin: 18px 8px 4px 12px;
 }
-.usersList {
+.users-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -21,9 +21,9 @@
 .buttons > * {
   margin-left: 8px;
 }
-.buttonIcon {
-  width: 18px;
-  height: 18px;
+.button-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .user {
@@ -41,14 +41,14 @@
   opacity: 0;
 }
 
-.user.active:hover .deactivateIcon {
+.user.active:hover .deactivate-button {
   opacity: 1;
 }
-.user.inactive:hover .activateIcon {
+.user.inactive:hover .activate-button {
   opacity: 1;
 }
 
-.activateIcon, .deactivateIcon {
+.activate-button, .deactivate-button {
   position: absolute;
   top: 0;
   left: 0;
@@ -61,14 +61,11 @@
   background: white;
   transition: opacity 0.2s;
 }
-.deactivateIconIcon {
-  width: 18px;
-  height: 18px;
-  color: #cb2431;
+.deactivate-icon {
+  fill: #cb2431;
 }
-.activateIconIcon {
-  composes: deactivateIconIcon;
-  color: #28A745;
+.activate-icon {
+  fill: #28A745;
   transform: rotate(45deg);
 }
 
@@ -115,6 +112,10 @@
   background: none;
   border: 0;
   cursor: pointer;
+}
+.user-menu-icon {
+  fill: #586069;
+  transform: rotate(90deg);
 }
 
 .empty-message {

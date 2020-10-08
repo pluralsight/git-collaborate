@@ -1,5 +1,9 @@
 # Git Collaborate
 
+<p align="center">
+  <img height="150px" src="src/assets/git-collaborate.png">
+</p>
+
 Cross-platform electron app, `git-collab`, for managing git users while pair/mob programming
 
 
@@ -22,7 +26,7 @@ Any repositories initialized with the `post-commit.git-switch` hook will be swit
 
 * You will find deployables for each of the 3 major platforms [here](https://github.com/pluralsight/git-collaborate/releases).
 * Install git-collab for your platform and run it.
-* You should see a new tray item with the git-collab icon.
+* You should see a new tray item with the git-collab <img height="14px" src="src/assets/menu/tray-icon.svg"> icon.
 * Add your git repos and pair/mob users.
 * Enjoy!
 
