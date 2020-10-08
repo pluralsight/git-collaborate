@@ -119,79 +119,119 @@ export function getGitLogCoAuthorScript() {
 
 # Pretty formatting for git logs with github's co-author support.
 
-commitHash=''
-nextHash=''
-author=''
-date=''
-description=''
-summary=''
-coAuthors=()
+this_ifs=$'\\037'
+begin_commit="---begin_commit---"
+begin_commit_regex="^($begin_commit)(.*)"
+co_author_regex="([Cc]o-[Aa]uthored-[Bb]y: )(.*)( <.*)"
 
-us=$'\\037'
-OIFS=$IFS
-RED='\\033[01;31m'
-GREEN='\\033[01;32m'
-YELLOW='\\033[01;33m'
-BLUE='\\033[01;34m'
-MAGEN='\\033[01;35m'
-CYAN='\\033[01;36m'
-WHITE='\\033[01;37m'
+red="\\e[01;31m"
+green="\\e[01;32m"
+yellow="\\e[33m"
+blue="\\e[01;34m"
+magenta="\\e[01;35m"
+cyan="\\e[01;36m"
+white="\\e[37m"
 
-function main {
-  git log --date=short --pretty=format:"commitHash %h$us(%ad, %ar)$us%d$us%s$us<%an>$us%b" |
-  sed '/^[[:blank:]]*$/d' |
-  parseGitLog |
-  less -R
+commit_hash=""
+date=""
+branches=()
+summary=""
+author=""
+co_authors=()
+
+function join_by {
+  local delim=$1
+  shift
+  echo -n "$1"
+  shift
+  printf "%s" "\${@/#/$delim}"
 }
 
-function parseGitLog {
-  IFS=$us
-  while read data
-  do
-    if [[ $data =~ (commitHash )(.*) ]]; then
-      a=($data)
-      nextHash=$( echo \${a[0]} | sed -e "s/commitHash \\(.*\\)/\\1/" );
-      if [[ $nextHash != $commitHash ]] && [[ $commitHash != '' ]]; then
-        printCommit
+function print_branches {
+  if [ "\${#branches[@]}" != 0 ]; then
+    formatted_branches=()
+
+    for ref in "\${branches[@]}"; do
+      case "$ref" in
+        HEAD*)
+          formatted_branches+=("$cyan$ref$magenta")
+          ;;
+        tag*)
+          formatted_branches+=("$red$ref$magenta")
+          ;;
+        *)
+          formatted_branches+=($ref)
+          ;;
+      esac
+    done
+
+    echo "$magenta($(join_by ", " \${formatted_branches[@]}))$white "
+  fi
+}
+
+function print_co_authors {
+  [ \${#co_authors[@]} -ne 0 ] && echo " $blue($(join_by ", " \${co_authors[@]}))$white" || echo ""
+}
+
+function print_commit {
+  echo -e "$cyan$commit_hash $yellow($date)$white - $(print_branches)$summary $green<$author>$(print_co_authors)"
+}
+
+function parse_commit_hash() {
+  commit_hash=$(echo -e "$1" | sed -e "s/$begin_commit\\(.*\\)/\\1/")
+}
+
+function parse_branches() {
+  trimmed=$(echo -e "$1" | sed -e "s/,[[:space:]]\\+/,/g")
+
+  local IFS=","
+  read -a branches <<< $trimmed
+}
+
+function parse_co_author {
+  if [[ $1 =~ $co_author_regex ]]; then
+    author_name=\${BASH_REMATCH[2]}
+    [[ ! "\${co_authors[@]}" =~ "$author_name" ]] && co_authors+=($author_name)
+  fi
+}
+
+function parse_line {
+  branches=()
+  co_authors=()
+  data=($@)
+
+  parse_commit_hash \${data[0]}
+  date=\${data[1]}
+  parse_branches \${data[2]}
+  summary=\${data[3]}
+  author=\${data[4]}
+  parse_co_author \${data[5]}
+}
+
+function parse_git_log {
+  local IFS=$this_ifs
+
+  while read line; do
+    if [[ $line =~ $begin_commit_regex ]]; then
+      if [ -n "$commit_hash" ]; then
+        print_commit
       fi
-      commitHash=$nextHash
-      date=\${a[1]}
-      branch=\${a[2]}
-      summary=\${a[3]}
-      author=\${a[4]}
-      coAuthors=()
-      possibleCoAuthor=\${a[5]}
+
+      parse_line $line
     else
-      possibleCoAuthor=$data
+      parse_co_author $line
     fi
-    extractCoAuthor $possibleCoAuthor
   done
 
-  printCommit
-  IFS=$OIFS
+  print_commit
 }
 
-function extractCoAuthor {
-  if [[ $1 =~ (Co-Authored-By: )(.*)( <.*) ]]; then
-    authorFound=\${BASH_REMATCH[2]}
-    coAuthors+=($authorFound)
-  fi
+function main {
+  git log --pretty=format:"$begin_commit%h$this_ifs%as, %ar$this_ifs%D$this_ifs%s$this_ifs%an$this_ifs%b%n" |
+    sed "/^[[:blank:]]*$/d" |
+    parse_git_log |
+    less -RFX
 }
-
-function printCommit {
-  if [ \${#coAuthors[@]} -eq 0 ]; then
-    coAuthors=''
-  else
-    CIFS=$IFS
-    IFS=$OIFS
-    coAuthors=$(join_by ', ' "\${coAuthors[@]}")
-    IFS=$CIFS
-    coAuthors="($coAuthors)"
-  fi
-  echo -e "\${CYAN}$commitHash \${YELLOW}$date \${WHITE}-\${MAGEN}$branch \${WHITE}$summary \${BLUE}$author \${GREEN}$coAuthors"
-}
-
-function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "\${@/#/$d}"; }
 
 main
 `
