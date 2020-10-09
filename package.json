@@ -1,5 +1,5 @@
 {
-  "name": "git-collaborate",
+  "name": "git-collab",
   "version": "2.0.0",
   "description": "Cross-platform electron app for managing git users while pair/mob programming",
   "main": "dist/main.js",
