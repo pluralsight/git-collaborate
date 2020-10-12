@@ -27,42 +27,61 @@ function getPackageSrcDir(targetOS) {
   return path.join(__dirname, '..', 'out', packageNames[targetOS])
 }
 
+function getFileSizeString(bytes) {
+  const units = ['B', 'kB', 'MB', 'GB', 'TB']
+  const kilobyte = 1024
+  let unitIndex = 0
+
+  while (bytes >= kilobyte && unitIndex < units.length) {
+    bytes /= kilobyte
+    unitIndex++
+  }
+
+  return `${unitIndex === 0 ? bytes : bytes.toFixed(2)} ${units[unitIndex]}`
+}
+
 function removePackageSrc(targetOS) {
   const sourceDir = getPackageSrcDir(targetOS)
   rimraf.sync(sourceDir)
 }
 
 function zipPackage(targetOS) {
+  console.log(`Creating zip for '${targetOS}'...\n`)
+
   const zippedDir = getPackageZipDir(targetOS)
   const sourceDir = getPackageSrcDir(targetOS)
 
   const srcCodeExists = fs.existsSync(sourceDir)
   if (!srcCodeExists) {
-    throw new Error('`npm run pack` must be run before zipping!')
+    throw new Error(`'npm run package:${targetOS}' or 'npm run package:all' must be run before zipping!`)
   }
 
-  const zippedPackage = fs.createWriteStream(zippedDir)
-  const zip = archiver('zip', { zlib: { level: 9 } })
+  const zipFile = fs.createWriteStream(zippedDir)
+  const archive = archiver('zip', { zlib: { level: 9 } })
 
-  zippedPackage.on('close', () => {
-    console.log(`${targetOS} package: ${zip.pointer()} total bytes`)
-    console.log(`Finished zipping ${PACKAGE_BASE_NAME}-${targetOS}.zip`)
-    console.log(`Removing unzipped build: ${sourceDir}...`)
-    removePackageSrc(targetOS)
+  archive.pipe(zipFile)
+  archive.directory(sourceDir, false)
+  archive.finalize()
+
+  return new Promise((resolve, reject) => {
+    archive.on('error', (err) => reject(err))
+
+    zipFile.on('close', () => {
+      const size = getFileSizeString(archive.pointer())
+      console.log(`Created ${PACKAGE_BASE_NAME}-${targetOS}.zip (${size})`)
+
+      console.log(`Removing unzipped build: ${sourceDir}...\n`)
+      removePackageSrc(targetOS)
+
+      resolve()
+    })
   })
-
-  zip.on('error', (err) => { throw err })
-  zip.pipe(zippedPackage)
-  zip.directory(sourceDir, false)
-  zip.finalize()
 }
 
-function execute() {
-  console.log('Starting zip of all OS packages...')
-
-  zipPackage(OS_NAMES.MAC_OS)
-  zipPackage(OS_NAMES.LINUX)
-  zipPackage(OS_NAMES.WINDOWS)
+async function execute() {
+  console.log('Starting zip of all OS packages...\n')
+  await Promise.all(Object.values(OS_NAMES).map(zipPackage))
+  console.log('Finished')
 }
 
 execute()
