@@ -10,6 +10,7 @@ jobs:
     steps:
       - name: Create release
         id: create_release
+        # deprecated
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,10 +24,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -fy wine64
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+          [ -z "$(which wine64)" ] && sudo ln -s $(which wine) $(which wine)64
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 12.x
+          node-version: lts/*
       - name: Build app
         shell: bash
         run: |
@@ -37,6 +39,7 @@ jobs:
       - name: Zip packages
         run: yarn packages:zip
       - name: Upload macos
+        # deprecated
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,6 +49,7 @@ jobs:
           asset_name: git-collab-macos.zip
           asset_content_type: application/zip
       - name: Upload linux
+        # deprecated
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +59,7 @@ jobs:
           asset_name: git-collab-linux.zip
           asset_content_type: application/zip
       - name: Upload windows
+        # deprecated
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

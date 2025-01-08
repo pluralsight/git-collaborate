@@ -60,6 +60,7 @@ describe('utils/install', () => {
       .withArgs(GIT_LOG_CO_AUTHOR_FILE).callsFake(() => existingGitLogCoAuthorFileContents)
       .withArgs(GIT_SWITCH_CONFIG_FILE).callsFake(() => existingGitSwitchConfigFileContents)
     sandbox.stub(repoService, 'get').callsFake(() => existingRepos)
+    sandbox.stub(repoService, 'update')
     sandbox.stub(userService, 'get').callsFake(() => users)
     sandbox.stub(notificationService, 'showUpdateAvailable')
     sandbox.stub(userService, 'shortenUserIds')
@@ -98,7 +99,7 @@ describe('utils/install', () => {
 
       subject(platform, appExecutablePath, appVersion)
 
-      expect(fs.mkdirSync).to.have.been.calledWith(GIT_COLLAB_PATH, 0o755)
+      expect(fs.mkdirSync).to.have.been.calledWith(GIT_COLLAB_PATH, { mode: 0o755 })
     })
   })
 
@@ -175,17 +176,27 @@ describe('utils/install', () => {
   })
 
   describe('when the config file exists', () => {
+    let repoOneInitResult
+    let repoTwoInitResult
+
     beforeEach(() => {
-      existingRepos = [{ path: 'repo/one' }, { path: 'repo/two' }]
+      existingRepos = [
+        { path: 'repo/one', hooksPath: 'repo/one/.git/hooks', name: 'one', isValid: true },
+        { path: 'repo/two', hooksPath: 'repo/two/.git/hooks', name: 'two', isValid: true }
+      ]
+      repoOneInitResult = { hooksPath: 'repo/one/.git/hooks', isValid: true }
+      repoTwoInitResult = { hooksPath: 'repo/two/.git/hooks', isValid: true }
       sandbox.stub(gitService, 'initRepo')
+        .withArgs(existingRepos[0].path).callsFake(() => repoOneInitResult)
+        .withArgs(existingRepos[1].path).callsFake(() => repoTwoInitResult)
       sandbox.stub(fs, 'writeFileSync')
     })
 
     it('re-initializes all the repos', () => {
       subject(platform, appExecutablePath, appVersion)
 
-      expect(gitService.initRepo).to.have.been.calledWith('repo/one')
-      expect(gitService.initRepo).to.have.been.calledWith('repo/two')
+      expect(gitService.initRepo).to.have.been.calledWith(existingRepos[0].path)
+      expect(gitService.initRepo).to.have.been.calledWith(existingRepos[1].path)
       expect(gitService.initRepo).to.have.been.calledTwice
     })
 
@@ -208,8 +219,8 @@ describe('utils/install', () => {
       it('re-initializes all the repos', () => {
         subject(platform, appExecutablePath, appVersion)
 
-        expect(gitService.initRepo).to.have.been.calledWith('repo/one')
-        expect(gitService.initRepo).to.have.been.calledWith('repo/two')
+        expect(gitService.initRepo).to.have.been.calledWith(existingRepos[0].path)
+        expect(gitService.initRepo).to.have.been.calledWith(existingRepos[1].path)
         expect(gitService.initRepo).to.have.been.calledTwice
       })
 
@@ -236,6 +247,18 @@ describe('utils/install', () => {
       })
     })
 
+    describe('when git-log-co-author exists', () => {
+      it('does not create .git-collab/git-log-co-authors', () => {
+        subject(platform, appExecutablePath, appVersion)
+        expect(fs.writeFileSync).to.not.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE, gitLogCoAuthorFileContents, { encoding: 'utf-8', mode: 0o755 })
+      })
+
+      it('creates a git log alias', () => {
+        subject(platform, appExecutablePath, appVersion)
+        expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
+      })
+    })
+
     describe('when git-log-co-author is outdated', () => {
       beforeEach(() => {
         existingGitLogCoAuthorFileContents = 'outdated-content-here'
@@ -252,10 +275,22 @@ describe('utils/install', () => {
       })
     })
 
-    describe('when git-log-co-author exists', () => {
-      it('creates a git log alias', () => {
+    describe('when repo init returns updated result', () => {
+      beforeEach(() => {
+        existingRepos = [
+          { hooksPath: 'repo/one/.git/hooks', isValid: false, name: 'one', path: 'repo/one' },
+          { hooksPath: 'repo/two/.git/hooks', isValid: true, name: 'two', path: 'repo/two' }
+        ]
+        repoOneInitResult = { hooksPath: 'repo/one/.git/hooks', isValid: true }
+        repoTwoInitResult = { hooksPath: 'repo/two/.some-tool/hooks', isValid: true }
+      })
+
+      it('updates the repos', () => {
         subject(platform, appExecutablePath, appVersion)
-        expect(gitService.setGitLogAlias).to.have.been.calledWith(GIT_LOG_CO_AUTHOR_FILE)
+        expect(repoService.update).to.have.been.calledWith([
+          { hooksPath: 'repo/one/.git/hooks', isValid: true, name: 'one', path: 'repo/one' },
+          { hooksPath: 'repo/two/.some-tool/hooks', isValid: true, path: 'repo/two', name: 'two' }
+        ])
       })
     })
   })

@@ -7,17 +7,15 @@ import * as exec from '../../utils/exec'
 import sandbox from '../../../../test/sandbox'
 
 describe('services/git', () => {
-  let execResult
-
-  beforeEach(() => {
-    execResult = ''
-    sandbox.stub(exec, 'execute').callsFake(() => execResult)
-  })
   afterEach(() => {
     sandbox.restore()
   })
 
   describe('#setAuthor', () => {
+    beforeEach(() => {
+      sandbox.stub(exec, 'execute')
+    })
+
     it('executes a git command to set author name and email', () => {
       subject.setAuthor('author-name', 'author-email')
 
@@ -27,6 +25,10 @@ describe('services/git', () => {
   })
 
   describe('#setCoAuthors', () => {
+    beforeEach(() => {
+      sandbox.stub(exec, 'execute')
+    })
+
     it('executes a git command to set co-author(s)', () => {
       const coAuthors = [
         { name: 'co-author-1', email: 'co-author1@email.com' },
@@ -53,6 +55,7 @@ describe('services/git', () => {
     beforeEach(() => {
       sandbox.stub(subject, 'setAuthor')
       sandbox.stub(subject, 'setCoAuthors')
+      sandbox.stub(exec, 'execute')
 
       users = [{
         name: 'First User',
@@ -128,6 +131,10 @@ describe('services/git', () => {
   })
 
   describe('#setGitLogAlias', () => {
+    beforeEach(() => {
+      sandbox.stub(exec, 'execute')
+    })
+
     it('executes a git command to set the `git lg` alias', () => {
       subject.setGitLogAlias('path/to/git/log/script')
       expect(exec.execute).to.have.been.calledWith('git config --global alias.lg "!path/to/git/log/script"')
@@ -141,9 +148,12 @@ describe('services/git', () => {
 
   describe('#initRepo', () => {
     let repoPath
+    let repoHooksPath
+    let localHooksPath
     let pathExists
     let repoExists
     let submoduleExists
+    let submoduleStatus
     let isSubmoduleDir
     let postCommitExists
     let postCommitPath
@@ -152,21 +162,29 @@ describe('services/git', () => {
 
     beforeEach(() => {
       repoPath = '/repo/path'
+      repoHooksPath = path.join(repoPath, '.git', 'hooks')
+      localHooksPath = null
       pathExists = true
       repoExists = true
       submoduleExists = false
       isSubmoduleDir = true
       postCommitExists = false
-      postCommitPath = path.join(repoPath, '.git', 'hooks', 'post-commit')
-      postCommitGitCollabPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-collab')
+      postCommitPath = path.join(repoHooksPath, 'post-commit')
+      postCommitGitCollabPath = path.join(repoHooksPath, 'git-collab', 'post-commit')
       gitHookPath = path.join(subject.GIT_COLLAB_PATH, 'post-commit')
 
       sandbox.stub(fs, 'existsSync')
         .withArgs(repoPath).callsFake(() => pathExists)
         .withArgs(path.join(repoPath, '.git')).callsFake(() => repoExists)
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
-        .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
+        .withArgs(path.join(repoHooksPath, 'post-commit')).callsFake(() => postCommitExists)
       sandbox.stub(fs, 'statSync').callsFake(() => ({ isDirectory: () => isSubmoduleDir }))
+      sandbox.stub(exec, 'execute')
+        .withArgs('git submodule status', { cwd: repoPath }).callsFake(() => submoduleStatus)
+        .withArgs('git config --local core.hooksPath', { cwd: repoPath }).callsFake(() => {
+          if (!localHooksPath) throw new Error()
+          return `${localHooksPath}\n`
+        })
     })
 
     describe('when path is a git repo', () => {
@@ -181,23 +199,29 @@ describe('services/git', () => {
           .withArgs(postCommitPath).callsFake(() => existingPostCommitScript)
           .withArgs(gitHookPath).callsFake(() => gitHookContents)
         sandbox.stub(fs, 'writeFileSync')
+        sandbox.stub(fs, 'mkdirSync')
       })
 
-      it('copies the post-commit.git-collab file', () => {
+      it('creates the git-collab directory', () => {
+        subject.initRepo(repoPath)
+        expect(fs.mkdirSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab'), { recursive: true })
+      })
+
+      it('copies the git-collab/post-commit file', () => {
         subject.initRepo(repoPath)
 
         expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitGitCollabPath, gitHookContents, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('writes post-commit file to call post-commit.git-collab', () => {
+      it('writes post-commit file to call git-collab/post-commit', () => {
         subject.initRepo(repoPath)
         expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
       })
 
-      it('returns true', () => {
-        const success = subject.initRepo(repoPath)
-        expect(success).to.be.true
+      it('returns valid', () => {
+        const actual = subject.initRepo(repoPath)
+        expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
       })
 
       describe('when post-commit already exists', () => {
@@ -209,10 +233,10 @@ describe('services/git', () => {
           existingPostCommitScript = '#!/bin/bash\n\necho "Committed"'
           const expected = `${subject.POST_COMMIT_BASE}\n\necho "Committed"`
 
-          const success = subject.initRepo(repoPath)
+          const actual = subject.initRepo(repoPath)
 
           expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, expected, { encoding: 'utf-8', mode: 0o755 })
-          expect(success).to.be.true
+          expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
         })
 
         describe('when post-commit contains call to git-switch', () => {
@@ -220,18 +244,70 @@ describe('services/git', () => {
             existingPostCommitScript = subject.GIT_SWITCH_POST_COMMIT_BASE
             sandbox.stub(fs, 'unlinkSync')
 
-            const success = subject.initRepo(repoPath)
+            const actual = subject.initRepo(repoPath)
 
             expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
-            expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit.git-switch'))
-            expect(success).to.be.true
+            expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit.git-switch'))
+            expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
+          })
+        })
+
+        describe('when the post-commit contains old post-commit.git-collab', () => {
+          it('replaces post-commit.git-collab hook with git-collab/post-commit', () => {
+            existingPostCommitScript = subject.GIT_SWITCH_POST_COMMIT_BASE
+            sandbox.stub(fs, 'unlinkSync')
+
+            const actual = subject.initRepo(repoPath)
+
+            expect(fs.writeFileSync).to.have.been.calledWith(postCommitPath, subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit.git-collab'))
+            expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
+          })
+        })
+      })
+
+      describe('when the repo has a local hooksPath', () => {
+        beforeEach(() => {
+          localHooksPath = '.some-tool/hooks'
+          repoHooksPath = path.join(repoPath, '.some-tool', 'hooks')
+        })
+
+        it('uses the local hooksPath', () => {
+          const actual = subject.initRepo(repoPath)
+
+          expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
+          expect(exec.execute).to.have.been.calledWith('git config --local core.hooksPath', { cwd: repoPath })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab', 'post-commit'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+          expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
+        })
+
+        it('adds `.gitignore` to local `git-collab` directory', () => {
+          const actual = subject.initRepo(repoPath)
+
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab', '.gitignore'), '*', { encoding: 'utf-8' })
+          expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
+        })
+
+        describe('when the local hooksPath is .husky', () => {
+          beforeEach(() => {
+            localHooksPath = '.husky/_'
+            repoHooksPath = path.join(repoPath, '.husky')
+          })
+
+          it('uses the .husky path', () => {
+            const actual = subject.initRepo(repoPath)
+
+            expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab', 'post-commit'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
+            expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab', '.gitignore'), '*', { encoding: 'utf-8' })
+            expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
           })
         })
       })
 
       describe('when sub-modules exist', () => {
         let submoduleDirs
-        let submoduleStatus
         let submodule1GitHooksPath
         let submodule2GitHooksPath
         let submodule3GitHooksPath
@@ -245,26 +321,24 @@ describe('services/git', () => {
           submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
           submodule2GitHooksPath = path.join(repoPath, '.git', 'modules', 'subdir', 'mod2', 'hooks')
           submodule3GitHooksPath = path.join(repoPath, '.git', 'modules', 'subdir', 'mod2', 'hooks')
-
-          execResult = submoduleStatus
         })
 
         it('installs post-commit files in sub-modules', () => {
-          const success = subject.initRepo(repoPath)
+          const actual = subject.initRepo(repoPath)
 
           expect(fs.readFileSync).to.have.been.calledWith(gitHookPath, 'utf-8')
           expect(exec.execute).to.have.been.calledWith('git submodule status')
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'git-collab', 'post-commit'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule2GitHooksPath, 'git-collab', 'post-commit'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit.git-collab'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
           expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'post-commit'), subject.POST_COMMIT_BASE, { encoding: 'utf-8', mode: 0o755 })
+          expect(fs.writeFileSync).to.have.been.calledWith(path.join(submodule3GitHooksPath, 'git-collab', 'post-commit'), gitHookContents, { encoding: 'utf-8', mode: 0o755 })
 
-          expect(success).to.be.true
+          expect(actual).to.deep.equal({ hooksPath: repoHooksPath, isValid: true })
         })
       })
     })
@@ -272,64 +346,67 @@ describe('services/git', () => {
     describe('when path does not exist', () => {
       it('return false', () => {
         pathExists = false
-        expect(subject.initRepo(repoPath)).to.be.false
+        expect(subject.initRepo(repoPath)).to.deep.equal({ isValid: false })
       })
     })
 
     describe('when path is not a git repo', () => {
-      it('return false', () => {
+      it('return invalid result', () => {
         repoExists = false
-        expect(subject.initRepo(repoPath)).to.be.false
+        expect(subject.initRepo(repoPath)).to.deep.equal({ isValid: false })
       })
     })
   })
 
   describe('#removeRepo', () => {
-    const postCommitGitCollab = '\n\n/bin/bash "$(dirname $0)"/post-commit.git-collab'
+    const postCommitGitCollab = '\n\n[ -f "$(dirname $0)/git-collab/post-commit" ] && . $(dirname $0)/git-collab/post-commit'
     let postCommitScript
     let repoPath
+    let repoHooksPath
     let submoduleExists
     let postCommitExists
     let postCommitGitCollabExists
-    let postCommitGitCollabPath
 
     beforeEach(() => {
       repoPath = '/repo/path'
+      repoHooksPath = path.join(repoPath, '.some-tool', 'hooks')
       submoduleExists = false
       postCommitExists = true
       postCommitGitCollabExists = true
-      postCommitScript = `#!/bin/bash${postCommitGitCollab}\n\necho "Committed"`
-      postCommitGitCollabPath = path.join(repoPath, '.git', 'hooks', 'post-commit.git-collab')
+      postCommitScript = `#!/usr/bin/env sh${postCommitGitCollab}\n\necho "Committed"`
 
       sandbox.stub(fs, 'existsSync')
         .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
-        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit.git-collab')).callsFake(() => submoduleExists)
         .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'post-commit')).callsFake(() => submoduleExists)
-        .withArgs(path.join(repoPath, '.git', 'modules')).callsFake(() => submoduleExists)
-        .withArgs(path.join(repoPath, '.git', 'hooks', 'post-commit')).callsFake(() => postCommitExists)
-        .withArgs(postCommitGitCollabPath).callsFake(() => postCommitGitCollabExists)
-      sandbox.stub(fs, 'unlinkSync')
+        .withArgs(path.join(repoPath, '.git', 'modules', 'mod1', 'hooks', 'git-collab')).callsFake(() => submoduleExists)
+        .withArgs(path.join(repoHooksPath, 'post-commit')).callsFake(() => postCommitExists)
+        .withArgs(path.join(repoHooksPath, 'git-collab')).callsFake(() => postCommitGitCollabExists)
       sandbox.stub(fs, 'readFileSync').callsFake(() => postCommitScript)
+      sandbox.stub(fs, 'unlinkSync')
+      sandbox.stub(fs, 'rmdirSync')
       sandbox.stub(fs, 'writeFileSync')
     })
 
-    it('deletes the post-commit.git-collab file', () => {
-      subject.removeRepo(repoPath)
-      expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitCollabPath)
+    it('deletes the git-collab dir', () => {
+      subject.removeRepo(repoPath, repoHooksPath)
+      expect(fs.rmdirSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab'))
     })
 
     it('removes the git collab call in post-commit', () => {
       const expected = postCommitScript.replace(postCommitGitCollab, '')
-      subject.removeRepo(repoPath)
-      expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'), expected, { encoding: 'utf-8', mode: 0o755 })
+      subject.removeRepo(repoPath, repoHooksPath)
+      expect(fs.writeFileSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit'), expected, { encoding: 'utf-8', mode: 0o755 })
     })
 
     describe('when no other post-commit hooks exist', () => {
+      beforeEach(() => {
+        postCommitScript = `#!/usr/bin/env sh${postCommitGitCollab}`
+      })
+
       it('deletes the post-commit hook', () => {
-        postCommitScript = `#!/bin/bash${postCommitGitCollab}`
-        subject.removeRepo(repoPath)
-        expect(fs.unlinkSync).to.have.been.calledWith(postCommitGitCollabPath)
-        expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoPath, '.git', 'hooks', 'post-commit'))
+        subject.removeRepo(repoPath, repoHooksPath)
+        expect(fs.unlinkSync).to.have.been.calledWith(path.join(repoHooksPath, 'post-commit'))
+        expect(fs.rmdirSync).to.have.been.calledWith(path.join(repoHooksPath, 'git-collab'))
       })
     })
 
@@ -337,18 +414,19 @@ describe('services/git', () => {
       const submoduleDirs = ['mod1']
 
       beforeEach(() => {
+        repoHooksPath = path.join(repoPath, '.git', 'hooks')
         submoduleExists = true
-        postCommitScript = `#!/bin/bash${postCommitGitCollab}`
+        postCommitScript = `#!/usr/bin/env sh${postCommitGitCollab}`
         sandbox.stub(fs, 'readdirSync').callsFake(() => submoduleDirs)
       })
 
       it('removes post-commit files in sub-modules', () => {
         const submodule1GitHooksPath = path.join(repoPath, '.git', 'modules', 'mod1', 'hooks')
 
-        subject.removeRepo(repoPath)
+        subject.removeRepo(repoPath, repoHooksPath)
 
-        expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit.git-collab'))
         expect(fs.unlinkSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'post-commit'))
+        expect(fs.rmdirSync).to.have.been.calledWith(path.join(submodule1GitHooksPath, 'git-collab'))
       })
     })
   })

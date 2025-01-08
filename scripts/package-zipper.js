@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 const archiver = require('archiver')
 const fs = require('fs')
 const path = require('path')
@@ -46,7 +44,7 @@ function removePackageSrc(targetOS) {
 }
 
 function zipPackage(targetOS) {
-  console.log(`Creating zip for '${targetOS}'...\n`)
+  console.info(`Creating zip for '${targetOS}'...\n`)
 
   const zippedDir = getPackageZipDir(targetOS)
   const sourceDir = getPackageSrcDir(targetOS)
@@ -68,9 +66,9 @@ function zipPackage(targetOS) {
 
     zipFile.on('close', () => {
       const size = getFileSizeString(archive.pointer())
-      console.log(`Created ${PACKAGE_BASE_NAME}-${targetOS}.zip (${size})`)
+      console.info(`Created ${PACKAGE_BASE_NAME}-${targetOS}.zip (${size})`)
 
-      console.log(`Removing unzipped build: ${sourceDir}...\n`)
+      console.info(`Removing unzipped build: ${sourceDir}...\n`)
       removePackageSrc(targetOS)
 
       resolve()
@@ -79,9 +77,9 @@ function zipPackage(targetOS) {
 }
 
 async function execute() {
-  console.log('Starting zip of all OS packages...\n')
+  console.info('Starting zip of all OS packages...\n')
   await Promise.all(Object.values(OS_NAMES).map(zipPackage))
-  console.log('Finished')
+  console.info('Finished')
 }
 
 execute()

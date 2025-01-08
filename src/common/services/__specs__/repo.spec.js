@@ -10,8 +10,8 @@ describe('services/repo', () => {
 
   beforeEach(() => {
     repos = [
-      { name: 'one', path: '/repo/one', isValid: false },
-      { name: 'two', path: '/repo/two', isValid: true }
+      { name: 'one', path: '/repo/one', hooksPath: 'repo/one/.git/hooks', isValid: false },
+      { name: 'two', path: '/repo/two', hooksPath: 'repo/two/.git/hooks', isValid: true }
     ]
     config = { repos }
 
@@ -35,73 +35,85 @@ describe('services/repo', () => {
   })
 
   describe('#add', () => {
-    let didRepoSucceed
+    let repoPath
+    let initRepoResult
 
     beforeEach(() => {
-      didRepoSucceed = true
+      repoPath = '/foo/bar'
+      initRepoResult = { hooksPath: '/foo/bar/.git/hooks', isValid: true }
 
       sandbox.stub(configUtil, 'write')
-      sandbox.stub(gitService, 'initRepo').callsFake(() => didRepoSucceed)
+      sandbox.stub(gitService, 'initRepo').callsFake(() => initRepoResult)
     })
 
     it('adds repo to config sorted by name', () => {
-      const newRepo = '/foo/bar'
       const expected = [
-        { name: 'bar', path: newRepo, isValid: true },
+        { name: 'bar', path: repoPath, hooksPath: initRepoResult.hooksPath, isValid: true },
         ...repos
       ]
 
-      const actual = subject.add(newRepo)
+      const actual = subject.add(repoPath)
 
-      expect(gitService.initRepo).to.have.been.calledWith(newRepo)
+      expect(gitService.initRepo).to.have.been.calledWith(repoPath)
       expect(configUtil.write).to.have.been.calledWith({ repos: expected })
       expect(actual).to.deep.equal(expected)
     })
 
     describe('when a repo with the path already exists', () => {
+      beforeEach(() => {
+        repoPath = '/repo/one'
+        initRepoResult = { hooksPath: '/repo/one/.git/hooks', isValid: true }
+      })
+
       it('re-initializes the repo', () => {
-        const existingRepo = '/repo/one'
         const expected = [
-          { name: 'one', path: existingRepo, isValid: true },
+          { name: 'one', path: repoPath, hooksPath: initRepoResult.hooksPath, isValid: true },
           repos[1]
         ]
 
-        const actual = subject.add(existingRepo)
+        const actual = subject.add(repoPath)
 
-        expect(gitService.initRepo).to.have.been.calledWith(existingRepo)
+        expect(gitService.initRepo).to.have.been.calledWith(repoPath)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
         expect(actual).to.deep.equal(expected)
       })
     })
 
     describe('when the repo has a trailing slash', () => {
+      beforeEach(() => {
+        repoPath = '/foo/bar/'
+      })
+
       it('adds removes the trailing slash', () => {
-        const newRepo = '/foo/bar/'
-        const modifiedRepo = '/foo/bar'
+        const expectedPath = '/foo/bar'
         const expected = [
-          { name: 'bar', path: modifiedRepo, isValid: true },
+          { name: 'bar', path: expectedPath, hooksPath: initRepoResult.hooksPath, isValid: true },
           ...repos
         ]
 
-        const actual = subject.add(newRepo)
+        const actual = subject.add(repoPath)
 
-        expect(gitService.initRepo).to.have.been.calledWith(modifiedRepo)
+        expect(gitService.initRepo).to.have.been.calledWith(expectedPath)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
         expect(actual).to.deep.equal(expected)
       })
     })
 
     describe('when using windows paths', () => {
+      beforeEach(() => {
+        repoPath = 'C:\\foo\\bar'
+        initRepoResult = { hooksPath: 'C:\\foo\\bar\\.git\\hooks', isValid: true }
+      })
+
       it('adds repo to config sorted by name', () => {
-        const newRepo = 'C:\\foo\\bar'
         const expected = [
-          { name: 'bar', path: newRepo, isValid: true },
+          { name: 'bar', path: repoPath, hooksPath: initRepoResult.hooksPath, isValid: true },
           ...repos
         ]
 
-        const actual = subject.add(newRepo)
+        const actual = subject.add(repoPath)
 
-        expect(gitService.initRepo).to.have.been.calledWith(newRepo)
+        expect(gitService.initRepo).to.have.been.calledWith(repoPath)
         expect(configUtil.write).to.have.been.calledWith({ repos: expected })
         expect(actual).to.deep.equal(expected)
       })
@@ -109,12 +121,12 @@ describe('services/repo', () => {
 
     describe('when git service fails to init repo hooks', () => {
       beforeEach(() => {
-        didRepoSucceed = false
+        initRepoResult = { isValid: false }
       })
 
       it('adds the repo with isValid set to false', () => {
         const expected = [
-          { name: 'bar-2', path: '/foo/bar-2', isValid: false },
+          { name: 'bar-2', path: '/foo/bar-2', hooksPath: '', isValid: false },
           ...repos
         ]
 
@@ -136,13 +148,14 @@ describe('services/repo', () => {
 
     it('removes the repo from config', () => {
       const repoToDelete = repos[1].path
+      const hooksPath = repos[1].hooksPath
       const expected = {
         repos: [repos[0]]
       }
 
       subject.remove(repoToDelete)
 
-      expect(gitService.removeRepo).to.have.been.calledWith(repoToDelete)
+      expect(gitService.removeRepo).to.have.been.calledWith(repoToDelete, hooksPath)
       expect(configUtil.write).to.have.been.calledWith(expected)
     })
 
@@ -157,6 +170,7 @@ describe('services/repo', () => {
     describe('when path has trailing slash', () => {
       it('removes the repo from config', () => {
         const normalizedPath = repos[1].path
+        const hooksPath = repos[1].hooksPath
         const repoToDelete = `${repos[1].path}/`
         const expected = {
           repos: [repos[0]]
@@ -164,7 +178,7 @@ describe('services/repo', () => {
 
         subject.remove(repoToDelete)
 
-        expect(gitService.removeRepo).to.have.been.calledWith(normalizedPath)
+        expect(gitService.removeRepo).to.have.been.calledWith(normalizedPath, hooksPath)
         expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })
@@ -172,13 +186,14 @@ describe('services/repo', () => {
     describe('when repo hooks are not configured', () => {
       it('does not call git service', () => {
         const repoToDelete = repos[0].path
+        const hooksPath = repos[0].hooksPath
         const expected = {
           repos: [repos[1]]
         }
 
         subject.remove(repoToDelete)
 
-        expect(gitService.removeRepo).to.not.have.been.calledWith(repoToDelete)
+        expect(gitService.removeRepo).to.not.have.been.calledWith(repoToDelete, hooksPath)
         expect(configUtil.write).to.have.been.calledWith(expected)
       })
     })

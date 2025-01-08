@@ -6,7 +6,7 @@
   "scripts": {
     "build": "yarn build:clean && yarn build:compile",
     "build:clean": "rimraf ./dist",
-    "build:compile": "webpack",
+    "build:compile": "NODE_OPTIONS=--openssl-legacy-provider webpack",
     "lint": "yarn lint:main && yarn lint:renderer && yarn lint:cli",
     "lint:cli": "eslint ./src/cli",
     "lint:main": "eslint ./src/common",

@@ -30,11 +30,11 @@ export const add = (path) => {
     repos = repos.filter((r) => r !== existingRepo)
   }
 
-  const isValid = gitService.initRepo(path)
+  const { hooksPath, isValid } = gitService.initRepo(path)
 
   return persist([
     ...repos,
-    { name, path, isValid }
+    { name, path, hooksPath: hooksPath ?? '', isValid }
   ])
 }
 
@@ -48,11 +48,16 @@ export const remove = (path) => {
     return repos
   }
 
-  if (repos[foundIndex].isValid) {
-    gitService.removeRepo(path)
+  const foundRepo = repos[foundIndex]
+  if (foundRepo.isValid) {
+    gitService.removeRepo(path, foundRepo.hooksPath)
   }
 
   repos.splice(foundIndex, 1)
 
+  return persist(repos)
+}
+
+export const update = (repos) => {
   return persist(repos)
 }

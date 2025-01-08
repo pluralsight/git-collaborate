@@ -27,7 +27,7 @@ export function install(platform, appExecutablePath, appVersion) {
 
 function installConfigFile() {
   if (!fs.existsSync(GIT_COLLAB_PATH)) {
-    fs.mkdirSync(GIT_COLLAB_PATH, 0o755)
+    fs.mkdirSync(GIT_COLLAB_PATH, { mode: 0o755 })
   }
 
   if (!fs.existsSync(CONFIG_FILE)) {
@@ -67,34 +67,43 @@ function getAutoRotateCommand(platform, appExecutablePath) {
 }
 
 export function getPostCommitHookScript(autoRotate) {
-  return `#!/bin/sh
+  return `#!/usr/bin/env sh
 
-body=$(git log -1 HEAD --format="%b")
-author=$(git log -1 HEAD --format="%an <%ae>")
-co_authors_string=$(git config --global git-collab.co-authors)
-co_authors=$(echo $co_authors_string | tr ";" "\n")
+readonly co_authors=$(git config --global git-collab.co-authors | tr ';' '\\n')
+[ -z "$co_authors" ] && exit 0
 
-echo -e "git-collab > Author:\\n  $author"
+readonly subject=$(git log -1 --format="%s")
+readonly body=$(git log -1 --format="%b")
+readonly author=$(git log -1 --format="%an <%ae>")
 
-if [[ "$body" != *$co_authors ]]; then
-  subject=$(git log -1 HEAD --format="%s")
+match_co_authors() {
+  _co_author_lines=$(printf "%s\\n" "$2" | wc -l)
+  _body_end=$(printf "%s" "$1" | tail -n "$_co_author_lines")
 
-  echo -e "git-collab > Co-Author(s):\\n\${co_authors//Co-Authored-By:/ }"
-  echo ""
+  [ "$_body_end" = "$2" ]
+}
 
-  if [[ "$body" == Co-Authored-By* ]]; then
-    body=$co_authors
-  else
-    body=\${body//Co-Authored-By*/}
-    body="$body\n\n$co_authors"
-  fi
+match_co_authors "$body" "$co_authors" && exit 0
 
-  git commit --amend --no-verify --message="$subject\n\n$body"
+printf "git-collab > Author:\\n  %s\\n" "$author"
+printf "git-collab > Co-Author(s):\\n%s\\n\\n" "$(printf "%s" "$co_authors" | sed 's/^Co-Authored-By: /  /g')"
 
-  echo ""
-  echo "git-collab > Rotating author and co-author(s)"
-  ${autoRotate}
-fi
+case "$body" in
+  ""|"Co-Authored-By:"*)
+    new_body=$co_authors
+    ;;
+  *)
+    new_body=\${body%%Co-Authored-By*}
+    new_body=$(printf "%s\\n\\n%s" "$new_body" "$co_authors")
+    ;;
+esac
+
+message="$(printf "%s\\n\\n%s" "$subject" "$new_body")"
+
+git commit --quiet --amend --no-verify --message="$message"
+
+printf "git-collab > Rotating author and co-author(s)\\n\\n"
+${autoRotate}
 `
 }
 
@@ -110,130 +119,136 @@ function installPostCommitHook(autoRotate) {
 
   const repos = repoService.get()
   for (const repo of repos) {
-    gitService.initRepo(repo.path)
+    const { hooksPath, isValid } = gitService.initRepo(repo.path)
+    if (isValid !== repo.isValid || hooksPath !== repo.hooksPath) {
+      repo.hooksPath = hooksPath
+      repo.isValid = isValid
+    }
   }
+
+  repoService.update(repos)
 }
 
 export function getGitLogCoAuthorScript() {
-  return `#!/bin/bash
+  return `#!/usr/bin/env sh
 
-# Pretty formatting for git logs with github's co-author support.
+# Pretty formatting for git logs with github's co-author support
 
-this_ifs=$'\\037'
-begin_commit="---begin_commit---"
-begin_commit_regex="^($begin_commit)(.*)"
-co_author_regex="([Cc]o-[Aa]uthored-[Bb]y: )(.*)( <.*)"
-
-red="\\e[01;31m"
-green="\\e[01;32m"
-yellow="\\e[33m"
-blue="\\e[01;34m"
-magenta="\\e[01;35m"
-cyan="\\e[01;36m"
-white="\\e[37m"
+readonly line_ifs=$(printf '\\037')
+readonly branch_ifs="|"
+readonly begin_commit="### begin_commit ###"
 
 commit_hash=""
 date=""
-branches=()
-summary=""
+branches=""
+subject=""
 author=""
-co_authors=()
+co_authors=""
 
-function join_by {
-  local delim=$1
-  shift
-  echo -n "$1"
-  shift
-  printf "%s" "\${@/#/$delim}"
+init_colors() {
+  red=$(printf '\\033[31m')
+  green=$(printf '\\033[32m')
+  yellow=$(printf '\\033[33m')
+  blue=$(printf '\\033[34m')
+  magenta=$(printf '\\033[35m')
+  cyan=$(printf '\\033[36m')
+  white=$(printf '\\033[37m')
+  reset=$(printf '\\033[0m')
 }
 
-function print_branches {
-  if [ "\${#branches[@]}" != 0 ]; then
-    formatted_branches=()
+print_branches() {
+  [ -z "$branches" ] && return
+  formatted_branches=""
 
-    for ref in "\${branches[@]}"; do
-      case "$ref" in
-        HEAD*)
-          formatted_branches+=("$cyan$ref$magenta")
-          ;;
-        tag*)
-          formatted_branches+=("$red$ref$magenta")
-          ;;
-        *)
-          formatted_branches+=($ref)
-          ;;
-      esac
-    done
+  reset_ifs=$IFS
+  IFS=$branch_ifs
+  for ref in $branches; do
+    [ -n "$formatted_branches" ] && formatted_branches="$formatted_branches, "
 
-    echo "$magenta($(join_by ", " \${formatted_branches[@]}))$white "
-  fi
+    # Remove leading spaces
+    ref=\${ref#"\${ref%%[! ]*}"}
+
+    case "$ref" in
+      HEAD*) formatted_branches="$formatted_branches$cyan$ref$magenta";;
+      tag*) formatted_branches="$formatted_branches$red$ref$magenta";;
+      *) formatted_branches="$formatted_branches$ref";;
+    esac
+  done
+  IFS=$reset_ifs
+
+  printf "%s" "$magenta($formatted_branches)$reset"
 }
 
-function print_co_authors {
-  [ \${#co_authors[@]} -ne 0 ] && echo " $blue($(join_by ", " \${co_authors[@]}))$white" || echo ""
+print_co_authors() {
+  [ -n "$co_authors" ] && printf "%s" "$blue($co_authors)$reset"
 }
 
-function print_commit {
-  echo -e "$cyan$commit_hash $yellow($date)$white - $(print_branches)$summary $green<$author>$(print_co_authors)"
+print_commit() {
+  printf "%s %s - %s %s %s%s\\n" \\
+    "$cyan$commit_hash$reset" \\
+    "$yellow($date)$reset" \\
+    "$(print_branches)" \\
+    "$white$subject$reset" \\
+    "$green<$author>$reset" \\
+    "$(print_co_authors)"
 }
 
-function parse_commit_hash() {
-  commit_hash=$(echo -e "$1" | sed -e "s/$begin_commit\\(.*\\)/\\1/")
+parse_co_author() {
+  case "$1" in
+    *[Cc]o-[Aa]uthored-[Bb]y:*)
+      # Remove 'Co-Authored-By: ' / 'Co-authored-by: ' prefix
+      author_name=\${1#*[Bb]y: }
+      author_name=\${author_name%% <*}
+      [ -z "$co_authors" ] && co_authors=$author_name || co_authors="$co_authors, $author_name"
+      ;;
+  esac
 }
 
-function parse_branches() {
-  trimmed=$(echo -e "$1" | sed -e "s/,[[:space:]]\\+/,/g")
+parse_line() {
+  line=$1
 
-  local IFS=","
-  read -a branches <<< $trimmed
+  reset_ifs=$IFS
+  IFS=$line_ifs
+  set -- $line
+  IFS=$reset_ifs
+
+  commit_hash=\${1#$begin_commit} # Remove the '### begin_commit ###' prefix
+  date="$2"
+  branches=$(printf "%s" "$3" | tr ',' "$branch_ifs")
+  subject="$4"
+  author="$5"
+  [ -n "$6" ] && parse_co_author "$6"
 }
 
-function parse_co_author {
-  if [[ $1 =~ $co_author_regex ]]; then
-    author_name=\${BASH_REMATCH[2]}
-    [[ ! "\${co_authors[@]}" =~ "$author_name" ]] && co_authors+=($author_name)
-  fi
-}
+parse_git_log() {
+  while read -r line; do
+    case "$line" in
+      "$begin_commit"*)
+        if [ -n "$commit_hash" ]; then
+          print_commit
+          commit_hash=""
+          co_authors=""
+        fi
 
-function parse_line {
-  branches=()
-  co_authors=()
-  data=($@)
-
-  parse_commit_hash \${data[0]}
-  date=\${data[1]}
-  parse_branches \${data[2]}
-  summary=\${data[3]}
-  author=\${data[4]}
-  parse_co_author \${data[5]}
-}
-
-function parse_git_log {
-  local IFS=$this_ifs
-
-  while read line; do
-    if [[ $line =~ $begin_commit_regex ]]; then
-      if [ -n "$commit_hash" ]; then
-        print_commit
-      fi
-
-      parse_line $line
-    else
-      parse_co_author $line
-    fi
+        parse_line "$line"
+        ;;
+      *)
+        parse_co_author "$line"
+        ;;
+    esac
   done
 
-  print_commit
+  print_commit # Print the last commit
 }
 
-function main {
-  git log --pretty=format:"$begin_commit%h$this_ifs%as, %ar$this_ifs%D$this_ifs%s$this_ifs%an$this_ifs%b%n" |
-    sed "/^[[:blank:]]*$/d" |
-    parse_git_log |
-    less -RFX
-}
+init_colors
 
-main
+git log \\
+  --no-notes \\
+  --no-decorate \\
+  --pretty=format:"$begin_commit%h\${line_ifs}%as, %ar\${line_ifs}%D\${line_ifs}%s\${line_ifs}%an\${line_ifs}%b%n" |
+  parse_git_log |
+  less -RFX
 `
 }
 

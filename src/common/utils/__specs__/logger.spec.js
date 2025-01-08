@@ -1,11 +1,9 @@
-/* eslint-disable no-console */
-
 import { logger as subject } from '../'
 import sandbox from '../../../../test/sandbox'
 
 describe('utils/logger', () => {
   beforeEach(() => {
-    sandbox.spy(console, 'log')
+    sandbox.spy(console, 'info')
     sandbox.spy(console, 'error')
   })
   afterEach(() => {
@@ -20,7 +18,7 @@ describe('utils/logger', () => {
 
     it('logs info to console', () => {
       subject.info('foo')
-      expect(console.log).to.have.been.called
+      expect(console.info).to.have.been.called
     })
 
     it('logs errors to console', () => {
@@ -36,7 +34,7 @@ describe('utils/logger', () => {
 
     it('does not log info to console', () => {
       subject.info('foo')
-      expect(console.log).to.not.be.called
+      expect(console.info).to.not.be.called
     })
 
     it('logs errors to console', () => {
@@ -45,5 +43,3 @@ describe('utils/logger', () => {
     })
   })
 })
-
-/* eslint-enable no-console */

@@ -27,7 +27,15 @@
     ],
     "lines-between-class-members": "off",
     "mocha/no-exclusive-tests": "error",
-    "no-console": "error",
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "info",
+          "error"
+        ]
+      }
+    ],
     "no-new": "off",
     "no-unused-vars": [
       2,
